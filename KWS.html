@@ -376,6 +376,48 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
   .hdr .flag { width: 52px; }
   .withsubin { font-size: 1.05rem; }
 }
+
+/* ===== more practice: build a sentence, meaning, streak, statistics ===== */
+.pseg { grid-template-columns: repeat(3, 1fr); }
+@media (min-width: 560px) { .pseg { grid-template-columns: repeat(5, 1fr); } }
+.again { font-size: .85rem; font-weight: 600; color: var(--muted); }
+.bans { min-height: 64px; display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start; padding: 10px; border: 1.5px dashed var(--line); border-radius: var(--r-lg); background: var(--bg); }
+.bans .ph { color: var(--muted); font-size: .95rem; align-self: center; }
+.bpool { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.tile { font: inherit; font-size: 1.3rem; font-weight: 600; min-height: 48px; padding: 6px 14px; border-radius: var(--r); border: 1.5px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; box-shadow: var(--shadow); }
+.tile.used { visibility: hidden; }
+.tile.ok { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 16%, var(--bg)); }
+.tile.bad { border-color: var(--red); background: color-mix(in srgb, var(--red) 14%, var(--bg)); }
+.tile:disabled { cursor: default; }
+.mprompt { font-size: 1.35rem; font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
+.mprompt.tr { font-size: 1.15rem; }
+.opts.mopts { grid-template-columns: 1fr; }
+.opt.mopt { font-size: 1.05rem; font-weight: 500; justify-content: flex-start; text-align: left; min-height: 54px; padding: 10px 14px; line-height: 1.4; }
+.opt.mopt[lang="ko"] { font-size: 1.2rem; font-weight: 600; }
+@media (min-width: 1200px) { .opts.mopts { grid-template-columns: 1fr 1fr; } }
+.streak { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 8px 8px 8px 12px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow); }
+.streak .fire { font-weight: 700; white-space: nowrap; }
+.streak .goalw { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--muted); }
+.streak .prog i { background: var(--ok); }
+.streak .btn { min-height: 38px; padding: 6px 12px; flex: 0 0 auto; }
+.toast { position: fixed; left: 50%; top: calc(16px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); z-index: 50; background: var(--fg); color: var(--bg); font-weight: 600; padding: 10px 18px; border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,.2); max-width: calc(100vw - 32px); text-align: center; }
+.tiles4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+@media (min-width: 560px) { .tiles4 { grid-template-columns: repeat(4, 1fr); } }
+.stile { border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px; background: var(--bg); }
+.stile b { display: block; font-size: 1.5rem; font-family: var(--display); color: var(--blue); line-height: 1.2; }
+.stile span { font-size: .8rem; color: var(--muted); }
+.chart { width: 100%; height: auto; display: block; }
+.chart .ok { fill: var(--ok); } .chart .bad { fill: var(--red); } .chart .goal { stroke: var(--muted); stroke-dasharray: 4 4; }
+.chart text { fill: var(--muted); font-size: 15px; font-family: inherit; }
+.legend { display: flex; gap: 14px; font-size: .8rem; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.lstat { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; border-top: 1px solid var(--line); }
+.lstat:first-of-type { border-top: 0; }
+.lstat b { font-weight: 600; }
+.lstat span { font-size: .85rem; color: var(--muted); }
+.hardl { display: flex; flex-wrap: wrap; gap: 8px; }
+.hardl button { font: inherit; font-size: 1.05rem; font-weight: 600; border: 0; padding: 4px 12px; border-radius: 8px; background: color-mix(in srgb, var(--red) 14%, var(--bg)); color: inherit; cursor: pointer; }
+.hardl button small { font-weight: 500; color: var(--muted); margin-left: 4px; }
 </style>
 
 <div class="wrap">
@@ -438,11 +480,18 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
   </div>
 
   <div id="quizView" hidden>
+    <div class="streak" id="streakBar">
+      <span class="fire" id="stFire"></span>
+      <div class="goalw"><span id="stGoal"></span><div class="prog"><i id="stGoalBar"></i></div></div>
+      <button class="btn ghost" id="openStats" data-t="statsBtn"></button>
+    </div>
     <p class="hint" id="progInfo" style="margin:0 0 10px"></p>
     <div class="pseg" id="pSeg">
       <button data-p="quiz" aria-pressed="true" data-t="segQuiz"></button>
       <button data-p="dict" aria-pressed="false" data-t="segDict"></button>
       <button data-p="speak" aria-pressed="false" data-t="segSpeak"></button>
+      <button data-p="build" aria-pressed="false" data-t="segBuild"></button>
+      <button data-p="mean" aria-pressed="false" data-t="segMean"></button>
     </div>
     <div id="pQuiz">
     <section class="panel" id="qStart">
@@ -475,6 +524,63 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
     <div id="pSpeak" hidden>
       <div id="sBox"></div>
     </div>
+
+    <div id="pBuild" hidden>
+      <section class="panel" id="bStart">
+        <div class="qhead" data-t="buildTitle"></div>
+        <p class="hint" style="margin:0" data-t="buildIntro"></p>
+        <div class="qset">
+          <label class="ctrl"><span data-t="sentences"></span> <select id="bCount"><option>5</option><option selected>10</option><option>20</option></select></label>
+          <label class="ctrl"><span data-t="sentFrom"></span> <select id="bSrc"><option value="all" data-t="wholeFile"></option><option value="sel" data-t="selLines"></option><option value="review" data-t="dueOnly"></option></select></label>
+        </div>
+        <div class="row"><button class="btn" id="bGo" style="flex:1" data-t="startBuild"></button></div>
+        <p class="hint" id="bInfo" style="margin:0"></p>
+      </section>
+      <div id="bBox"></div>
+    </div>
+
+    <div id="pMean" hidden>
+      <section class="panel" id="mStart">
+        <div class="qhead" data-t="meanTitle"></div>
+        <p class="hint" style="margin:0" data-t="meanIntro"></p>
+        <div class="qset">
+          <label class="ctrl"><span data-t="questions"></span> <select id="mCount"><option>5</option><option selected>10</option><option>20</option></select></label>
+          <label class="ctrl"><span data-t="direction"></span> <select id="mDir"><option value="ko" data-t="dirKo"></option><option value="tr" data-t="dirTr"></option><option value="mix" data-t="dirMix"></option></select></label>
+          <label class="ctrl"><span data-t="sentFrom"></span> <select id="mSrc"><option value="all" data-t="wholeFile"></option><option value="sel" data-t="selLines"></option><option value="review" data-t="dueOnly"></option></select></label>
+        </div>
+        <div class="row"><button class="btn" id="mGo" style="flex:1" data-t="startMean"></button></div>
+        <p class="hint" id="mInfo" style="margin:0"></p>
+      </section>
+      <div id="mBox"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden role="status"></div>
+
+<div class="sheet" id="statsSheet" hidden role="dialog" aria-modal="true" aria-labelledby="statsTitle">
+  <div class="sheet-in">
+    <div class="top">
+      <h2 id="statsTitle" data-t="statsT"></h2>
+      <button class="gear" id="closeStats" data-t="done"></button>
+    </div>
+    <section class="panel">
+      <div class="tiles4" id="stTiles"></div>
+      <label class="ctrl"><span data-t="goalAt"></span> <select id="goalSel"></select></label>
+    </section>
+    <section class="panel">
+      <h3 data-t="last14"></h3>
+      <div id="stChart"></div>
+    </section>
+    <section class="panel">
+      <h3 data-t="hardT"></h3>
+      <p class="hint" style="margin:0" data-t="hardHint"></p>
+      <div class="hardl" id="stHard"></div>
+    </section>
+    <section class="panel">
+      <h3 data-t="lessonsT"></h3>
+      <div id="stLessons"></div>
+    </section>
   </div>
 </div>
 
@@ -567,6 +673,17 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
       <label class="ctrl"><span data-t="remAt"></span> <select id="remHour"></select></label>
       <div class="row"><button class="btn ghost" id="remTest" data-t="remTest"></button></div>
       <p class="hint" id="remMsg" style="margin:0"></p>
+    </section>
+
+    <section class="panel">
+      <h3 data-t="bkT"></h3>
+      <p class="hint" style="margin:0" data-t="bkHint"></p>
+      <div class="row">
+        <button class="btn" id="bkSave" data-t="bkSave"></button>
+        <label class="btn ghost" for="bkLoad" style="display:inline-block" data-t="bkLoad"></label>
+        <input type="file" id="bkLoad" accept=".json,application/json" hidden>
+      </div>
+      <p class="hint" id="bkMsg" style="margin:0"></p>
     </section>
   </div>
 </div>
@@ -698,6 +815,27 @@ const TX = {
     dueBanner: n => `📚 ${n} to review`, practiceNow: "Practise",
     dueOnly: "Due for review", noDue: " Nothing to review right now: come back later.",
     hardest: s => `Most often wrong: ${s}. They will come up more often.`,
+    againSoon: "↻ It will come back in a moment.",
+    segBuild: "Build", segMean: "Meaning",
+    buildTitle: "Build the sentence", buildIntro: "Listen and tap the pieces in the right order. No Korean keyboard needed.",
+    startBuild: "Start", buildPh: "Tap the pieces below in the right order…", clearB: "↺ Clear", bAvail: n => `Sentences available: ${n}`,
+    meanTitle: "What does it mean?", meanIntro: "Match Korean sentences with their translations. It uses the lesson's translations.",
+    direction: "Direction", dirKo: "Korean → translation", dirTr: "Translation → Korean", dirMix: "Mixed", startMean: "Start",
+    meanQko: "What does this sentence mean?", meanQtr: "How do you say it in Korean?",
+    meanAvail: n => `Translated sentences: ${n}`, meanNeed: "Translate the lesson first: 🎧 Listen → 🌐 Translate lesson (at least 2 sentences).",
+    statsBtn: "📊 Stats", streakN: n => `🔥 ${n} ${n === 1 ? "day" : "days"}`, goalLine: (n, g) => `Today ${Math.min(n, g)}/${g}${n >= g ? " ✓" : ""}`,
+    goalDone: "🎉 Today's goal reached!", statsT: "Statistics", goalAt: "Daily goal (answers)",
+    tStreak: "days in a row", tBest: "longest streak", tToday: "answers today", tAcc: "right (last 14 days)",
+    last14: "Last 14 days", legOk: "right", legBad: "wrong", legGoal: "goal",
+    hardT: "Hardest words", hardHint: "Tap a word to hear it. They come up more often in Spelling.", lessonsT: "Lessons",
+    lessonLine: (wl, wn, sn, due) => `Words: ${wl} learned of ${wn} practised · sentences practised: ${sn} · due: ${due}`,
+    noData: "Nothing yet: do some exercises first.",
+    bkT: "Backup", bkHint: "Lessons, progress, translations and recordings live only on this phone. Save a backup file (e.g. to Google Drive) and load it on a new phone.",
+    bkSave: "💾 Save backup", bkLoad: "📂 Load backup", bkWorking: "Preparing the file…",
+    bkDone: (n, mb) => `Saved: ${n} lessons, ${mb} MB. Keep the file somewhere safe (Drive, e-mail to yourself).`,
+    bkLast: d => `Last backup: ${d}.`, bkNone: "No backup yet.", bkBad: "This is not a KWS backup file.",
+    bkConfirm: (n, d) => `Load the backup from ${d} (${n} lessons)? Progress saved in it will replace the current progress of the same lessons.`,
+    bkRestored: "Backup loaded. Restarting…",
     progLine: (wm, wn, sd, sn, avg, due) => `Progress: ${wm}/${wn} words learned · ${sd}/${sn} sentences dictated${avg != null ? ` (average ${avg}%)` : ""} · ${due} due for review`,
     trFail: "Translation didn't work. Check the internet connection and try again, or tap ✏️ to write a translation yourself.", trDenied: "Claude isn't allowed to translate here. You can allow it the next time you open the page.",
     noLessons: "No lessons yet: load a file",
@@ -782,6 +920,27 @@ const TX = {
     dueBanner: n => `📚 Do powtórki: ${n}`, practiceNow: "Ćwicz",
     dueOnly: "Do powtórki", noDue: " Na razie nie ma nic do powtórki: wróć później.",
     hardest: s => `Najczęściej mylone: ${s}. Będą pojawiać się częściej.`,
+    againSoon: "↻ To pytanie wróci za chwilę.",
+    segBuild: "Ułóż", segMean: "Znaczenie",
+    buildTitle: "Ułóż zdanie", buildIntro: "Posłuchaj i dotykaj kawałków w dobrej kolejności. Nie potrzeba koreańskiej klawiatury.",
+    startBuild: "Zacznij", buildPh: "Dotykaj kawałków poniżej w dobrej kolejności…", clearB: "↺ Wyczyść", bAvail: n => `Dostępnych zdań: ${n}`,
+    meanTitle: "Co to znaczy?", meanIntro: "Dopasuj koreańskie zdania do tłumaczeń. Korzysta z tłumaczeń lekcji.",
+    direction: "Kierunek", dirKo: "Koreański → tłumaczenie", dirTr: "Tłumaczenie → koreański", dirMix: "Na zmianę", startMean: "Zacznij",
+    meanQko: "Co znaczy to zdanie?", meanQtr: "Jak to powiedzieć po koreańsku?",
+    meanAvail: n => `Przetłumaczonych zdań: ${n}`, meanNeed: "Najpierw przetłumacz lekcję: 🎧 Listen → 🌐 Przetłumacz lekcję (co najmniej 2 zdania).",
+    statsBtn: "📊 Statystyki", streakN: n => `🔥 ${n} ${n === 1 ? "dzień" : "dni"}`, goalLine: (n, g) => `Dziś ${Math.min(n, g)}/${g}${n >= g ? " ✓" : ""}`,
+    goalDone: "🎉 Cel na dziś osiągnięty!", statsT: "Statystyki", goalAt: "Dzienny cel (odpowiedzi)",
+    tStreak: "dni z rzędu", tBest: "najdłuższa seria", tToday: "odpowiedzi dziś", tAcc: "dobrych (14 dni)",
+    last14: "Ostatnie 14 dni", legOk: "dobrze", legBad: "źle", legGoal: "cel",
+    hardT: "Najtrudniejsze słowa", hardHint: "Dotknij słowa, żeby je usłyszeć. W Pisowni pojawiają się częściej.", lessonsT: "Lekcje",
+    lessonLine: (wl, wn, sn, due) => `Słowa: ${wl} opanowanych z ${wn} ćwiczonych · ćwiczone zdania: ${sn} · do powtórki: ${due}`,
+    noData: "Jeszcze nic: najpierw zrób kilka ćwiczeń.",
+    bkT: "Kopia zapasowa", bkHint: "Lekcje, postępy, tłumaczenia i nagrania są zapisane tylko w tym telefonie. Zapisz plik kopii (np. na Dysku Google), a na nowym telefonie go wczytaj.",
+    bkSave: "💾 Zapisz kopię", bkLoad: "📂 Wczytaj kopię", bkWorking: "Przygotowuję plik…",
+    bkDone: (n, mb) => `Zapisano: ${n} lekcji, ${mb} MB. Trzymaj plik w bezpiecznym miejscu (Dysk Google, mail do siebie).`,
+    bkLast: d => `Ostatnia kopia: ${d}.`, bkNone: "Nie ma jeszcze kopii.", bkBad: "To nie jest plik kopii KWS.",
+    bkConfirm: (n, d) => `Wczytać kopię z ${d} (lekcji: ${n})? Postępy z kopii zastąpią obecne postępy tych samych lekcji.`,
+    bkRestored: "Kopia wczytana. Uruchamiam ponownie…",
     progLine: (wm, wn, sd, sn, avg, due) => `Postęp: ${wm}/${wn} słów opanowanych · ${sd}/${sn} zdań z dyktanda${avg != null ? ` (średnio ${avg}%)` : ""} · do powtórki: ${due}`,
     trFail: "Tłumaczenie się nie udało. Sprawdź internet i spróbuj ponownie albo dotknij ✏️ i wpisz tłumaczenie sam.", trDenied: "Claude nie ma tu zgody na tłumaczenie. Możesz ją dać przy następnym otwarciu strony.",
     noLessons: "Brak lekcji: wczytaj plik",
@@ -866,6 +1025,27 @@ const TX = {
     dueBanner: n => `📚 복습할 것 ${n}개`, practiceNow: "연습하기",
     dueOnly: "복습할 것", noDue: " 지금은 복습할 게 없어요. 나중에 다시 오세요.",
     hardest: s => `자주 틀린 단어: ${s}. 더 자주 나와요.`,
+    againSoon: "↻ 이 문제는 곧 다시 나와요.",
+    segBuild: "문장 만들기", segMean: "뜻",
+    buildTitle: "문장 만들기", buildIntro: "듣고 조각을 맞는 순서로 누르세요. 한국어 키보드가 필요 없어요.",
+    startBuild: "시작", buildPh: "아래 조각을 맞는 순서로 누르세요…", clearB: "↺ 지우기", bAvail: n => `사용할 수 있는 문장: ${n}개`,
+    meanTitle: "무슨 뜻일까요?", meanIntro: "한국어 문장과 번역을 맞춰 보세요. 레슨의 번역을 사용해요.",
+    direction: "방향", dirKo: "한국어 → 번역", dirTr: "번역 → 한국어", dirMix: "섞어서", startMean: "시작",
+    meanQko: "이 문장은 무슨 뜻일까요?", meanQtr: "한국어로 어떻게 말할까요?",
+    meanAvail: n => `번역된 문장: ${n}개`, meanNeed: "먼저 레슨을 번역하세요: 🎧 듣기 → 🌐 레슨 번역 (최소 2문장).",
+    statsBtn: "📊 통계", streakN: n => `🔥 ${n}일`, goalLine: (n, g) => `오늘 ${Math.min(n, g)}/${g}${n >= g ? " ✓" : ""}`,
+    goalDone: "🎉 오늘의 목표 달성!", statsT: "통계", goalAt: "하루 목표 (답)",
+    tStreak: "연속 학습일", tBest: "최장 연속", tToday: "오늘 답한 수", tAcc: "정답률 (14일)",
+    last14: "최근 14일", legOk: "정답", legBad: "오답", legGoal: "목표",
+    hardT: "어려운 단어", hardHint: "단어를 누르면 들을 수 있어요. 맞춤법 퀴즈에 더 자주 나와요.", lessonsT: "레슨",
+    lessonLine: (wl, wn, sn, due) => `단어: 연습한 ${wn}개 중 ${wl}개 익힘 · 연습한 문장: ${sn} · 복습할 것: ${due}`,
+    noData: "아직 없어요. 먼저 연습해 보세요.",
+    bkT: "백업", bkHint: "레슨, 진도, 번역, 녹음은 이 휴대폰에만 저장돼요. 백업 파일을 저장해 두고 (예: 구글 드라이브) 새 휴대폰에서 불러오세요.",
+    bkSave: "💾 백업 저장", bkLoad: "📂 백업 불러오기", bkWorking: "파일을 준비하고 있어요…",
+    bkDone: (n, mb) => `저장 완료: 레슨 ${n}개, ${mb} MB. 파일을 안전한 곳에 보관하세요.`,
+    bkLast: d => `마지막 백업: ${d}.`, bkNone: "아직 백업이 없어요.", bkBad: "KWS 백업 파일이 아니에요.",
+    bkConfirm: (n, d) => `${d} 백업을 불러올까요? (레슨 ${n}개) 같은 레슨의 진도는 백업 내용으로 바뀌어요.`,
+    bkRestored: "백업을 불러왔어요. 다시 시작해요…",
     progLine: (wm, wn, sd, sn, avg, due) => `진도: 단어 ${wm}/${wn}개 익힘 · 받아쓰기 ${sd}/${sn}문장${avg != null ? ` (평균 ${avg}%)` : ""} · 복습할 것 ${due}개`,
     trFail: "번역하지 못했어요. 인터넷 연결을 확인하고 다시 해 보거나 ✏️를 눌러 직접 써 보세요.", trDenied: "여기서는 Claude가 번역할 수 없어요. 다음에 페이지를 열 때 허용할 수 있어요.",
     noLessons: "수업이 없어요: 파일을 불러오세요",
@@ -921,7 +1101,7 @@ function applyUI() {
   showFileName(); renderPills(); renderCards(); render(); uiPlaying(playing);
   try { renderLessons(); } catch (e) {}
   try { setPmin(pmin); } catch (e) {}
-  try { renderRem(); renderDue(); } catch (e) {}
+  try { renderRem(); renderDue(); renderStreak(); bkMsg(); bInfo(); mInfo(); } catch (e) {}
   origDrawn = false; if (!$("origView").hidden) renderOrig();
   setCoverMode(coverMode);
   if (!$("quizView").hidden) { updateInfo(); if (Q) (Q.done ? result() : showQ(true)); if (P !== "quiz") showPractice(P); }
@@ -1570,6 +1750,8 @@ function setLines(arr, name) {
   covered = new Set(); textCache.clear(); D = null; S.i = 0;
   // a quiz from the previous lesson must not carry over
   Q = null; $("qBox").innerHTML = ""; $("qStart").hidden = false;
+  B = null; $("bBox").innerHTML = ""; $("bStart").hidden = false;
+  M = null; $("mBox").innerHTML = ""; $("mStart").hidden = false;
   loadProg(); loadHeads(); lastIdx = -1;
   stop(); lines = arr; sel = new Set(); docName = name; fileMsg = null;
   showFileName(); render(); uiPlaying(false);
@@ -2030,7 +2212,7 @@ function allDues() {
     for (const k of Object.keys(localStorage)) {
       if (!k.startsWith("kws-prog-")) continue;
       const p = JSON.parse(localStorage.getItem(k) || "null"); if (!p) continue;
-      for (const m of [p.w || {}, p.s || {}]) for (const r of Object.values(m)) if (r && r.due) out.push(r.due);
+      for (const m of [p.w || {}, p.s || {}, p.m || {}]) for (const r of Object.values(m)) if (r && r.due) out.push(r.due);
     }
   } catch (e) {}
   return out;
@@ -2093,7 +2275,8 @@ $("remTest").onclick = async () => {
 };
 const isDue = r => !!r && r.due <= Date.now();
 function grade(kind, key, ok, score) {
-  const m = prog[kind], r = m[key] || (m[key] = { box: 0, due: 0, ok: 0, bad: 0 });
+  countAnswer(ok);
+  const m = prog[kind] || (prog[kind] = {}), r = m[key] || (m[key] = { box: 0, due: 0, ok: 0, bad: 0 });
   if (ok) { r.ok++; r.box = Math.min(r.box + 1, BOX_DAYS.length - 1); r.due = Date.now() + BOX_DAYS[r.box] * DAY; }
   else { r.bad++; r.box = 0; r.due = Date.now(); }
   if (score != null) r.last = score;
@@ -2105,7 +2288,7 @@ function renderProg() {
   const learned = ws.filter(x => (prog.w[x.w]?.box || 0) >= 3).length;
   const done = ss.filter(x => prog.s[x.ko] && prog.s[x.ko].last != null);
   const avg = done.length ? Math.round(done.reduce((a, x) => a + prog.s[x.ko].last, 0) / done.length) : null;
-  const due = ws.filter(x => isDue(prog.w[x.w])).length + ss.filter(x => isDue(prog.s[x.ko])).length;
+  const due = ws.filter(x => isDue(prog.w[x.w])).length + ss.filter(x => isDue(prog.s[x.ko])).length + ss.filter(x => isDue(prog.m?.[x.ko])).length;
   $("progInfo").hidden = false;
   $("progInfo").textContent = t("progLine", learned, ws.length, done.length, ss.length, avg, due);
 }
@@ -2159,8 +2342,19 @@ function ctxHtml(line, w) {
 }
 function startQuiz(ws) {
   const pool = quizWords("all"), slots = answerSlots(ws.length);
-  Q = { items: ws.map((x, k) => ({ ...x, opts: placeRight(options(x.w, pool), x.w, slots[k]) })), i: 0, score: 0, miss: [], done: false };
+  Q = { items: ws.map((x, k) => ({ ...x, slot: slots[k], opts: placeRight(options(x.w, pool), x.w, slots[k]) })), i: 0, score: 0, miss: [], done: false };
   $("qStart").hidden = true; showQ();
+}
+/* A missed question comes back once more 3–4 questions later in the same round,
+   with its answers in a new order (and the right one not on the same letter as its neighbours). */
+function requeue(st, it, rebuild) {
+  if (it.again) return false;
+  const pos = Math.min(st.i + 3 + Math.floor(Math.random() * 2), st.items.length);
+  const near = new Set([st.items[pos - 1]?.slot, st.items[pos]?.slot, it.slot]);
+  const free = [0, 1, 2, 3].filter(s => !near.has(s));
+  const slot = free[Math.floor(Math.random() * free.length)] ?? 0;
+  st.items.splice(pos, 0, { ...rebuild(it, slot), again: true, slot });
+  return true;
 }
 function showQ(silent) {
   const it = Q.items[Q.i], n = Q.items.length;
@@ -2181,9 +2375,15 @@ function answer(btn) {
   grade("w", it.w, ok);
   document.querySelectorAll(".opt").forEach(b => { b.disabled = true; if (b.dataset.o === it.w) b.classList.add("right"); });
   if (ok) { Q.score++; $("qFb").className = "fb good"; $("qFb").textContent = t("right", it.w); }
-  else { btn.classList.add("wrong"); Q.miss.push(it); $("qFb").className = "fb bad"; $("qFb").textContent = t("wrong", it.w); }
+  else {
+    btn.classList.add("wrong"); if (!Q.miss.some(m => m.w === it.w)) Q.miss.push(it);
+    $("qFb").className = "fb bad"; $("qFb").textContent = t("wrong", it.w);
+    const pool = quizWords("all");
+    if (requeue(Q, it, (x, s) => ({ ...x, opts: placeRight(options(x.w, pool), x.w, s) }))) $("qFb").insertAdjacentHTML("beforeend", `<div class="again">${t("againSoon")}</div>`);
+  }
   document.querySelector(".ctx .gap").outerHTML = `<b style="color:var(${ok ? "--ok" : "--red"})">${it.w}</b>`;
   speakWord(it.w);
+  $("qNext").textContent = Q.i + 1 < Q.items.length ? t("next") : t("seeResult");
   $("qNext").hidden = false; $("qNext").focus();
 }
 function result() {
@@ -2219,7 +2419,7 @@ $("qBox").addEventListener("click", e => {
   if (id === "qPlay") speakWord(Q.items[Q.i].w);
   if (id === "qNext") { Q.i++; Q.i < Q.items.length ? showQ() : result(); }
   if (id === "qQuit" || id === "qNew") { Q = null; $("qBox").innerHTML = ""; $("qStart").hidden = false; updateInfo(); }
-  if (id === "qRetry") startQuiz(shuffle(Q.miss.slice()));
+  if (id === "qRetry") startQuiz(shuffle(Q.miss.map(({ again, slot, opts, ...x }) => x)));
 });
 function setMode(m) {
   stop();
@@ -2331,8 +2531,11 @@ function showPractice(m) {
   P = m; store.set("pmode", m);
   document.querySelectorAll("#pSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.p === m));
   $("pQuiz").hidden = m !== "quiz"; $("pDict").hidden = m !== "dict"; $("pSpeak").hidden = m !== "speak";
-  stop(); stopRec(); renderProg();
+  $("pBuild").hidden = m !== "build"; $("pMean").hidden = m !== "mean";
+  stop(); stopRec(); renderProg(); renderStreak();
   if (m === "quiz") updateInfo();
+  if (m === "build") { if (B) (B.done ? buildResult() : showB(true)); else { $("bBox").innerHTML = ""; $("bStart").hidden = false; bInfo(); } }
+  if (m === "mean") { if (M) (M.done ? meanResult() : showM(true)); else { $("mBox").innerHTML = ""; $("mStart").hidden = false; mInfo(); } }
   if (m === "dict") { if (D) (D.done ? dictResult() : showD(true)); else { $("dBox").innerHTML = ""; $("dStart").hidden = false; dictInfo(); } }
   if (m === "speak") renderSpeak();
 }
@@ -2543,6 +2746,326 @@ $("sBox").addEventListener("click", async e => {
   if (id === "sComp") { stop(); await speakKo(it.ko); await wait(400); playMine(); }
 });
 
+/* ---------- build the sentence: tap the pieces in the right order ----------
+   Pieces are the words of the sentence; a short sentence (1–2 words) is cut into syllables instead. */
+let B = null;
+function bPieces(ko) {
+  const ws = ko.split(" ").filter(Boolean);
+  if (ws.length >= 3) return { pieces: ws, sep: " " };
+  const syl = [];
+  for (const w of ws) for (const ch of w) { if (/[가-힣\d]/.test(ch) || !syl.length) syl.push(ch); else syl[syl.length - 1] += ch; }
+  return syl.length >= 2 && syl.length <= 14 ? { pieces: syl, sep: "" } : { pieces: ws, sep: " " };
+}
+const bNorm = s => s.replace(/\s+/g, "");
+function bInfo() { const n = sentences($("bSrc").value).length; $("bInfo").textContent = t("bAvail", n) + ($("bSrc").value === "sel" && !sel.size ? t("noSelUsed") : "") + ($("bSrc").value === "review" && !n ? t("noDue") : ""); }
+$("bSrc").onchange = bInfo;
+function bItem(x) {
+  const { pieces, sep } = bPieces(x.ko);
+  let order = pieces.map((_, k) => k);
+  for (let k = 0; k < 8; k++) { shuffle(order); if (order.some((v, j) => v !== j) || pieces.length < 2) break; }
+  return { i: x.i, ko: x.ko, pieces, sep, order, picked: [], checked: false, ok: null };
+}
+$("bGo").onclick = () => {
+  const all = sentences($("bSrc").value);
+  if (!all.length) { $("bInfo").textContent = t("noSent"); return; }
+  startBuild(shuffle(pickWeighted(all, parseInt($("bCount").value), x => prog.s[x.ko])));
+};
+function startBuild(items) { B = { items: items.map(bItem), i: 0, score: 0, miss: [], done: false }; $("bStart").hidden = true; showB(); }
+function showB(silent) {
+  const it = B.items[B.i], n = B.items.length, tr = trClean(getTr(lines[it.i]?.text || ""));
+  const tile = (k, extra = "") => `<button class="tile ${extra}" data-k="${k}" lang="ko">${esc(it.pieces[k])}</button>`;
+  const ans = it.picked.length ? it.picked.map((k, j) => tile(k, it.checked ? (bNorm(it.pieces[k]) === bNorm(it.pieces[j] ?? "") ? "ok" : "bad") : "")).join("") : `<span class="ph">${t("buildPh")}</span>`;
+  $("bBox").innerHTML = `<div class="qcard">
+    <div class="qbar"><span>${t("dSent")} <b>${B.i + 1} / ${n}</b></span><span>${t("score")} <b>${B.score}</b></span></div>
+    <div class="prog"><i style="width:${(B.i / n) * 100}%"></i></div>
+    <div class="dgrid">
+      <button class="btn" id="bPlay">${t("again")}</button>
+      <button class="btn ghost" id="bSlow">${t("slow")}</button>
+      ${tr ? `<button class="btn ghost" id="bMean">${t("meaning")}</button>` : ""}
+    </div>
+    ${tr ? `<div class="strl" id="bTr" hidden>${esc(tr)}</div>` : ""}
+    <div class="bans" id="bAns">${ans}</div>
+    <div class="bpool" id="bPool">${it.order.map(k => tile(k, it.picked.includes(k) ? "used" : "")).join("")}</div>
+    <div class="fb" id="bFb"></div>
+    <div class="row">
+      <button class="btn" id="bCheck" style="flex:1" ${it.checked || it.picked.length < it.pieces.length ? "disabled" : ""}>${t("check")}</button>
+      <button class="btn ghost" id="bClear" ${it.checked ? "disabled" : ""}>${t("clearB")}</button>
+      <button class="btn ghost" id="bQuit">${t("quit")}</button>
+    </div>
+    <div class="row"><button class="btn" id="bNext" ${it.checked ? "" : "hidden"} style="flex:1">${B.i + 1 < n ? t("next") : t("seeResult")}</button></div>
+  </div>`;
+  if (it.checked) bFeedback(it);
+  if (!silent) speakKo(it.ko);
+}
+function bFeedback(it) {
+  const fb = $("bFb");
+  fb.className = "fb " + (it.ok ? "good" : "bad");
+  fb.innerHTML = it.ok ? esc(t("perfect")) : `${esc(t("correctAns"))}: <span lang="ko">${esc(it.ko)}</span>${it.requeued ? `<div class="again">${t("againSoon")}</div>` : ""}`;
+}
+function checkB() {
+  const it = B.items[B.i];
+  it.checked = true;
+  it.ok = bNorm(it.picked.map(k => it.pieces[k]).join("")) === bNorm(it.ko);
+  grade("s", it.ko, it.ok);
+  if (it.ok) B.score++;
+  else {
+    if (!B.miss.some(m => m.ko === it.ko)) B.miss.push({ i: it.i, ko: it.ko });
+    it.requeued = requeue(B, it, x => bItem(x));
+  }
+  showB(true); speakKo(it.ko);
+  $("bNext").focus();
+}
+function buildResult() {
+  B.done = true;
+  const n = B.items.length;
+  $("bBox").innerHTML = `<div class="qcard result">
+    <div class="big">${B.score} / ${n}</div>
+    <div>${B.score === n ? t("perfect") : B.score / n >= 0.7 ? t("good") : t("keep")}</div>
+    ${B.miss.length ? `<p class="hint">${t("review")}</p><div class="miss" style="flex-direction:column;align-items:center">${B.miss.map(m => `<button lang="ko" data-say="${esc(m.ko)}">🔊 ${esc(m.ko)}</button>`).join("")}</div>` : ""}
+    <div class="row" style="justify-content:center">
+      ${B.miss.length ? `<button class="btn" id="bRetry">${t("retry", B.miss.length)}</button>` : ""}
+      <button class="btn ghost" id="bNew">${t("newQuiz")}</button>
+    </div></div>`;
+}
+$("bBox").addEventListener("click", e => {
+  if (!B) return;
+  const it = B.items[B.i], tl = e.target.closest(".tile");
+  if (tl && !B.done && !it.checked) {
+    const k = +tl.dataset.k;
+    if (tl.closest("#bPool")) { if (!it.picked.includes(k)) it.picked.push(k); }
+    else it.picked = it.picked.filter(x => x !== k);
+    return showB(true);
+  }
+  const id = e.target.closest("button")?.id; if (!id) return;
+  if (id === "bPlay") speakKo(it.ko);
+  if (id === "bSlow") speakKo(it.ko, Math.max(0.3, Math.round(rate * 0.65 * 100) / 100));
+  if (id === "bMean") $("bTr").hidden = !$("bTr").hidden;
+  if (id === "bClear") { it.picked = []; showB(true); }
+  if (id === "bCheck") checkB();
+  if (id === "bNext") { B.i++; B.i < B.items.length ? showB() : buildResult(); }
+  if (id === "bQuit" || id === "bNew") { B = null; stop(); $("bBox").innerHTML = ""; $("bStart").hidden = false; bInfo(); }
+  if (id === "bRetry") startBuild(B.miss.slice());
+});
+
+/* ---------- meaning: match a Korean sentence with its translation (or the other way round) ---------- */
+let M = null;
+// the translation without a speaker label like "Subin:", which would give the answer away
+const trClean = s => String(s || "").replace(/^[^:：]{1,15}[:：]\s*/, "").trim();
+function meanPool(src) {
+  const seenTr = new Set(), out = [];
+  for (const x of sentences(src === "review" ? "all" : src)) {
+    const tr = trClean(getTr(lines[x.i]?.text || ""));
+    if (!tr || seenTr.has(tr.toLowerCase())) continue;
+    seenTr.add(tr.toLowerCase()); out.push({ ...x, tr });
+  }
+  return src === "review" ? out.filter(x => isDue(prog.m?.[x.ko])) : out;
+}
+function mInfo() {
+  const n = meanPool($("mSrc").value).length, all = meanPool("all").length;
+  $("mInfo").textContent = all < 2 ? t("meanNeed") : t("meanAvail", n) + ($("mSrc").value === "sel" && !sel.size ? t("noSelUsed") : "") + ($("mSrc").value === "review" && !n ? t("noDue") : "");
+}
+$("mSrc").onchange = mInfo;
+function mItem(x, slot, dir, pool) {
+  const key = dir === "ko" ? "tr" : "ko";
+  const others = shuffle(pool.filter(p => p.ko !== x.ko).map(p => p[key])).filter((v, k, a) => a.indexOf(v) === k).slice(0, 3);
+  return { ...x, dir, opts: placeRight([x[key], ...others], x[key], slot), right: x[key], slot };
+}
+$("mGo").onclick = () => {
+  const all = meanPool($("mSrc").value), pool = meanPool("all");
+  if (pool.length < 2) { $("mInfo").textContent = t("meanNeed"); return; }
+  if (!all.length) { mInfo(); return; }
+  const picked = shuffle(pickWeighted(all, parseInt($("mCount").value), x => prog.m?.[x.ko])), slots = answerSlots(picked.length), d = $("mDir").value;
+  M = { items: picked.map((x, k) => mItem(x, slots[k], d === "mix" ? (k % 2 ? "tr" : "ko") : d, pool)), i: 0, score: 0, miss: [], done: false };
+  $("mStart").hidden = true; showM();
+};
+function showM(silent) {
+  const it = M.items[M.i], n = M.items.length, ko = it.dir === "ko";
+  $("mBox").innerHTML = `<div class="qcard">
+    <div class="qbar"><span>${t("qNum")} <b>${M.i + 1} / ${n}</b></span><span>${t("score")} <b>${M.score}</b></span></div>
+    <div class="prog"><i style="width:${(M.i / n) * 100}%"></i></div>
+    <div class="qhead">${ko ? t("meanQko") : t("meanQtr")}</div>
+    <div class="mprompt${ko ? "" : " tr"}" ${ko ? 'lang="ko"' : ""}>${esc(ko ? it.ko : it.tr)}</div>
+    ${ko ? `<button class="btn ghost listen" id="mPlay">${t("again")}</button>` : ""}
+    <div class="opts mopts">${it.opts.map((o, k) => `<button class="opt mopt" data-k="${k}" ${ko ? "" : 'lang="ko"'}><span class="n">${"ABCD"[k]}</span>${esc(o)}</button>`).join("")}</div>
+    <div class="fb" id="mFb"></div>
+    <div class="row"><button class="btn" id="mNext" hidden style="flex:1">${M.i + 1 < n ? t("next") : t("seeResult")}</button><button class="btn ghost" id="mQuit">${t("quit")}</button></div>
+  </div>`;
+  if (!silent && ko) speakKo(it.ko);
+}
+function answerM(btn) {
+  const it = M.items[M.i], ok = it.opts[+btn.dataset.k] === it.right;
+  grade("m", it.ko, ok);
+  document.querySelectorAll("#mBox .opt").forEach(b => { b.disabled = true; if (it.opts[+b.dataset.k] === it.right) b.classList.add("right"); });
+  if (ok) { M.score++; $("mFb").className = "fb good"; $("mFb").textContent = t("perfect"); }
+  else {
+    btn.classList.add("wrong"); if (!M.miss.some(m => m.ko === it.ko)) M.miss.push(it);
+    $("mFb").className = "fb bad"; $("mFb").textContent = `${t("correctAns")}: ${it.right}`;
+    const pool = meanPool("all");
+    if (requeue(M, it, (x, s) => mItem(x, s, x.dir, pool))) $("mFb").insertAdjacentHTML("beforeend", `<div class="again">${t("againSoon")}</div>`);
+  }
+  speakKo(it.ko);
+  $("mNext").textContent = M.i + 1 < M.items.length ? t("next") : t("seeResult");
+  $("mNext").hidden = false; $("mNext").focus();
+}
+function meanResult() {
+  M.done = true;
+  const n = M.items.length;
+  $("mBox").innerHTML = `<div class="qcard result">
+    <div class="big">${M.score} / ${n}</div>
+    <div>${M.score === n ? t("perfect") : M.score / n >= 0.7 ? t("good") : t("keep")}</div>
+    ${M.miss.length ? `<p class="hint">${t("review")}</p><div class="miss" style="flex-direction:column;align-items:center">${M.miss.map(m => `<button lang="ko" data-say="${esc(m.ko)}">🔊 ${esc(m.ko)} <small style="font-weight:400">— ${esc(m.tr)}</small></button>`).join("")}</div>` : ""}
+    <div class="row" style="justify-content:center">
+      ${M.miss.length ? `<button class="btn" id="mRetry">${t("retry", M.miss.length)}</button>` : ""}
+      <button class="btn ghost" id="mNew">${t("newQuiz")}</button>
+    </div></div>`;
+}
+$("mBox").addEventListener("click", e => {
+  if (!M) return;
+  const o = e.target.closest(".opt"); if (o && !o.disabled) return answerM(o);
+  const id = e.target.closest("button")?.id; if (!id) return;
+  const it = M.items[M.i];
+  if (id === "mPlay") speakKo(it.ko);
+  if (id === "mNext") { M.i++; M.i < M.items.length ? showM() : meanResult(); }
+  if (id === "mQuit" || id === "mNew") { M = null; stop(); $("mBox").innerHTML = ""; $("mStart").hidden = false; mInfo(); }
+  if (id === "mRetry") {
+    const pool = meanPool("all"), miss = shuffle(M.miss.slice()), slots = answerSlots(miss.length);
+    M = { items: miss.map((x, k) => mItem(x, slots[k], x.dir, pool)), i: 0, score: 0, miss: [], done: false }; showM();
+  }
+});
+for (const box of ["bBox", "mBox"]) $(box).addEventListener("click", e => { const s = e.target.closest("[data-say]"); if (s) { stop(); speakKo(s.dataset.say); } });
+
+/* ---------- daily goal and streak ----------
+   Every answer in any exercise is counted per day ("days": {"2026-11-07": {n, ok}}).
+   The streak is the number of days in a row with at least one answer, up to today (or yesterday). */
+const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+let days = store.get("days", {}), goal = store.get("goal", 10);
+function countAnswer(ok) {
+  const k = dayKey(), d = days[k] || (days[k] = { n: 0, ok: 0 });
+  d.n++; if (ok) d.ok++;
+  const old = new Date(); old.setDate(old.getDate() - 400);   // keep about a year
+  for (const x of Object.keys(days)) if (x < dayKey(old)) delete days[x];
+  store.set("days", days);
+  if (d.n === goal) toast(t("goalDone"));
+  renderStreak();
+}
+function streakNow() {
+  const d = new Date(); let s = 0;
+  if (!days[dayKey(d)]?.n) d.setDate(d.getDate() - 1);
+  while (days[dayKey(d)]?.n) { s++; d.setDate(d.getDate() - 1); }
+  return s;
+}
+function bestStreak() {
+  const ks = Object.keys(days).filter(k => days[k].n).sort();
+  let best = 0, run = 0, prev = null;
+  for (const k of ks) {
+    const d = new Date(k + "T12:00");
+    run = prev && Math.round((d - prev) / DAY) === 1 ? run + 1 : 1;
+    best = Math.max(best, run); prev = d;
+  }
+  return best;
+}
+function renderStreak() {
+  const n = days[dayKey()]?.n || 0;
+  $("stFire").textContent = t("streakN", streakNow());
+  $("stGoal").textContent = t("goalLine", n, goal);
+  $("stGoalBar").style.width = Math.min(100, (n / goal) * 100) + "%";
+}
+let toastT = 0;
+function toast(msg) { $("toast").textContent = msg; $("toast").hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { $("toast").hidden = true; }, 2800); }
+
+/* ---------- statistics ---------- */
+function renderStats() {
+  const today = days[dayKey()]?.n || 0, last = [];
+  for (let k = 13; k >= 0; k--) { const d = new Date(); d.setDate(d.getDate() - k); last.push({ d, ...(days[dayKey(d)] || { n: 0, ok: 0 }) }); }
+  const sumN = last.reduce((a, x) => a + x.n, 0), sumOk = last.reduce((a, x) => a + x.ok, 0);
+  $("stTiles").innerHTML = [[streakNow(), t("tStreak")], [bestStreak(), t("tBest")], [`${today}`, t("tToday")], [sumN ? Math.round((sumOk / sumN) * 100) + "%" : "–", t("tAcc")]]
+    .map(([v, l]) => `<div class="stile"><b>${v}</b><span>${esc(l)}</span></div>`).join("");
+  $("goalSel").innerHTML = [5, 10, 20, 30, 50].map(g => `<option value="${g}" ${g === goal ? "selected" : ""}>${g}</option>`).join("");
+  // bar chart: right answers (green) under wrong ones (red), one bar per day, dashed line = daily goal
+  const W = 560, H = 170, top = 10, bottom = 22, bw = W / 14, max = Math.max(goal, ...last.map(x => x.n), 1), y = v => H - bottom - (v / max) * (H - top - bottom);
+  let svg = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(t("last14"))}">`;
+  last.forEach((x, k) => {
+    const x0 = k * bw + bw * 0.18, w = bw * 0.64;
+    if (x.ok) svg += `<rect class="ok" x="${x0}" y="${y(x.ok)}" width="${w}" height="${y(0) - y(x.ok)}" rx="2"><title>${x.d.toLocaleDateString()}: ${x.ok} ✓</title></rect>`;
+    if (x.n - x.ok) svg += `<rect class="bad" x="${x0}" y="${y(x.n)}" width="${w}" height="${y(x.ok) - y(x.n)}" rx="2"><title>${x.d.toLocaleDateString()}: ${x.n - x.ok} ✗</title></rect>`;
+    svg += `<text x="${x0 + w / 2}" y="${H - 6}" text-anchor="middle">${x.d.getDate()}</text>`;
+  });
+  svg += `<line class="goal" x1="0" x2="${W}" y1="${y(goal)}" y2="${y(goal)}"/></svg>`;
+  $("stChart").innerHTML = sumN ? svg + `<div class="legend"><span><i style="background:var(--ok)"></i>${t("legOk")}</span><span><i style="background:var(--red)"></i>${t("legBad")}</span><span><i style="border-top:2px dashed var(--muted);height:0;border-radius:0"></i>${t("legGoal")}</span></div>` : `<p class="empty">${t("noData")}</p>`;
+  // hardest words across all lessons, and a line per lesson
+  const hard = [], rows = [];
+  for (const l of lib) {
+    const p = store.get("prog-" + l.id, null); if (!p) continue;
+    const w = Object.entries(p.w || {}), s = Object.keys(p.s || {}).length;
+    for (const [k, r] of w) if (r.bad) hard.push([k, r]);
+    const due = [p.w, p.s, p.m].reduce((a, m) => a + Object.values(m || {}).filter(isDue).length, 0);
+    rows.push(`<div class="lstat"><b>${esc(l.id === SAMPLE_ID ? t("sampleName") : l.name)}</b><span>${esc(t("lessonLine", w.filter(([, r]) => r.box >= 3).length, w.length, s, due))}</span></div>`);
+  }
+  hard.sort((a, b) => (b[1].bad - b[1].ok * 0.5) - (a[1].bad - a[1].ok * 0.5));
+  $("stHard").innerHTML = hard.length ? hard.slice(0, 12).map(([w, r]) => `<button lang="ko" data-say="${esc(w)}">🔊 ${esc(w)}<small>${r.bad}×</small></button>`).join("") : `<p class="empty">${t("noData")}</p>`;
+  $("stLessons").innerHTML = rows.join("") || `<p class="empty">${t("noData")}</p>`;
+}
+$("openStats").onclick = () => { stop(); renderStats(); $("statsSheet").hidden = false; $("statsSheet").scrollTop = 0; $("closeStats").focus(); };
+$("closeStats").onclick = () => { $("statsSheet").hidden = true; renderStreak(); };
+$("goalSel").onchange = () => { goal = +$("goalSel").value; store.set("goal", goal); renderStats(); renderStreak(); };
+$("stHard").addEventListener("click", e => { const s = e.target.closest("[data-say]"); if (s) { stop(); speakKo(s.dataset.say); } });
+
+/* ---------- backup: everything KWS keeps on the phone in one file, and back ----------
+   localStorage (kws-…: library, progress, translations, settings) + IndexedDB (lesson files, recordings). */
+function b64(u8) { let s = ""; for (let k = 0; k < u8.length; k += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(k, k + 0x8000)); return btoa(s); }
+function unb64(s) { const bin = atob(s), u8 = new Uint8Array(bin.length); for (let k = 0; k < bin.length; k++) u8[k] = bin.charCodeAt(k); return u8; }
+async function pack(v) {
+  if (v instanceof Blob) return { $blob: v.type, d: b64(new Uint8Array(await v.arrayBuffer())) };
+  if (v instanceof ArrayBuffer) return { $ab: b64(new Uint8Array(v)) };
+  if (ArrayBuffer.isView(v)) return { $u8: b64(new Uint8Array(v.buffer, v.byteOffset, v.byteLength)) };
+  if (Array.isArray(v)) { const o = []; for (const x of v) o.push(await pack(x)); return o; }
+  if (v && typeof v === "object") { const o = {}; for (const k in v) o[k] = await pack(v[k]); return o; }
+  return v;
+}
+function unpack(v) {
+  if (Array.isArray(v)) return v.map(unpack);
+  if (v && typeof v === "object") {
+    if ("$blob" in v) return new Blob([unb64(v.d)], { type: v.$blob });
+    if ("$u8" in v) return unb64(v.$u8);
+    if ("$ab" in v) return unb64(v.$ab).buffer;
+    const o = {}; for (const k in v) o[k] = unpack(v[k]); return o;
+  }
+  return v;
+}
+function bkMsg(m) { $("bkMsg").textContent = m || (store.get("lastBackup", null) ? t("bkLast", new Date(store.get("lastBackup")).toLocaleDateString()) : t("bkNone")); }
+$("bkSave").onclick = async () => {
+  bkMsg(t("bkWorking"));
+  const ls = {};
+  try { for (const k of Object.keys(localStorage)) if (k.startsWith("kws-")) ls[k] = localStorage.getItem(k); } catch (e) {}
+  const keys = (await idb("readonly", st => st.getAllKeys())) || [], db = [];
+  for (const k of keys) {
+    if (k === "reminder") continue;
+    const v = await idb("readonly", st => st.get(k));
+    if (v != null) db.push([k, await pack(v)]);
+  }
+  const blob = new Blob([JSON.stringify({ kws: "backup", v: 1, date: Date.now(), lessons: lib.length, ls, db })], { type: "application/json" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `KWS-kopia-${dayKey()}.json`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+  store.set("lastBackup", Date.now());
+  bkMsg(t("bkDone", lib.length, (blob.size / 1048576).toFixed(1)));
+};
+$("bkLoad").onchange = async () => {
+  const f = $("bkLoad").files[0]; $("bkLoad").value = ""; if (!f) return;
+  let d;
+  try { d = JSON.parse(await f.text()); if (!d || d.kws !== "backup" || typeof d.ls !== "object" || !Array.isArray(d.db)) throw 0; }
+  catch (e) { return bkMsg(t("bkBad")); }
+  if (!confirm(t("bkConfirm", d.lessons ?? "?", new Date(d.date).toLocaleString()))) return;
+  // lessons already on this phone stay: the library lists are joined, everything else comes from the file
+  let libNow = []; try { libNow = JSON.parse(localStorage.getItem("kws-lib") || "[]"); } catch (e) {}
+  let libBk = []; try { libBk = JSON.parse(d.ls["kws-lib"] || "[]"); } catch (e) {}
+  for (const [k, v] of Object.entries(d.ls)) if (k.startsWith("kws-") && k !== "kws-lib") try { localStorage.setItem(k, v); } catch (e) {}
+  const joined = libNow.concat(libBk.filter(l => !libNow.some(x => x.id === l.id)));
+  try { localStorage.setItem("kws-lib", JSON.stringify(joined)); } catch (e) {}
+  for (const [k, v] of d.db) await idb("readwrite", st => st.put(unpack(v), k));
+  bkMsg(t("bkRestored"));
+  setTimeout(() => location.reload(), 700);
+};
+
 /* ---------- start ---------- */
 lines = SAMPLE.map(([page, text]) => ({ page, text }));
 orig = SAMPLE.length ? samplePdf() : null;
@@ -2552,7 +3075,7 @@ try { applyUI(); } catch (e) { console.error(e); }
 setPmin(pmin);
 setMode("orig");
 initLibrary();
-renderRem(); syncReminder();
+renderRem(); syncReminder(); renderStreak(); bkMsg();
 // links like …#dictation open the right place (used by the KWS checklist)
 function route() {
   const h = location.hash.slice(1);
@@ -2565,6 +3088,8 @@ function route() {
   else if (h === "library") { setMode("orig"); window.scrollTo({ top: 0 }); $("lessonSel").focus(); }
   else if (h === "voices") openSet();
   else if (h === "review") goReview();
+  else if (h === "build" || h === "meaning") { setMode("quiz"); showPractice(h === "build" ? "build" : "mean"); }
+  else if (h === "stats") { setMode("quiz"); $("openStats").click(); }
 }
 window.addEventListener("hashchange", route);
 route();
