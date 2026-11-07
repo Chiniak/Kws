@@ -1,0 +1,16 @@
+{
+  "name": "KWS - Korean with Subin",
+  "short_name": "KWS",
+  "description": "Nauka koreańskiego z własnych lekcji: słuchanie z podświetlaniem, tłumaczenie, quiz, dyktando i mówienie.",
+  "lang": "pl",
+  "start_url": "./KWS.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#12141a",
+  "theme_color": "#0b4ea2",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

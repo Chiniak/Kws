@@ -1,0 +1,2254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b4ea2">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KWS">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMCIgZmlsbD0iIzBiNGVhMiIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjIzMCIgcj0iMTIwIiBmaWxsPSIjZmZmIi8+PHBhdGggZD0iTTEzNiAyMzBhMTIwIDEyMCAwIDAgMSAyNDAgMGE2MCA2MCAwIDAgMS0xMjAgMGE2MCA2MCAwIDAgMC0xMjAgMHoiIGZpbGw9IiNjODMwM2YiLz48dGV4dCB4PSIyNTYiIHk9IjQ1NSIgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iOTYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPktXUzwvdGV4dD48L3N2Zz4=">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>KWS - Korean with Subin</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+</head>
+<body>
+<style>
+/* Layout: one column. Top: file loader + sound status. Middle: tappable lines grouped by page. Bottom: sticky player. */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --fg: #1b1f2a; --muted: #646b7c; --line: #e1e4ea;
+  --blue: #0b4ea2; --red: #c8303f; --active: #e8effa; --ok: #1f8a5c;
+  --display: "Gowun Batang", Georgia, serif;
+  --body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12141a; --surface: #1b1e27; --fg: #e9ebf1; --muted: #9aa1b2; --line: #2b2f3b;
+    --blue: #7fa9ec; --red: #ef6f7c; --active: #1f2a40; --ok: #4cc493; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12141a; --surface: #1b1e27; --fg: #e9ebf1; --muted: #9aa1b2; --line: #2b2f3b;
+  --blue: #7fa9ec; --red: #ef6f7c; --active: #1f2a40; --ok: #4cc493; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); line-height: 1.55; font-size: 16px; }
+.wrap { max-width: 680px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 230px; }
+h1 { font-family: var(--display); font-size: 1.9rem; margin: 0; color: var(--blue); }
+.sub { margin: 4px 0 18px; color: var(--muted); font-size: 1rem; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.btn { font: inherit; font-weight: 600; font-size: 1rem; border: 0; border-radius: 12px; padding: 13px 16px; min-height: 48px; background: var(--blue); color: #fff; cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); font-weight: 500; }
+.btn.stop { background: var(--red); }
+.file { font-size: .95rem; color: var(--muted); min-width: 0; overflow-wrap: anywhere; }
+.status { font-size: .95rem; display: flex; gap: 8px; align-items: flex-start; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); flex: 0 0 auto; margin-top: 6px; }
+.status.good .dot { background: var(--ok); }
+.status.bad .dot { background: var(--red); }
+.status.bad { color: var(--red); }
+textarea { font: inherit; width: 100%; min-height: 90px; border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--bg); color: var(--fg); resize: vertical; }
+details summary { cursor: pointer; font-size: .85rem; color: var(--muted); }
+
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 10px; }
+.chip { font: inherit; font-size: .95rem; min-height: 42px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 8px 14px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+.page { font-size: .8rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 22px 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
+.ln { display: grid; grid-template-columns: 52px 1fr; align-items: stretch; background: var(--surface); border: 1.5px solid var(--line); border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
+.ln.playing { border-color: var(--blue); background: var(--active); box-shadow: 0 0 0 2px var(--blue); }
+.ln.sel { border-color: var(--red); }
+.pick { border: 0; border-right: 1px solid var(--line); background: transparent; cursor: pointer; display: grid; place-items: center; color: var(--muted); font-size: 1.3rem; }
+.ln.sel .pick { color: #fff; background: var(--red); font-weight: 700; }
+.ln.sel { background: var(--active); }
+.txt { font: inherit; text-align: left; border: 0; background: transparent; color: inherit; padding: 12px 14px; cursor: pointer; min-width: 0; overflow-wrap: anywhere; font-size: 1rem; }
+.txt .k { font-weight: 600; font-size: 1.25rem; }
+.txt .o { color: var(--muted); font-size: .95rem; }
+.hide .txt .k .w:not(.shown) { filter: blur(6px); background: color-mix(in srgb, var(--blue) 18%, transparent); border-radius: 6px; cursor: pointer; }
+.hide .txt .k .w.shown { animation: pop .25s ease-out; }
+@keyframes pop { from { transform: scale(.85); opacity: .4; } to { transform: none; opacity: 1; } }
+.hidehint { font-size: .9rem; color: var(--muted); margin: -4px 0 10px; }
+.empty { color: var(--muted); font-size: .9rem; padding: 20px 0; }
+
+.player { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--surface); border-top: 1px solid var(--line); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-top: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+.pin { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+.speeds { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.sp { font: inherit; font-size: .95rem; font-weight: 600; min-height: 44px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.15; }
+.sp small { font-weight: 400; font-size: .7rem; color: var(--muted); }
+.sp[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: #fff; }
+.sp[aria-pressed="true"] small { color: rgba(255,255,255,.85); }
+.lbl { font-size: .8rem; font-weight: 600; color: var(--muted); }
+.pin .row .btn { flex: 1 1 130px; }
+.ctrl { display: flex; align-items: center; gap: 8px; font-size: .95rem; color: var(--fg); min-height: 40px; }
+.ctrl input[type=checkbox] { width: 22px; height: 22px; }
+.ctrl input[type=range] { width: 100px; }
+.rv { font-variant-numeric: tabular-nums; min-width: 2.6em; }
+select { font: inherit; font-size: .95rem; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; max-width: 100%; background: var(--surface); color: var(--fg); }
+button:focus-visible, select:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 5px; margin-bottom: 14px; }
+.mode { font: inherit; font-weight: 600; font-size: 1rem; min-height: 46px; border: 0; border-radius: 10px; background: transparent; color: var(--muted); cursor: pointer; }
+.mode[aria-selected="true"] { background: var(--blue); color: #fff; }
+.qbar { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: .95rem; color: var(--muted); }
+.qbar b { color: var(--fg); font-variant-numeric: tabular-nums; }
+.prog { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.prog i { display: block; height: 100%; background: var(--blue); transition: width .25s; }
+.qcard { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.qhead { font-size: 1rem; font-weight: 600; }
+.ctx { font-size: 1.2rem; line-height: 1.7; overflow-wrap: anywhere; }
+.ctx .gap { display: inline-block; min-width: 3.5em; border-bottom: 3px solid var(--blue); margin: 0 2px; }
+.ctx .o { color: var(--muted); font-size: .95rem; }
+.listen { align-self: flex-start; }
+.opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.opt { font: inherit; font-size: 1.45rem; font-weight: 600; min-height: 64px; padding: 10px; border: 2px solid var(--line); border-radius: 14px; background: var(--bg); color: var(--fg); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.opt .n { font-size: .8rem; font-weight: 600; color: var(--muted); }
+.opt.right { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 16%, var(--bg)); }
+.opt.wrong { border-color: var(--red); background: color-mix(in srgb, var(--red) 14%, var(--bg)); }
+.opt:disabled { cursor: default; }
+.fb { font-size: 1rem; font-weight: 600; min-height: 1.5em; }
+.fb.good { color: var(--ok); } .fb.bad { color: var(--red); }
+.qset { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.result { text-align: center; padding: 10px 0; }
+.result .big { font-family: var(--display); font-size: 2.6rem; color: var(--blue); }
+.miss { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0; }
+.miss span, .miss button { font: inherit; color: inherit; border: 0; font-size: 1.15rem; font-weight: 600; padding: 4px 12px; border-radius: 8px; background: color-mix(in srgb, var(--red) 14%, var(--bg)); }
+.miss button { cursor: pointer; }
+.hint { font-size: .9rem; color: var(--muted); }
+@media (max-width: 360px) { .opts { grid-template-columns: 1fr; } }
+.gtrow { font-size: .9rem; color: var(--muted); }
+.gtrow a { color: var(--blue); font-weight: 600; }
+.w { border-radius: 4px; transition: background .12s, color .12s; }
+.w.now { background: var(--blue); color: #fff; box-shadow: 0 0 0 3px var(--blue); }
+.hide .txt .k .w.now { filter: none; }
+.modes { grid-template-columns: repeat(3, 1fr); }
+.mode { font-size: .95rem; }
+.origbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-start; margin-bottom: 10px; }
+.opage { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px; }
+.opage canvas { width: 100%; height: auto; border-radius: 6px; background: #fff; display: block; }
+.opage .ph { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: .85rem; color: var(--muted); font-weight: 600; }
+.otext { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 1.05rem; line-height: 1.7; }
+.otext.html { white-space: normal; }
+.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.gear { font: inherit; font-size: 1rem; font-weight: 600; min-height: 46px; padding: 8px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; flex: 0 0 auto; }
+.vstat { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: .9rem; }
+.vpill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); font-weight: 600; font-size: .85rem; }
+.vpill.ok { color: var(--ok); border-color: var(--ok); }
+.vpill.no { color: var(--red); border-color: var(--red); }
+.vpill.off { color: var(--muted); }
+.linkbtn { font: inherit; font-size: .9rem; background: none; border: 0; color: var(--blue); font-weight: 600; cursor: pointer; padding: 4px 2px; text-decoration: underline; }
+.sheet { position: fixed; inset: 0; z-index: 30; background: var(--bg); overflow-y: auto; }
+.sheet-in { max-width: 680px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-top: calc(16px + env(safe-area-inset-top, 0px)); padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 14px; }
+.sheet h2 { font-family: var(--display); font-size: 1.6rem; margin: 0; color: var(--blue); }
+.sheet h3 { font-size: 1.05rem; margin: 0; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.seg button { font: inherit; font-weight: 600; font-size: 1rem; min-height: 48px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: #fff; }
+.lang { border: 1.5px solid var(--line); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: var(--surface); }
+.lang-h { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.lang-h label { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 600; }
+.lang-h input { width: 24px; height: 24px; }
+.lang select { width: 100%; }
+.steps { margin: 6px 0 0; padding-left: 20px; font-size: .92rem; display: flex; flex-direction: column; gap: 4px; }
+.steps b { font-weight: 600; }
+.os { font-size: .85rem; font-weight: 600; color: var(--muted); margin-top: 8px; }
+.trl { display: flex; gap: 8px; align-items: baseline; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); color: var(--fg); font-size: .95rem; line-height: 1.45; cursor: pointer; }
+.trl .tag { flex: 0 0 auto; font-size: .7rem; font-weight: 700; letter-spacing: .06em; color: var(--red); border: 1px solid var(--red); border-radius: 5px; padding: 0 5px; }
+.trl.playing { color: var(--blue); }
+.notr .trl { display: none; }
+.ln { grid-template-columns: 52px 1fr auto; }
+.tre { border: 0; border-left: 1px solid var(--line); background: transparent; cursor: pointer; color: var(--muted); font-size: 1rem; padding: 0 10px; }
+.notr .tre { display: none; }
+.tredit { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 12px; border-top: 1px dashed var(--line); }
+.tredit textarea { font: inherit; font-size: 1rem; width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--fg); resize: vertical; }
+.hidetr .trl > span:last-child { filter: blur(5px); }
+.ln.peek .trl > span:last-child { filter: none; }
+.opage canvas, .opage .otext { cursor: zoom-in; }
+.viewer[hidden] { display: none; }
+.viewer { position: fixed; inset: 0; z-index: 40; background: #0d0f14; color: #e9ebf1; display: flex; flex-direction: column; }
+.vbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: calc(8px + env(safe-area-inset-top, 0px)); padding-bottom: 8px; padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); background: #161922; }
+.vbar .vt { font-weight: 600; font-variant-numeric: tabular-nums; }
+.vb { font: inherit; font-weight: 600; font-size: 1rem; min-width: 46px; min-height: 46px; padding: 0 12px; border-radius: 12px; border: 1px solid #2b2f3b; background: #1f2330; color: #e9ebf1; cursor: pointer; }
+.vb:disabled { opacity: .35; cursor: default; }
+.vbody { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y pinch-zoom; display: grid; place-items: start center; }
+.vbody canvas { display: block; background: #fff; }
+.vbody .otext { margin: 12px; max-width: 760px; background: #1b1e27; color: #e9ebf1; border-color: #2b2f3b; font-size: 1.25rem; cursor: default; }
+.vfoot { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; padding-top: 8px; padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); background: #161922; }
+.vzoom { min-width: 3.5em; text-align: center; font-variant-numeric: tabular-nums; }
+/* tablets and computers: wider column, bigger type, pages side by side */
+@media (min-width: 760px) {
+  body { font-size: 17px; }
+  .wrap { max-width: 860px; padding-block: 32px 200px; }
+  .pin, .sheet-in { max-width: 860px; }
+  h1 { font-size: 2.3rem; }
+  .txt .k { font-size: 1.4rem; }
+  .ln { grid-template-columns: 60px 1fr; }
+  .pin { display: grid; grid-template-columns: 1fr 1fr; align-items: center; column-gap: 20px; }
+  .pin .gtrow, .pin .lbl, .pin > .row:not(:last-child) { grid-column: 1 / -1; }
+  .pin > .row:not(:last-child) .btn { flex: 0 1 260px; }
+  .pin .lbl { display: none; }
+  .pin .speeds { grid-row: 3; grid-column: 1; }
+  .pin > .row:last-child { grid-row: 3; grid-column: 2; justify-content: flex-end; }
+  .qcard { max-width: 680px; margin: 0 auto; width: 100%; }
+  #qStart { max-width: 680px; margin-left: auto; margin-right: auto; }
+  .opt { font-size: 1.7rem; min-height: 76px; }
+}
+@media (min-width: 1200px) {
+  .wrap { max-width: 1180px; }
+  .pin, .sheet-in { max-width: 1180px; }
+  #listView { max-width: 900px; margin: 0 auto; }
+  #orig { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  #orig .opage { margin-bottom: 0; }
+  #orig > p { grid-column: 1 / -1; }
+  .opts { grid-template-columns: repeat(4, 1fr); }
+  .qcard, #qStart { max-width: 820px; }
+}
+@media (hover: hover) {
+  .ln:hover { border-color: color-mix(in srgb, var(--blue) 50%, var(--line)); }
+  .btn:hover, .chip:hover, .sp:hover, .mode:hover, .opt:not(:disabled):hover { filter: brightness(1.08); }
+}
+.pgbox { position: relative; }
+.pgbox canvas { display: block; }
+.cov { --cover: var(--blue); touch-action: manipulation; }
+.cov.pdf { position: absolute; border-radius: 3px; }
+.cov.on { background: var(--cover); box-shadow: 0 0 0 1.5px var(--cover); color: transparent; }
+.cov.t { border-radius: 4px; }
+.covering .cov { cursor: crosshair; touch-action: none; }
+.covering .cov:not(.on) { background: color-mix(in srgb, var(--cover) 22%, transparent); outline: 1px dashed color-mix(in srgb, var(--cover) 80%, transparent); }
+.cov.peekw { animation: peekw .35s ease-out; }
+@keyframes peekw { from { box-shadow: 0 0 0 6px color-mix(in srgb, var(--cover) 60%, transparent); } }
+.origbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-start; margin-bottom: 10px; }
+.origbar .hint { flex: 1 1 100%; margin: 0; }
+.covbtn[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: #fff; }
+.vb.covbtn[aria-pressed="true"] { background: #0b4ea2; color: #fff; }
+.lessonrow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.lessonrow select { flex: 1 1 200px; min-width: 0; font-size: 1rem; padding: 10px; }
+.btn.danger { background: var(--red); }
+.btn:disabled { opacity: .4; cursor: default; }
+.pseg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
+.pseg button { font: inherit; font-weight: 600; font-size: .95rem; min-height: 44px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.pseg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.dans { width: 100%; min-height: 76px; font-size: 1.35rem; line-height: 1.5; }
+.dgrid { display: flex; flex-wrap: wrap; gap: 8px; }
+.dres { display: flex; flex-direction: column; gap: 6px; font-size: 1.25rem; line-height: 1.6; overflow-wrap: anywhere; }
+.dres .lbl2 { font-size: .8rem; font-weight: 600; color: var(--muted); }
+.dres .ok { color: var(--ok); }
+.dres .mz { color: var(--red); text-decoration: underline wavy; text-underline-offset: 4px; }
+.dres .extra { color: var(--red); text-decoration: line-through; }
+.boxes { font-size: 1.2rem; letter-spacing: .1em; color: var(--muted); }
+.sbig { font-size: 1.6rem; font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
+.strl { color: var(--muted); font-size: 1rem; }
+.recbtn.on { background: var(--red); animation: pulse 1.2s infinite; }
+@keyframes pulse { 50% { filter: brightness(1.25); } }
+@media (prefers-reduced-motion: reduce) { .recbtn.on { animation: none; } }
+.snav { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.pmin-btn { font: inherit; font-size: .85rem; font-weight: 600; color: var(--muted); background: transparent; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 30px; margin-top: -4px; }
+.pmin-btn .bar { width: 40px; height: 5px; border-radius: 3px; background: var(--line); }
+.pmin-btn:hover .bar { background: var(--muted); }
+.player.min .gtrow, .player.min .lbl, .player.min .speeds, .player.min .pin > .row:last-child { display: none !important; }
+.player.min .pin { gap: 6px; }
+.player.min .pin > .row .btn { min-height: 44px; padding-block: 8px; }
+.ratechip { display: none; font-size: .85rem; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+.player.min .ratechip { display: inline; }
+body.pmin .wrap { padding-bottom: 120px; }
+.brand { margin: 0; line-height: 0; }
+.flag { width: 92px; height: auto; display: block; border-radius: 3px; box-shadow: 0 2px 10px rgba(0,0,0,.18), 0 0 0 1px rgba(0,0,0,.08); }
+.withsubin { margin: 10px 0 0; color: var(--red); font-family: var(--display); font-weight: 700; font-size: 1.35rem; letter-spacing: .02em; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (min-width: 760px) { .flag { width: 110px; } .withsubin { font-size: 1.5rem; } }
+.hdr { position: relative; display: flex; justify-content: center; padding-inline: 56px; }
+.hdr-brand { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.hdr .flag { margin: 0 auto; }
+.hdr .gear-icon { position: absolute; top: 0; right: 0; width: 48px; height: 48px; min-height: 48px; padding: 0; font-size: 1.4rem; display: grid; place-items: center; border-radius: 50%; }
+.hdr + .sub { text-align: center; }
+.lcode { display: inline-block; font-size: .7rem; font-weight: 700; letter-spacing: .04em; padding: 1px 6px; border-radius: 5px; border: 1px solid var(--line); color: var(--muted); }
+.others { border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; background: var(--surface); }
+.others summary, .guide summary { cursor: pointer; font-weight: 600; min-height: 32px; }
+.lrow { display: flex; align-items: center; gap: 10px; padding: 10px 2px; border-top: 1px solid var(--line); cursor: pointer; }
+.lrow input { width: 22px; height: 22px; flex: 0 0 auto; }
+.lrow .lname { flex: 1; min-width: 0; }
+.lrow .lcnt { font-size: .8rem; color: var(--muted); }
+.guide { border: 1.5px dashed var(--line); border-radius: 14px; padding: 12px 14px; }
+.trbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: space-between; background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; font-size: .95rem; color: var(--muted); }
+.trbar span { flex: 1 1 200px; min-width: 0; }
+#trSel { width: 100%; font-size: 1rem; padding: 10px; }
+.vwarn { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; border: 1.5px solid var(--red); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; color: var(--fg); background: color-mix(in srgb, var(--red) 8%, var(--surface)); }
+.vwarn b { color: var(--red); flex: 1 1 100%; }
+.vwarn span { flex: 1 1 260px; color: var(--muted); font-size: .92rem; }
+</style>
+
+<div class="wrap">
+  <div class="hdr">
+    <div class="hdr-brand">
+      <h1 class="brand"><svg class="flag" viewBox="0 0 72 48" role="img" aria-label="Korea"><rect width="72" height="48" fill="#fff"/><g transform="translate(36 24)"><g transform="rotate(33.69)"><circle r="12" fill="#0047A0"/><path d="M-12 0A12 12 0 0 1 12 0A6 6 0 0 0 0 0A6 6 0 0 1 -12 0Z" fill="#CD2E3A"/></g><g fill="#000"><g transform="rotate(-56.31)"><rect x="-6" y="-20" width="12" height="2"/><rect x="-6" y="-23" width="12" height="2"/><rect x="-6" y="-26" width="12" height="2"/></g><g transform="rotate(56.31)"><rect x="-6" y="-20" width="5.5" height="2"/><rect x="0.5" y="-20" width="5.5" height="2"/><rect x="-6" y="-23" width="12" height="2"/><rect x="-6" y="-26" width="5.5" height="2"/><rect x="0.5" y="-26" width="5.5" height="2"/></g><g transform="rotate(123.69)"><rect x="-6" y="-20" width="5.5" height="2"/><rect x="0.5" y="-20" width="5.5" height="2"/><rect x="-6" y="-23" width="5.5" height="2"/><rect x="0.5" y="-23" width="5.5" height="2"/><rect x="-6" y="-26" width="5.5" height="2"/><rect x="0.5" y="-26" width="5.5" height="2"/></g><g transform="rotate(-123.69)"><rect x="-6" y="-20" width="12" height="2"/><rect x="-6" y="-23" width="5.5" height="2"/><rect x="0.5" y="-23" width="5.5" height="2"/><rect x="-6" y="-26" width="12" height="2"/></g></g></g></svg><span class="vh">KWS</span></h1>
+      <p class="withsubin">with Subin</p>
+    </div>
+    <button class="gear gear-icon" id="openSet">⚙️</button>
+  </div>
+  <p class="sub" data-t="tagline"></p>
+
+  <section class="panel">
+    <span class="lbl" data-t="library"></span>
+    <div class="lessonrow">
+      <select id="lessonSel" aria-label="Lesson"></select>
+      <button class="btn ghost" id="delLesson" aria-label="Delete lesson">🗑</button>
+    </div>
+    <div class="row">
+      <label class="btn" for="fileIn" style="display:inline-block">📄 <span data-t="loadFile"></span></label>
+      <input type="file" id="fileIn" accept=".pdf,.txt,.docx,application/pdf,text/plain" hidden>
+      <span class="file" id="fileName"></span>
+    </div>
+    <details>
+      <summary data-t="orPaste"></summary>
+      <textarea id="paste"></textarea>
+      <div class="row" style="margin-top:8px"><button class="btn ghost" id="usePaste" data-t="usePaste"></button></div>
+    </details>
+    <div class="vstat"><span data-t="reading"></span> <span id="pills"></span> <button class="linkbtn" id="openSet2" data-t="voiceSettings"></button></div>
+    <div class="status" id="status" hidden><span class="dot"></span><span id="statusText"></span></div>
+  </section>
+
+  <div class="modes" role="tablist">
+    <button class="mode" role="tab" id="mOrig" aria-selected="true">📄 <span data-t="original"></span></button>
+    <button class="mode" role="tab" id="mListen" aria-selected="false">🎧 <span data-t="listen"></span></button>
+    <button class="mode" role="tab" id="mQuiz" aria-selected="false">✍️ <span data-t="practice"></span></button>
+  </div>
+
+  <div id="listView" hidden>
+    <div class="vwarn" id="vWarn" hidden></div>
+    <div class="chips">
+      <button class="chip" id="cKo" aria-pressed="false" data-t="onlyKo"></button>
+      <button class="chip" id="cTr" aria-pressed="true"></button>
+      <button class="chip" id="cHide" aria-pressed="false" data-t="hideKo"></button>
+      <button class="chip" id="cClear" data-t="clearSel"></button>
+    </div>
+    <p class="hidehint" id="hideHint" hidden data-t="hideHint"></p>
+    <div class="trbar" id="trBar" hidden><span id="trMsg"></span><button class="btn" id="trGo"></button></div>
+    <div id="list"></div>
+  </div>
+
+  <div id="origView">
+    <div class="origbar">
+      <span class="hint" id="origHint" data-t="origHint"></span>
+      <button class="chip covbtn" id="covMode" aria-pressed="false" data-t="coverMode"></button>
+      <button class="chip" id="covAll" data-t="coverAll"></button>
+      <button class="chip" id="covNone" data-t="uncoverAll"></button>
+    </div>
+    <div id="orig"></div>
+  </div>
+
+  <div id="quizView" hidden>
+    <p class="hint" id="progInfo" style="margin:0 0 10px"></p>
+    <div class="pseg" id="pSeg">
+      <button data-p="quiz" aria-pressed="true" data-t="segQuiz"></button>
+      <button data-p="dict" aria-pressed="false" data-t="segDict"></button>
+      <button data-p="speak" aria-pressed="false" data-t="segSpeak"></button>
+    </div>
+    <div id="pQuiz">
+    <section class="panel" id="qStart">
+      <div class="qhead" data-t="quizTitle"></div>
+      <p class="hint" style="margin:0" data-t="quizIntro"></p>
+      <div class="qset">
+        <label class="ctrl"><span data-t="questions"></span> <select id="qCount"><option>5</option><option selected>10</option><option>20</option></select></label>
+        <label class="ctrl"><span data-t="wordsFrom"></span> <select id="qSrc"><option value="all" data-t="wholeFile"></option><option value="sel" data-t="selLines"></option><option value="review" data-t="dueOnly"></option></select></label>
+      </div>
+      <div class="row"><button class="btn" id="qGo" style="flex:1" data-t="startQuiz"></button></div>
+      <p class="hint" id="qInfo" style="margin:0"></p>
+    </section>
+    <div id="qBox"></div>
+    </div>
+
+    <div id="pDict" hidden>
+      <section class="panel" id="dStart">
+        <div class="qhead" data-t="dictTitle"></div>
+        <p class="hint" style="margin:0" data-t="dictIntro"></p>
+        <div class="qset">
+          <label class="ctrl"><span data-t="sentences"></span> <select id="dCount"><option>5</option><option selected>10</option><option>20</option></select></label>
+          <label class="ctrl"><span data-t="sentFrom"></span> <select id="dSrc"><option value="all" data-t="wholeFile"></option><option value="sel" data-t="selLines"></option><option value="review" data-t="dueOnly"></option></select></label>
+        </div>
+        <div class="row"><button class="btn" id="dGo" style="flex:1" data-t="startDict"></button></div>
+        <p class="hint" id="dInfo" style="margin:0"></p>
+      </section>
+      <div id="dBox"></div>
+    </div>
+
+    <div id="pSpeak" hidden>
+      <div id="sBox"></div>
+    </div>
+  </div>
+</div>
+
+<div class="player" hidden>
+  <div class="pin">
+    <button class="pmin-btn" id="pMin" aria-expanded="true"><span class="bar"></span><span id="pMinTxt"></span></button>
+    <div class="gtrow" id="gtRow" hidden><span data-t="cantHear"></span> <a id="gt" href="https://translate.google.com/" target="_blank" rel="noopener" data-t="openGT"></a></div>
+    <div class="row">
+      <button class="btn" id="playSel"></button>
+      <button class="btn ghost" id="playAll"></button>
+      <span class="ratechip" id="rateChip"></span>
+    </div>
+    <span class="lbl" data-t="speed"></span>
+    <div class="speeds" id="speeds">
+      <button class="sp" data-r="0.3">0.3×<small data-t="sp1"></small></button>
+      <button class="sp" data-r="0.5">0.5×<small data-t="sp2"></small></button>
+      <button class="sp" data-r="0.7">0.7×<small data-t="sp3"></small></button>
+      <button class="sp" data-r="0.9">0.9×<small data-t="sp4"></small></button>
+      <button class="sp" data-r="1">1×<small data-t="sp5"></small></button>
+    </div>
+    <div class="row">
+      <label class="ctrl"><input type="checkbox" id="words"> <span data-t="wordByWord"></span></label>
+      <label class="ctrl"><input type="checkbox" id="loop"> <span data-t="loop"></span></label>
+      <label class="ctrl"><input type="checkbox" id="exact"> <span data-t="exactHL"></span></label>
+    </div>
+  </div>
+</div>
+
+<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true">
+  <div class="vbar">
+    <button class="vb" id="vClose" aria-label="Close">✕</button>
+    <span class="vt" id="vTitle"></span>
+    <button class="vb" id="vPlay"></button>
+  </div>
+  <div class="vbody" id="vBody"></div>
+  <div class="vfoot">
+    <button class="vb covbtn" id="vCov" aria-pressed="false">✏️</button>
+    <button class="vb" id="vPrev" aria-label="Previous page">◀</button>
+    <button class="vb" id="vOut" aria-label="Zoom out">−</button>
+    <span class="vzoom" id="vZoom">100%</span>
+    <button class="vb" id="vIn" aria-label="Zoom in">+</button>
+    <button class="vb" id="vNext" aria-label="Next page">▶</button>
+  </div>
+</div>
+
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="setTitle">
+  <div class="sheet-in">
+    <div class="top">
+      <h2 id="setTitle" data-t="settings"></h2>
+      <button class="gear" id="closeSet" data-t="done"></button>
+    </div>
+
+    <section class="panel">
+      <h3 data-t="uiLang"></h3>
+      <div class="seg" id="uiSeg">
+        <button data-l="en">English</button>
+        <button data-l="pl">Polski</button>
+        <button data-l="ko">한국어</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3 data-t="koVoice"></h3>
+      <div id="langCards" style="display:flex;flex-direction:column;gap:10px"></div>
+    </section>
+
+    <section class="panel">
+      <h3 data-t="trLangT"></h3>
+      <p class="hint" style="margin:0" data-t="trLangHint"></p>
+      <select id="trSel" aria-label="Translation language"></select>
+      <p class="hint" style="margin:8px 0 0" data-t="trFileHint"></p>
+      <div class="row">
+        <button class="btn ghost" id="trExport" data-t="trExport"></button>
+        <label class="btn ghost" for="trImport" style="display:inline-block" data-t="trImportBtn"></label>
+        <input type="file" id="trImport" accept=".json,application/json" hidden>
+      </div>
+      <p class="hint" id="trFileMsg" style="margin:0" hidden></p>
+    </section>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script>
+/* Inside the KWS Android app the WebView has no speechSynthesis; the app exposes AndroidTTS instead.
+   This shim maps it onto the browser API so the rest of the page works unchanged (with exact word events). */
+(function () {
+  const A = window.AndroidTTS; if (!A) return;
+  let seq = 0, speaking = false, pending = 0; const map = {};
+  function Utt(text) { this.text = text || ""; this.lang = ""; this.voice = null; this.rate = 1; this.pitch = 1; this.volume = 1; this.onstart = this.onend = this.onerror = this.onboundary = null; }
+  const synth = {
+    onvoiceschanged: null, paused: false,
+    get speaking() { return speaking || pending > 0; }, get pending() { return pending > 0; },
+    getVoices() { try { return JSON.parse(A.voices()).map(v => ({ name: v.name, lang: v.lang, localService: v.localService, voiceURI: v.name, default: false })); } catch (e) { return []; } },
+    speak(u) { const id = ++seq; map[id] = u; pending++; A.speak(id, String(u.text), u.lang || "", u.voice ? u.voice.name : "", +u.rate || 1, +u.pitch || 1, u.volume == null ? 1 : +u.volume); },
+    cancel() { A.stop(); for (const id in map) { const u = map[id]; delete map[id]; try { u.onerror && u.onerror({ error: "interrupted" }); } catch (e) {} } pending = 0; speaking = false; },
+    pause() {}, resume() {},
+  };
+  window.__ttsEvent = (id, type, a, b) => {
+    const u = map[id]; if (!u) return;
+    if (type === "start") { if (!u._s) { u._s = 1; pending = Math.max(0, pending - 1); } speaking = true; u.onstart && u.onstart({}); }
+    else if (type === "boundary") { u.onboundary && u.onboundary({ name: "word", charIndex: a, charLength: b - a }); }
+    else {
+      delete map[id]; if (!u._s) pending = Math.max(0, pending - 1); speaking = false;
+      if (type === "end") u.onend && u.onend({}); else u.onerror && u.onerror({ error: type === "interrupted" ? "interrupted" : "synthesis-failed" });
+    }
+  };
+  window.__ttsVoicesChanged = () => { synth.onvoiceschanged && synth.onvoiceschanged(); };
+  try { Object.defineProperty(window, "speechSynthesis", { value: synth, configurable: true }); } catch (e) {}
+  window.SpeechSynthesisUtterance = Utt;
+})();
+/* the example lesson that a new library starts with: [page, line] and its Polish translation */
+const SAMPLE_ID = "kws-sample";
+const SAMPLE = [
+  [1, "Lesson 1 · 인사하기 (Greetings)"],
+  [1, "수빈: 안녕하세요! 저는 수빈이에요."],
+  [1, "민수: 안녕하세요, 수빈 씨. 저는 민수예요."],
+  [1, "수빈: 만나서 반가워요."],
+  [1, "민수: 저도 반가워요. 수빈 씨는 학생이에요?"],
+  [1, "수빈: 네, 학생이에요. 민수 씨는요?"],
+  [1, "민수: 저는 회사원이에요."],
+  [1, "수빈: 그럼 다음에 또 봐요!"],
+  [1, "민수: 네, 안녕히 가세요."],
+  [2, "Vocabulary"],
+  [2, "안녕하세요 → hello"],
+  [2, "만나서 반가워요 → nice to meet you"],
+  [2, "학생 → student"],
+  [2, "회사원 → office worker"],
+  [2, "안녕히 가세요 → goodbye (to someone who is leaving)"],
+  [2, "Grammar: N + 이에요 / 예요 = to be N"],
+  [2, "저는 학생이에요. (after a consonant → 이에요)"],
+  [2, "저는 민수예요. (after a vowel → 예요)"],
+];
+const PL_TR = {
+  "Lesson 1 · 인사하기 (Greetings)": "Lekcja 1 · Powitania",
+  "수빈: 안녕하세요! 저는 수빈이에요.": "Subin: Dzień dobry! Jestem Subin.",
+  "민수: 안녕하세요, 수빈 씨. 저는 민수예요.": "Minsu: Dzień dobry, Subin. Jestem Minsu.",
+  "수빈: 만나서 반가워요.": "Subin: Miło mi cię poznać.",
+  "민수: 저도 반가워요. 수빈 씨는 학생이에요?": "Minsu: Mnie też miło. Jesteś studentką?",
+  "수빈: 네, 학생이에요. 민수 씨는요?": "Subin: Tak, jestem studentką. A ty, Minsu?",
+  "민수: 저는 회사원이에요.": "Minsu: Ja pracuję w biurze.",
+  "수빈: 그럼 다음에 또 봐요!": "Subin: To do zobaczenia następnym razem!",
+  "민수: 네, 안녕히 가세요.": "Minsu: Tak, do widzenia.",
+  "Vocabulary": "Słownictwo",
+  "안녕하세요 → hello": "dzień dobry, cześć",
+  "만나서 반가워요 → nice to meet you": "miło mi cię poznać",
+  "학생 → student": "uczeń, student",
+  "회사원 → office worker": "pracownik biurowy",
+  "안녕히 가세요 → goodbye (to someone who is leaving)": "do widzenia (do osoby, która odchodzi)",
+  "Grammar: N + 이에요 / 예요 = to be N": "Gramatyka: N + 이에요 / 예요 = być N",
+  "저는 학생이에요. (after a consonant → 이에요)": "Jestem studentem. (po spółgłosce → 이에요)",
+  "저는 민수예요. (after a vowel → 예요)": "Jestem Minsu. (po samogłosce → 예요)",
+};
+const SAMPLE_PDF = "";   // the example has no PDF: the Original tab shows its text
+const $ = id => document.getElementById(id);
+const synth = window.speechSynthesis;
+const store = { get(k, d) { try { const v = localStorage.getItem("kws-" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem("kws-" + k, JSON.stringify(v)); } catch (e) {} } };
+
+/* ---------- interface text ---------- */
+const TX = {
+  en: {
+    original: "Original", origHint: "The file as it looks. Tap ▶ to hear a page. Double-tap a Korean word to cover its sentence.", playPage: "▶ Play page", origNone: "The original isn't available for this text. Load the file again.", origLoading: "Rendering pages…",
+    hideHint: "Tap a blurred word to reveal it. Tap the rest of the line to hear it.",
+    installVoice: "📥 Download voices on this phone",
+    exactHL: "🎯 Exact highlight",
+    coverMode: "✏️ Cover words", coverAll: "Cover all Korean", uncoverAll: "Uncover all", coverHint: "Tap or drag across Korean words to cover them. Double-tap a word to cover its whole sentence. Tap a covered word to reveal and hear it.",
+    library: "Lesson", sampleName: "Example: Greetings (인사하기)", delConfirm: "Delete?", practice: "Practice",
+    segQuiz: "Spelling", segDict: "Dictation", segSpeak: "Speaking",
+    dictTitle: "Dictation", dictIntro: "Listen to a sentence and type it in Korean. You need a Korean keyboard on your phone (e.g. Gboard → Languages → Korean).",
+    sentences: "Sentences", sentFrom: "Sentences from", startDict: "Start dictation", dSent: "Sentence", slow: "🐢 Slowly", hintWords: "💡 Hint", meaning: "🇵🇱 Meaning",
+    typeHere: "Type what you hear…", check: "Check", dScore: n => `${n}% correct`, yourAns: "Yours", correctAns: "Correct",
+    noSent: "This lesson has no Korean sentences.", avgScore: n => `Average ${n}%`, sentAvail: n => `Sentences available: ${n}`,
+    speakIntro: "Listen to the speaker, record yourself and compare.", lector: "▶ Speaker", rec: "🎙 Record", mine: "▶ Me", compare: "🔁 Compare",
+    micErr: "The microphone isn't available here. Allow it in the browser if asked. In the Claude preview recording doesn't work: use KWS.html in Chrome or Safari, or the Android app.",
+    recording: n => `Recording… ${n} s`, noRec: "Record yourself first.", recDone: "Recorded. Tap ▶ Me or 🔁 Compare.",
+    showCtrl: "▴ Speed & options", hideCtrl: "▾ Hide",
+    otherLangs: n => `More languages on this phone (${n})`, voicesN: n => `${n} ${n === 1 ? "voice" : "voices"}`, guideTitle: "How to add a voice (example: Korean)", sameForOthers: "Every other language works the same way: choose it instead of Korean.",
+    lessonGone: "This lesson couldn't be read from the phone's storage. Load the file again.",
+    koVoice: "Korean voice", trLangT: "Translation language", trLangHint: "Lines are translated into this language. Claude translates the whole lesson for you inside the Claude app; elsewhere use the Google Translate link while listening.",
+    trChip: n => `🌐 Translation · ${n}`, trAsk: n => `This lesson has no ${n} translation yet.`, trBtn: "🌐 Translate lesson", trWorking: (a, b) => `Translating… ${a} / ${b}`, trDone: n => `Translated${n ? " (" + n + ")" : ""}. Machine translation can be wrong: tap ✏️ to fix a line.`,
+    trOnline: "If your browser can't translate on this device, the lines are sent to Google Translate or MyMemory.",
+    trEdit: "Edit translation", save: "Save", cancel: "Cancel",
+    trFileHint: "Save this lesson's translations to a file and load them on another device.", trExport: "⬇ Save translations", trImportBtn: "⬆ Load translations",
+    trNothing: "This lesson has no translations to save yet.", trExported: n => `Saved ${n} translations.`, trImported: (n, l) => `Loaded ${n} translations (${l}).`, trBadFile: "This isn't a KWS translations file.",
+    dueOnly: "Due for review", noDue: " Nothing to review right now: come back later.",
+    progLine: (wm, wn, sd, sn, avg, due) => `Progress: ${wm}/${wn} words learned · ${sd}/${sn} sentences dictated${avg != null ? ` (average ${avg}%)` : ""} · ${due} due for review`,
+    trFail: "Translation didn't work. Check the internet connection and try again, or tap ✏️ to write a translation yourself.", trDenied: "Claude isn't allowed to translate here. You can allow it the next time you open the page.",
+    noLessons: "No lessons yet: load a file",
+    noKoVoiceT: "No Korean voice in this browser, so nothing is read aloud.", noKoVoiceD: "On a computer: Chrome and Edge include Korean voices (Brave, Firefox and Opera usually don't). Or install a Korean voice in Windows or macOS (steps in Settings).",
+    winSteps: l => [`Open <b>Settings → Time & language → Speech</b>.`, `Under <b>Manage voices</b> choose <b>Add voices</b> and add <b>${l}</b>.`, `Restart the browser and open KWS again.`],
+    macSteps: l => [`Open <b>System Settings → Accessibility → Spoken Content</b>.`, `Next to <b>System voice</b> choose <b>Manage Voices…</b> and download a <b>${l}</b> voice (e.g. Yuna).`, `Restart the browser and open KWS again.`],
+    welcome: "No lesson yet. Tap 📄 Load file at the top and choose a PDF, Word or text file with your lesson.",
+    settings: "Settings", done: "Done", tagline: "Load a lesson file, tap a line and listen.",
+    loadFile: "Load file", orPaste: "Or paste text", pastePh: "Paste text here…", usePaste: "Use pasted text",
+    reading: "Reading:", voiceSettings: "Voices and languages", listen: "Listen", quiz: "Spelling quiz",
+    onlyKo: "Only lines with Korean", hideKo: "Hide Korean (practice)", clearSel: "Clear selection",
+    lines: n => `${n} lines`, loading: f => `Loading ${f}…`, loadFail: m => `Couldn't load the file: ${m}`,
+    pdfFail: "The PDF reader didn't load. Check your connection and refresh.", docxFail: "The Word reader didn't load. Refresh the page.",
+    pasted: "Pasted text", page: n => `Page ${n}`, pick: "Select",
+    empty: "No text to read. If the PDF is only images (a scan), the app can't extract text from it. Paste the text instead.",
+    cantHear: "Can't hear it?", openGT: "Translate this line in Google Translate ↗",
+    playSel: n => `▶ Play selected${n ? ` (${n})` : ""}`, playAll: "▶ Everything", stop: "■ Stop", pickFirst: "Select lines with ○ first",
+    speed: "Speed", sp1: "very slow", sp2: "slow", sp3: "calm", sp4: "almost", sp5: "normal", wordByWord: "Word by word", loop: "Loop",
+    uiLang: "App language", readLangs: "Reading languages",
+    readLangsHint: "The app recognizes each part of the text by its alphabet (Korean, Japanese, Russian…) or, for Latin letters, by its words (English, Polish, German…), and reads it with that language's voice. Turn on the languages you want to hear.",
+    test: "🔊 Test", voice: "Voice", best: "★ best", voiceOk: n => `Ready: ${n}`, voiceNo: "No voice on this phone", voiceWait: "Voices are loading…",
+    howTo: "How to install this voice", iphone: "iPhone (Safari)", android: "Android (Chrome)",
+    iosSteps: l => [`Open <b>Settings → Accessibility → Spoken Content → Voices</b>.`, `Choose <b>${l}</b>.`, `Download a <b>Premium</b> or <b>Enhanced</b> voice (Wi-Fi recommended).`, `Come back here and refresh the page.`],
+    andSteps: l => [`Install or update <b>Speech Services by Google</b> from the Play Store.`, `Open <b>Settings → Text-to-speech output → Google → ⚙️ → Install voice data</b>.`, `Download <b>${l}</b>.`, `Come back here and refresh the page.`],
+    noSynth: "This browser can't read aloud. Open the link in Chrome or Safari, not inside an app.",
+    works: "It works!", playErr: e => `Playback error (${e}). Choose another voice in “Voices and languages”, try Chrome, Edge or Safari, or use the Google Translate link.`,
+    voiceSwitched: (a, b) => `The voice “${a}” didn't work, so “${b}” is reading now. You can change it in “Voices and languages”.`,
+    silent: "Nothing played. Inside the Claude app reading aloud may be blocked: open the link in Chrome or Safari. Also check volume and silent mode.",
+    noneOn: "Turn on at least one reading language in Settings.",
+    quizTitle: "Spelling quiz", quizIntro: "You'll hear a word from your file. Pick the correct spelling. Wrong answers differ by one letter, e.g. ㅐ/ㅔ, ㅓ/ㅗ or the final consonant.",
+    questions: "Questions", wordsFrom: "Words from", wholeFile: "whole file", selLines: "selected lines", startQuiz: "Start quiz",
+    available: n => `Words available: ${n}`, noSelUsed: " (nothing selected, using the whole file)", noWords: "This text has no Korean words for a quiz.",
+    qNum: "Question", score: "Score", qPrompt: "Listen and pick the correct spelling", again: "🔊 Listen again", next: "Next →", seeResult: "See result", quit: "End",
+    right: w => `Correct! ${w}`, wrong: w => `Correct answer: ${w}`, perfect: "Perfect! 완벽해요!", good: "Well done! 잘했어요!", keep: "Keep practising, 화이팅!",
+    review: "To review:", retry: n => `Retry mistakes (${n})`, newQuiz: "New quiz",
+    lang_ko: "Korean", lang_en: "English", lang_pl: "Polish",
+  },
+  pl: {
+    original: "Oryginał", origHint: "Plik tak, jak wygląda. Naciśnij ▶, żeby odsłuchać stronę. Dotknij dwa razy koreańskiego słowa, żeby zasłonić zdanie.", playPage: "▶ Odtwórz stronę", origNone: "Oryginał nie jest dostępny dla tego tekstu. Wczytaj plik ponownie.", origLoading: "Wyświetlam strony…",
+    hideHint: "Dotknij rozmytego słowa, żeby je odkryć. Dotknij reszty linii, żeby ją usłyszeć.",
+    installVoice: "📥 Pobierz głosy w telefonie",
+    exactHL: "🎯 Dokładne podświetlanie",
+    coverMode: "✏️ Zasłanianie", coverAll: "Zasłoń cały koreański", uncoverAll: "Odsłoń wszystko", coverHint: "Dotknij albo przeciągnij palcem po koreańskich słowach, żeby je zasłonić. Dotknij dwa razy szybko słowa, żeby zasłonić całe zdanie. Dotknij zasłoniętego słowa, żeby je odsłonić i usłyszeć.",
+    library: "Lekcja", sampleName: "Przykład: Powitania (인사하기)", delConfirm: "Usunąć?", practice: "Ćwiczenia",
+    segQuiz: "Pisownia", segDict: "Dyktando", segSpeak: "Mówienie",
+    dictTitle: "Dyktando", dictIntro: "Posłuchaj zdania i wpisz je po koreańsku. Potrzebujesz koreańskiej klawiatury w telefonie (np. Gboard → Języki → Koreański).",
+    sentences: "Zdań", sentFrom: "Zdania z", startDict: "Zacznij dyktando", dSent: "Zdanie", slow: "🐢 Wolno", hintWords: "💡 Podpowiedź", meaning: "🇵🇱 Znaczenie",
+    typeHere: "Wpisz, co słyszysz…", check: "Sprawdź", dScore: n => `${n}% poprawnie`, yourAns: "Twoje", correctAns: "Poprawnie",
+    noSent: "W tej lekcji nie ma koreańskich zdań.", avgScore: n => `Średnio ${n}%`, sentAvail: n => `Dostępnych zdań: ${n}`,
+    speakIntro: "Posłuchaj lektora, nagraj siebie i porównaj.", lector: "▶ Lektor", rec: "🎙 Nagraj", mine: "▶ Ja", compare: "🔁 Porównaj",
+    micErr: "Mikrofon nie jest tu dostępny. Jeśli przeglądarka pyta, zezwól na niego. W podglądzie Claude nagrywanie nie działa: użyj KWS.html w Chrome lub Safari albo aplikacji na Androida.",
+    recording: n => `Nagrywam… ${n} s`, noRec: "Najpierw nagraj siebie.", recDone: "Nagrane. Naciśnij ▶ Ja albo 🔁 Porównaj.",
+    showCtrl: "▴ Tempo i opcje", hideCtrl: "▾ Zwiń",
+    otherLangs: n => `Inne języki w tym telefonie (${n})`, voicesN: n => `głosy: ${n}`, guideTitle: "Jak dodać głos (przykład: koreański)", sameForOthers: "Każdy inny język dodajesz tak samo: wybierz go zamiast koreańskiego.",
+    lessonGone: "Nie udało się odczytać tej lekcji z pamięci telefonu. Wczytaj plik ponownie.",
+    koVoice: "Głos koreański", trLangT: "Język tłumaczenia", trLangHint: "Na ten język tłumaczone są linie lekcji. W aplikacji Claude całą lekcję tłumaczy Claude; poza nią użyj linku do Tłumacza Google podczas słuchania.",
+    trChip: n => `🌐 Tłumaczenie · ${n}`, trAsk: n => `Ta lekcja nie ma jeszcze tłumaczenia: ${n}.`, trBtn: "🌐 Przetłumacz lekcję", trWorking: (a, b) => `Tłumaczę… ${a} / ${b}`, trDone: n => `Przetłumaczone${n ? " (" + n + ")" : ""}. Tłumaczenie maszynowe może się mylić: dotknij ✏️, żeby poprawić linię.`,
+    trOnline: "Jeśli przeglądarka nie umie tłumaczyć na tym urządzeniu, linie zostaną wysłane do Tłumacza Google lub MyMemory.",
+    trEdit: "Edytuj tłumaczenie", save: "Zapisz", cancel: "Anuluj",
+    trFileHint: "Zapisz tłumaczenia tej lekcji do pliku i wczytaj je na innym urządzeniu.", trExport: "⬇ Zapisz tłumaczenia", trImportBtn: "⬆ Wczytaj tłumaczenia",
+    trNothing: "Ta lekcja nie ma jeszcze tłumaczeń do zapisania.", trExported: n => `Zapisano tłumaczenia: ${n}.`, trImported: (n, l) => `Wczytano tłumaczenia: ${n} (${l}).`, trBadFile: "To nie jest plik z tłumaczeniami KWS.",
+    dueOnly: "Do powtórki", noDue: " Na razie nie ma nic do powtórki: wróć później.",
+    progLine: (wm, wn, sd, sn, avg, due) => `Postęp: ${wm}/${wn} słów opanowanych · ${sd}/${sn} zdań z dyktanda${avg != null ? ` (średnio ${avg}%)` : ""} · do powtórki: ${due}`,
+    trFail: "Tłumaczenie się nie udało. Sprawdź internet i spróbuj ponownie albo dotknij ✏️ i wpisz tłumaczenie sam.", trDenied: "Claude nie ma tu zgody na tłumaczenie. Możesz ją dać przy następnym otwarciu strony.",
+    noLessons: "Brak lekcji: wczytaj plik",
+    noKoVoiceT: "Ta przeglądarka nie ma koreańskiego głosu, więc nic nie jest czytane.", noKoVoiceD: "Na komputerze: Chrome i Edge mają koreańskie głosy (Brave, Firefox i Opera zwykle nie). Możesz też zainstalować koreański głos w Windows lub macOS (instrukcja w Ustawieniach).",
+    winSteps: l => [`Otwórz <b>Ustawienia → Czas i język → Mowa</b>.`, `W <b>Zarządzaj głosami</b> wybierz <b>Dodaj głosy</b> i dodaj <b>${l}</b>.`, `Uruchom ponownie przeglądarkę i otwórz KWS.`],
+    macSteps: l => [`Otwórz <b>Ustawienia systemowe → Dostępność → Treść mówiona</b>.`, `Przy <b>Głos systemowy</b> wybierz <b>Zarządzaj głosami…</b> i pobierz głos <b>${l}</b> (np. Yuna).`, `Uruchom ponownie przeglądarkę i otwórz KWS.`],
+    welcome: "Nie ma jeszcze żadnej lekcji. Naciśnij 📄 Wczytaj plik na górze i wybierz PDF, plik Word albo tekst z lekcją.",
+    settings: "Ustawienia", done: "Gotowe", tagline: "Wczytaj plik z lekcją, dotknij linijkę i słuchaj.",
+    loadFile: "Wczytaj plik", orPaste: "Albo wklej tekst", pastePh: "Wklej tu tekst…", usePaste: "Użyj wklejonego tekstu",
+    reading: "Czytam:", voiceSettings: "Głosy i języki", listen: "Słuchanie", quiz: "Quiz pisowni",
+    onlyKo: "Tylko linie z koreańskim", hideKo: "Ukryj koreański (nauka)", clearSel: "Wyczyść zaznaczenie",
+    lines: n => `${n} linii`, loading: f => `Wczytuję ${f}…`, loadFail: m => `Nie udało się wczytać pliku: ${m}`,
+    pdfFail: "Nie udało się załadować czytnika PDF. Sprawdź internet i odśwież stronę.", docxFail: "Nie udało się załadować czytnika Word. Odśwież stronę.",
+    pasted: "Wklejony tekst", page: n => `Strona ${n}`, pick: "Zaznacz",
+    empty: "Brak tekstu do odczytania. Jeśli PDF to same obrazki (skan), aplikacja nie wyciągnie z niego tekstu. Wklej wtedy tekst ręcznie.",
+    cantHear: "Nie słychać?", openGT: "Przetłumacz tę linię w Tłumaczu Google ↗",
+    playSel: n => `▶ Odtwórz zaznaczone${n ? ` (${n})` : ""}`, playAll: "▶ Wszystko", stop: "■ Stop", pickFirst: "Zaznacz linie kółkiem ○",
+    speed: "Tempo", sp1: "b. wolno", sp2: "wolno", sp3: "spokojnie", sp4: "prawie", sp5: "normalnie", wordByWord: "Słowo po słowie", loop: "W kółko",
+    uiLang: "Język aplikacji", readLangs: "Języki czytania",
+    readLangsHint: "Aplikacja rozpoznaje język każdego fragmentu po alfabecie (koreański, japoński, rosyjski…), a przy literach łacińskich po słowach (angielski, polski, niemiecki…), i czyta go głosem tego języka. Włącz języki, które chcesz słyszeć.",
+    test: "🔊 Test", voice: "Głos", best: "★ najlepszy", voiceOk: n => `Gotowy: ${n}`, voiceNo: "Brak głosu w tym telefonie", voiceWait: "Ładuję głosy…",
+    howTo: "Jak zainstalować ten głos", iphone: "iPhone (Safari)", android: "Android (Chrome)",
+    iosSteps: l => [`Otwórz <b>Ustawienia → Dostępność → Treść mówiona → Głosy</b>.`, `Wybierz <b>${l}</b>.`, `Pobierz głos <b>Premium</b> albo <b>Ulepszony</b> (najlepiej przez Wi-Fi).`, `Wróć tutaj i odśwież stronę.`],
+    andSteps: l => [`Zainstaluj lub zaktualizuj <b>Usługi Google do zamiany mowy</b> ze Sklepu Play.`, `Otwórz <b>Ustawienia → Zamiana tekstu na mowę → Google → ⚙️ → Zainstaluj dane głosowe</b>.`, `Pobierz <b>${l}</b>.`, `Wróć tutaj i odśwież stronę.`],
+    noSynth: "Ta przeglądarka nie potrafi czytać na głos. Otwórz link w Chrome albo Safari, nie w aplikacji.",
+    works: "Działa!", playErr: e => `Błąd odtwarzania (${e}). Wybierz inny głos w „Głosy i języki”, spróbuj Chrome, Edge lub Safari albo użyj linku do Tłumacza Google.`,
+    voiceSwitched: (a, b) => `Głos „${a}” nie zadziałał, więc teraz czyta „${b}”. Możesz to zmienić w „Głosy i języki”.`,
+    silent: "Nic się nie odtworzyło. W aplikacji Claude czytanie bywa zablokowane: otwórz link w Chrome lub Safari. Sprawdź też głośność i tryb cichy.",
+    noneOn: "Włącz przynajmniej jeden język czytania w Ustawieniach.",
+    quizTitle: "Quiz pisowni", quizIntro: "Usłyszysz słowo z wczytanego pliku. Wybierz poprawną pisownię. Złe odpowiedzi różnią się jedną literą, np. ㅐ/ㅔ, ㅓ/ㅗ albo końcówką pod sylabą.",
+    questions: "Pytań", wordsFrom: "Słowa z", wholeFile: "całego pliku", selLines: "zaznaczonych linii", startQuiz: "Zacznij quiz",
+    available: n => `Dostępnych słów: ${n}`, noSelUsed: " (nic nie zaznaczono, użyję całego pliku)", noWords: "W tym tekście nie ma koreańskich słów do quizu.",
+    qNum: "Pytanie", score: "Wynik", qPrompt: "Posłuchaj i wybierz poprawną pisownię", again: "🔊 Posłuchaj jeszcze raz", next: "Dalej →", seeResult: "Zobacz wynik", quit: "Zakończ",
+    right: w => `Dobrze! ${w}`, wrong: w => `Poprawnie: ${w}`, perfect: "Bezbłędnie! 완벽해요!", good: "Dobra robota! 잘했어요!", keep: "Ćwicz dalej, 화이팅!",
+    review: "Do powtórki:", retry: n => `Powtórz błędy (${n})`, newQuiz: "Nowy quiz",
+    lang_ko: "Koreański", lang_en: "Angielski", lang_pl: "Polski",
+  },
+  ko: {
+    original: "원본", origHint: "파일 원래 모습이에요. ▶를 누르면 그 쪽을 들을 수 있어요. 한국어 단어를 두 번 누르면 문장이 가려져요.", playPage: "▶ 이 쪽 재생", origNone: "이 텍스트는 원본을 볼 수 없어요. 파일을 다시 불러오세요.", origLoading: "페이지를 보여 주는 중…",
+    hideHint: "흐린 단어를 누르면 보여요. 문장의 나머지 부분을 누르면 들을 수 있어요.",
+    installVoice: "📥 휴대폰에서 음성 다운로드",
+    exactHL: "🎯 정확한 강조",
+    coverMode: "✏️ 가리기", coverAll: "한국어 모두 가리기", uncoverAll: "모두 보이기", coverHint: "한국어 단어를 누르거나 손가락으로 쓸어서 가리세요. 단어를 두 번 빠르게 누르면 문장 전체가 가려져요. 가린 단어를 누르면 다시 보이고 들려요.",
+    library: "수업", sampleName: "예시: 인사하기", delConfirm: "삭제할까요?", practice: "연습",
+    segQuiz: "맞춤법", segDict: "받아쓰기", segSpeak: "말하기",
+    dictTitle: "받아쓰기", dictIntro: "문장을 듣고 한국어로 써 보세요. 휴대폰에 한국어 키보드가 필요해요 (예: Gboard → 언어 → 한국어).",
+    sentences: "문장 수", sentFrom: "문장 출처", startDict: "받아쓰기 시작", dSent: "문장", slow: "🐢 천천히", hintWords: "💡 힌트", meaning: "🇵🇱 뜻",
+    typeHere: "들은 문장을 쓰세요…", check: "확인", dScore: n => `${n}% 정답`, yourAns: "내 답", correctAns: "정답",
+    noSent: "이 수업에는 한국어 문장이 없어요.", avgScore: n => `평균 ${n}%`, sentAvail: n => `사용할 수 있는 문장: ${n}개`,
+    speakIntro: "원어민 발음을 듣고, 녹음하고, 비교해 보세요.", lector: "▶ 원어민", rec: "🎙 녹음", mine: "▶ 내 녹음", compare: "🔁 비교",
+    micErr: "여기서는 마이크를 쓸 수 없어요. 브라우저가 물으면 허용하세요. Claude 미리보기에서는 녹음이 안 돼요. Chrome이나 Safari에서 KWS.html을 열거나 Android 앱을 쓰세요.",
+    recording: n => `녹음 중… ${n}초`, noRec: "먼저 녹음하세요.", recDone: "녹음했어요. ▶ 내 녹음이나 🔁 비교를 누르세요.",
+    showCtrl: "▴ 속도와 옵션", hideCtrl: "▾ 접기",
+    otherLangs: n => `이 휴대폰의 다른 언어 (${n})`, voicesN: n => `음성 ${n}개`, guideTitle: "음성 추가 방법 (예: 한국어)", sameForOthers: "다른 언어도 똑같이 추가해요. 한국어 대신 그 언어를 고르세요.",
+    lessonGone: "휴대폰 저장소에서 이 수업을 읽지 못했어요. 파일을 다시 불러오세요.",
+    koVoice: "한국어 음성", trLangT: "번역 언어", trLangHint: "수업 문장을 이 언어로 번역해요. Claude 앱에서는 Claude가 수업 전체를 번역하고, 다른 곳에서는 듣는 중에 Google 번역 링크를 쓰세요.",
+    trChip: n => `🌐 번역 · ${n}`, trAsk: n => `이 수업에는 아직 ${n} 번역이 없어요.`, trBtn: "🌐 수업 번역하기", trWorking: (a, b) => `번역 중… ${a} / ${b}`, trDone: n => `번역했어요${n ? " (" + n + ")" : ""}. 기계 번역은 틀릴 수 있어요. ✏️를 눌러 고칠 수 있어요.`,
+    trOnline: "브라우저가 기기에서 번역할 수 없으면 문장이 Google 번역이나 MyMemory로 보내져요.",
+    trEdit: "번역 고치기", save: "저장", cancel: "취소",
+    trFileHint: "이 수업의 번역을 파일로 저장하고 다른 기기에서 불러올 수 있어요.", trExport: "⬇ 번역 저장", trImportBtn: "⬆ 번역 불러오기",
+    trNothing: "이 수업에는 아직 저장할 번역이 없어요.", trExported: n => `번역 ${n}개를 저장했어요.`, trImported: (n, l) => `번역 ${n}개를 불러왔어요 (${l}).`, trBadFile: "KWS 번역 파일이 아니에요.",
+    dueOnly: "복습할 것", noDue: " 지금은 복습할 게 없어요. 나중에 다시 오세요.",
+    progLine: (wm, wn, sd, sn, avg, due) => `진도: 단어 ${wm}/${wn}개 익힘 · 받아쓰기 ${sd}/${sn}문장${avg != null ? ` (평균 ${avg}%)` : ""} · 복습할 것 ${due}개`,
+    trFail: "번역하지 못했어요. 인터넷 연결을 확인하고 다시 해 보거나 ✏️를 눌러 직접 써 보세요.", trDenied: "여기서는 Claude가 번역할 수 없어요. 다음에 페이지를 열 때 허용할 수 있어요.",
+    noLessons: "수업이 없어요: 파일을 불러오세요",
+    noKoVoiceT: "이 브라우저에는 한국어 음성이 없어서 소리가 나지 않아요.", noKoVoiceD: "컴퓨터에서는 Chrome과 Edge에 한국어 음성이 있어요(Brave, Firefox, Opera는 보통 없어요). 또는 Windows나 macOS에 한국어 음성을 설치하세요(설정에 방법이 있어요).",
+    winSteps: l => [`<b>설정 → 시간 및 언어 → 음성</b>을 여세요.`, `<b>음성 관리</b>에서 <b>음성 추가</b>를 눌러 <b>${l}</b>를 추가하세요.`, `브라우저를 다시 시작하고 KWS를 여세요.`],
+    macSteps: l => [`<b>시스템 설정 → 손쉬운 사용 → 콘텐츠 말하기</b>를 여세요.`, `<b>시스템 음성</b> 옆 <b>음성 관리…</b>에서 <b>${l}</b> 음성(예: 유나)을 다운로드하세요.`, `브라우저를 다시 시작하고 KWS를 여세요.`],
+    welcome: "아직 수업이 없어요. 위의 📄 파일 불러오기를 눌러 수업 PDF, Word 또는 텍스트 파일을 고르세요.",
+    settings: "설정", done: "완료", tagline: "수업 파일을 불러오고, 문장을 눌러서 들어 보세요.",
+    loadFile: "파일 불러오기", orPaste: "또는 텍스트 붙여넣기", pastePh: "여기에 텍스트를 붙여넣으세요…", usePaste: "붙여넣은 텍스트 사용",
+    reading: "읽기:", voiceSettings: "음성과 언어", listen: "듣기", quiz: "맞춤법 퀴즈",
+    onlyKo: "한국어 문장만", hideKo: "한국어 숨기기 (연습)", clearSel: "선택 해제",
+    lines: n => `${n}줄`, loading: f => `${f} 불러오는 중…`, loadFail: m => `파일을 불러오지 못했어요: ${m}`,
+    pdfFail: "PDF 리더를 불러오지 못했어요. 인터넷을 확인하고 새로고침하세요.", docxFail: "Word 리더를 불러오지 못했어요. 새로고침하세요.",
+    pasted: "붙여넣은 텍스트", page: n => `${n}쪽`, pick: "선택",
+    empty: "읽을 텍스트가 없어요. PDF가 이미지(스캔)로만 되어 있으면 텍스트를 꺼낼 수 없어요. 텍스트를 직접 붙여넣으세요.",
+    cantHear: "소리가 안 들리나요?", openGT: "Google 번역에서 이 문장 열기 ↗",
+    playSel: n => `▶ 선택한 문장 재생${n ? ` (${n})` : ""}`, playAll: "▶ 전체", stop: "■ 정지", pickFirst: "먼저 ○로 문장을 선택하세요",
+    speed: "속도", sp1: "아주 느리게", sp2: "느리게", sp3: "차분하게", sp4: "조금 느리게", sp5: "보통", wordByWord: "단어씩", loop: "반복",
+    uiLang: "앱 언어", readLangs: "읽기 언어",
+    readLangsHint: "앱이 글자(한국어, 일본어, 러시아어…)나 단어(영어, 폴란드어, 독일어…)로 언어를 알아보고 그 언어의 음성으로 읽어요. 듣고 싶은 언어를 켜세요.",
+    test: "🔊 테스트", voice: "음성", best: "★ 추천", voiceOk: n => `준비됨: ${n}`, voiceNo: "이 휴대폰에 음성이 없어요", voiceWait: "음성 불러오는 중…",
+    howTo: "음성 설치 방법", iphone: "iPhone (Safari)", android: "Android (Chrome)",
+    iosSteps: l => [`<b>설정 → 손쉬운 사용 → 콘텐츠 말하기 → 음성</b>을 여세요.`, `<b>${l}</b>를 고르세요.`, `<b>프리미엄</b> 또는 <b>고품질</b> 음성을 다운로드하세요 (Wi-Fi 권장).`, `여기로 돌아와서 새로고침하세요.`],
+    andSteps: l => [`Play 스토어에서 <b>Google 음성 서비스</b>를 설치하거나 업데이트하세요.`, `<b>설정 → 텍스트 음성 변환 → Google → ⚙️ → 음성 데이터 설치</b>를 여세요.`, `<b>${l}</b>를 다운로드하세요.`, `여기로 돌아와서 새로고침하세요.`],
+    noSynth: "이 브라우저는 소리 내어 읽을 수 없어요. 앱이 아니라 Chrome이나 Safari에서 링크를 여세요.",
+    works: "잘 돼요!", playErr: e => `재생 오류 (${e}). '음성과 언어'에서 다른 음성을 고르거나 Chrome, Edge, Safari를 써 보거나 Google 번역 링크를 사용하세요.`,
+    voiceSwitched: (a, b) => `'${a}' 음성이 작동하지 않아 지금은 '${b}' 음성으로 읽어요. '음성과 언어'에서 바꿀 수 있어요.`,
+    silent: "아무 소리도 안 났어요. Claude 앱 안에서는 읽기가 막힐 수 있어요. Chrome이나 Safari에서 링크를 여세요. 볼륨과 무음 모드도 확인하세요.",
+    noneOn: "설정에서 읽기 언어를 하나 이상 켜세요.",
+    quizTitle: "맞춤법 퀴즈", quizIntro: "파일에 있는 단어를 듣고 맞는 철자를 고르세요. 틀린 답은 ㅐ/ㅔ, ㅓ/ㅗ, 받침처럼 한 글자만 달라요.",
+    questions: "문제 수", wordsFrom: "단어 출처", wholeFile: "파일 전체", selLines: "선택한 문장", startQuiz: "퀴즈 시작",
+    available: n => `사용할 수 있는 단어: ${n}개`, noSelUsed: " (선택한 문장이 없어서 파일 전체를 써요)", noWords: "이 텍스트에는 퀴즈용 한국어 단어가 없어요.",
+    qNum: "문제", score: "점수", qPrompt: "듣고 맞는 철자를 고르세요", again: "🔊 다시 듣기", next: "다음 →", seeResult: "결과 보기", quit: "끝내기",
+    right: w => `정답! ${w}`, wrong: w => `정답: ${w}`, perfect: "완벽해요!", good: "잘했어요!", keep: "계속 연습해요, 화이팅!",
+    review: "복습할 단어:", retry: n => `틀린 문제 다시 (${n})`, newQuiz: "새 퀴즈",
+    lang_ko: "한국어", lang_en: "영어", lang_pl: "폴란드어",
+  },
+};
+let ui = store.get("ui", "en");
+const t = (k, ...a) => { const v = (TX[ui] && TX[ui][k]) ?? TX.en[k]; return typeof v === "function" ? v(...a) : v; };
+// language names as shown in phone settings, per interface language
+const LANGS = ["ko", "en", "pl"];
+const FLAG = { ko: "🇰🇷", en: "🇬🇧", pl: "🇵🇱" };
+const BCP = { ko: "ko-KR", en: "en-US", pl: "pl-PL" };
+const OSNAME = { en: { ko: "Korean", en: "English", pl: "Polish" }, pl: { ko: "Koreański", en: "Angielski", pl: "Polski" }, ko: { ko: "한국어", en: "영어", pl: "폴란드어" } };
+
+function applyUI() {
+  document.documentElement.lang = ui;
+  document.querySelectorAll("[data-t]").forEach(el => { el.textContent = t(el.dataset.t); });
+  $("paste").placeholder = t("pastePh");
+  $("openSet").setAttribute("aria-label", t("settings")); $("openSet").title = t("settings");
+  document.querySelectorAll("#uiSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.l === ui));
+  showFileName(); renderPills(); renderCards(); render(); uiPlaying(playing);
+  try { renderLessons(); } catch (e) {}
+  try { setPmin(pmin); } catch (e) {}
+  origDrawn = false; if (!$("origView").hidden) renderOrig();
+  setCoverMode(coverMode);
+  if (!$("quizView").hidden) { updateInfo(); if (Q) (Q.done ? result() : showQ(true)); if (P !== "quiz") showPractice(P); }
+}
+
+/* ---------- voices (every language the phone can speak) ---------- */
+// only Korean is read aloud
+const readOn = { ko: true };
+let trLang = "pl";
+const VOICE = {};
+let allVoices = [];
+const score = v => (/premium|enhanced|natural|neural|고품질/i.test(v.name) ? 4 : 0) + (/google/i.test(v.name) ? 3 : 0) + (v.localService === false ? 1 : 0);
+const baseLang = v => String(v.lang || "").replace("_", "-").toLowerCase().split("-")[0];
+const voicesFor = l => allVoices.filter(v => baseLang(v) === l).sort((x, y) => score(y) - score(x));
+const enabledLangs = () => Object.keys(readOn).filter(l => readOn[l]);
+const LNAMES = {"af": {"en": "Afrikaans", "pl": "Afrikaans", "ko": "아프리칸스어"}, "am": {"en": "Amharic", "pl": "Amharski", "ko": "암하라어"}, "ar": {"en": "Arabic", "pl": "Arabski", "ko": "아랍어"}, "az": {"en": "Azerbaijani", "pl": "Azerski", "ko": "아제르바이잔어"}, "be": {"en": "Belarusian", "pl": "Białoruski", "ko": "벨라루스어"}, "bg": {"en": "Bulgarian", "pl": "Bułgarski", "ko": "불가리아어"}, "bn": {"en": "Bengali", "pl": "Bengalski", "ko": "벵골어"}, "bs": {"en": "Bosnian", "pl": "Bośniacki", "ko": "보스니아어"}, "ca": {"en": "Catalan", "pl": "Kataloński", "ko": "카탈로니아어"}, "cs": {"en": "Czech", "pl": "Czeski", "ko": "체코어"}, "cy": {"en": "Welsh", "pl": "Walijski", "ko": "웨일스어"}, "da": {"en": "Danish", "pl": "Duński", "ko": "덴마크어"}, "de": {"en": "German", "pl": "Niemiecki", "ko": "독일어"}, "el": {"en": "Greek", "pl": "Grecki", "ko": "그리스어"}, "en": {"en": "English", "pl": "Angielski", "ko": "영어"}, "es": {"en": "Spanish", "pl": "Hiszpański", "ko": "스페인어"}, "et": {"en": "Estonian", "pl": "Estoński", "ko": "에스토니아어"}, "eu": {"en": "Basque", "pl": "Baskijski", "ko": "바스크어"}, "fa": {"en": "Persian", "pl": "Perski", "ko": "페르시아어"}, "fi": {"en": "Finnish", "pl": "Fiński", "ko": "핀란드어"}, "fil": {"en": "Filipino", "pl": "Filipiński", "ko": "필리핀어"}, "fr": {"en": "French", "pl": "Francuski", "ko": "프랑스어"}, "ga": {"en": "Irish", "pl": "Irlandzki", "ko": "아일랜드어"}, "gl": {"en": "Galician", "pl": "Galicyjski", "ko": "갈리시아어"}, "gu": {"en": "Gujarati", "pl": "Gudżarati", "ko": "구자라트어"}, "he": {"en": "Hebrew", "pl": "Hebrajski", "ko": "히브리어"}, "hi": {"en": "Hindi", "pl": "Hindi", "ko": "힌디어"}, "hr": {"en": "Croatian", "pl": "Chorwacki", "ko": "크로아티아어"}, "hu": {"en": "Hungarian", "pl": "Węgierski", "ko": "헝가리어"}, "hy": {"en": "Armenian", "pl": "Ormiański", "ko": "아르메니아어"}, "id": {"en": "Indonesian", "pl": "Indonezyjski", "ko": "인도네시아어"}, "is": {"en": "Icelandic", "pl": "Islandzki", "ko": "아이슬란드어"}, "it": {"en": "Italian", "pl": "Włoski", "ko": "이탈리아어"}, "ja": {"en": "Japanese", "pl": "Japoński", "ko": "일본어"}, "ka": {"en": "Georgian", "pl": "Gruziński", "ko": "조지아어"}, "kk": {"en": "Kazakh", "pl": "Kazachski", "ko": "카자흐어"}, "km": {"en": "Khmer", "pl": "Khmerski", "ko": "크메르어"}, "kn": {"en": "Kannada", "pl": "Kannada", "ko": "칸나다어"}, "ko": {"en": "Korean", "pl": "Koreański", "ko": "한국어"}, "lo": {"en": "Lao", "pl": "Laotański", "ko": "라오어"}, "lt": {"en": "Lithuanian", "pl": "Litewski", "ko": "리투아니아어"}, "lv": {"en": "Latvian", "pl": "Łotewski", "ko": "라트비아어"}, "mk": {"en": "Macedonian", "pl": "Macedoński", "ko": "마케도니아어"}, "ml": {"en": "Malayalam", "pl": "Malajalam", "ko": "말라얄람어"}, "mn": {"en": "Mongolian", "pl": "Mongolski", "ko": "몽골어"}, "mr": {"en": "Marathi", "pl": "Marathi", "ko": "마라티어"}, "ms": {"en": "Malay", "pl": "Malajski", "ko": "말레이어"}, "my": {"en": "Burmese", "pl": "Birmański", "ko": "미얀마어"}, "ne": {"en": "Nepali", "pl": "Nepalski", "ko": "네팔어"}, "nl": {"en": "Dutch", "pl": "Niderlandzki", "ko": "네덜란드어"}, "no": {"en": "Norwegian", "pl": "Norweski", "ko": "노르웨이어"}, "pa": {"en": "Punjabi", "pl": "Pendżabski", "ko": "펀자브어"}, "pl": {"en": "Polish", "pl": "Polski", "ko": "폴란드어"}, "pt": {"en": "Portuguese", "pl": "Portugalski", "ko": "포르투갈어"}, "ro": {"en": "Romanian", "pl": "Rumuński", "ko": "루마니아어"}, "ru": {"en": "Russian", "pl": "Rosyjski", "ko": "러시아어"}, "si": {"en": "Sinhala", "pl": "Syngaleski", "ko": "싱할라어"}, "sk": {"en": "Slovak", "pl": "Słowacki", "ko": "슬로바키아어"}, "sl": {"en": "Slovenian", "pl": "Słoweński", "ko": "슬로베니아어"}, "sq": {"en": "Albanian", "pl": "Albański", "ko": "알바니아어"}, "sr": {"en": "Serbian", "pl": "Serbski", "ko": "세르비아어"}, "sv": {"en": "Swedish", "pl": "Szwedzki", "ko": "스웨덴어"}, "sw": {"en": "Swahili", "pl": "Suahili", "ko": "스와힐리어"}, "ta": {"en": "Tamil", "pl": "Tamilski", "ko": "타밀어"}, "te": {"en": "Telugu", "pl": "Telugu", "ko": "텔루구어"}, "th": {"en": "Thai", "pl": "Tajski", "ko": "태국어"}, "tr": {"en": "Turkish", "pl": "Turecki", "ko": "튀르키예어"}, "uk": {"en": "Ukrainian", "pl": "Ukraiński", "ko": "우크라이나어"}, "ur": {"en": "Urdu", "pl": "Urdu", "ko": "우르두어"}, "uz": {"en": "Uzbek", "pl": "Uzbecki", "ko": "우즈베크어"}, "vi": {"en": "Vietnamese", "pl": "Wietnamski", "ko": "베트남어"}, "zh-CN": {"en": "Chinese (simplified)", "pl": "Chiński (uproszczony)", "ko": "중국어(간체)"}, "zh-TW": {"en": "Chinese (traditional)", "pl": "Chiński (tradycyjny)", "ko": "중국어(번체)"}};
+function langName(l, inLang) {
+  const known = LNAMES[l]; if (known && known[inLang || ui]) return known[inLang || ui];
+  try { const n = new Intl.DisplayNames([inLang || ui], { type: "language" }).of(l); return n ? n.charAt(0).toLocaleUpperCase(inLang || ui) + n.slice(1) : l; } catch (e) { return l; }
+}
+function loadVoices() {
+  if (!synth) return renderPills();
+  allVoices = synth.getVoices();
+  const langs = new Set([...LANGS, ...Object.keys(readOn), ...allVoices.map(baseLang)]);
+  for (const l of langs) {
+    const vs = voicesFor(l), want = store.get("voice-" + l, "");
+    VOICE[l] = vs.find(v => v.name === want) || vs[0] || null;
+  }
+  renderPills(); if (!$("sheet").hidden) renderCards();
+}
+if (synth) { loadVoices(); synth.onvoiceschanged = loadVoices; setTimeout(loadVoices, 800); setTimeout(loadVoices, 2500); }
+
+function tag(l) { return FLAG[l] || `<span class="lcode">${esc(l.toUpperCase())}</span>`; }
+function renderVWarn() {
+  const none = !synth || (allVoices.length > 0 && !VOICE.ko);
+  $("vWarn").hidden = !none;
+  if (none) $("vWarn").innerHTML = `<b>${esc(synth ? t("noKoVoiceT") : t("noSynth"))}</b>${synth ? `<span>${t("noKoVoiceD")}</span><button class="btn ghost" id="vWarnSet">${t("voiceSettings")}</button>` : ""}`;
+}
+function renderPills() {
+  try { renderVWarn(); } catch (e) {}
+  if (!synth) { $("pills").innerHTML = ""; setStatus("bad", t("noSynth")); return; }
+  const on = enabledLangs();
+  $("pills").innerHTML = on.map(l => `<span class="vpill ${VOICE[l] ? "ok" : allVoices.length ? "no" : "off"}">${tag(l)} ${esc(langName(l))} ${VOICE[l] ? "✓" : allVoices.length ? "✗" : "…"}</span>`).join("")
+    + ` <span class="vpill">🌐 → ${esc(langName(trLang))}</span>`;
+}
+function setStatus(kind, msg) { $("status").hidden = !msg; $("status").className = "status " + kind; $("statusText").textContent = msg || ""; }
+
+function langCard(l) {
+  const vs = voicesFor(l), v = VOICE[l];
+  const st = v ? `<span class="vpill ok">✓ ${t("voiceOk", esc(v.name))}</span>` : allVoices.length ? `<span class="vpill no">✗ ${t("voiceNo")}</span>` : `<span class="vpill off">${t("voiceWait")}</span>`;
+  return `<div class="lang" data-l="${l}">
+    <div class="lang-h"><label><input type="checkbox" data-on="${l}" ${readOn[l] ? "checked" : ""}> ${tag(l)} ${esc(langName(l))}</label><button class="btn ghost" data-test="${l}">${t("test")}</button></div>
+    ${st}
+    ${vs.length ? `<label class="ctrl" style="flex-direction:column;align-items:stretch;gap:4px"><span class="lbl">${t("voice")}</span><select data-vs="${l}">${vs.map((x, i) => `<option value="${esc(x.name)}" ${v && x.name === v.name ? "selected" : ""}>${esc(x.name)}${i === 0 && vs.length > 1 ? " " + t("best") : ""}</option>`).join("")}</select></label>` : ""}
+  </div>`;
+}
+function renderCards() {
+  const koName = OSNAME[ui].ko;
+  $("langCards").innerHTML = langCard("ko").replace(/<input type="checkbox"[^>]*>/, "")
+    + `<details class="guide" ${VOICE.ko ? "" : "open"}><summary>${t("guideTitle")}</summary>
+        <div class="os">${t("iphone")}</div><ol class="steps">${t("iosSteps", koName).map(x => `<li>${x}</li>`).join("")}</ol>
+        <div class="os">${t("android")}</div><ol class="steps">${t("andSteps", koName).map(x => `<li>${x}</li>`).join("")}</ol>
+        <div class="os">Windows</div><ol class="steps">${t("winSteps", koName).map(x => `<li>${x}</li>`).join("")}</ol>
+        <div class="os">Mac</div><ol class="steps">${t("macSteps", koName).map(x => `<li>${x}</li>`).join("")}</ol>
+        ${window.AndroidTTS ? `<button class="btn ghost" data-install="1" style="margin-top:8px">${t("installVoice")}</button>` : ""}
+      </details>`;
+  renderTrSel();
+}
+function renderCardsAll() {
+  const main = [...new Set([...LANGS, ...enabledLangs()])];
+  const others = [...new Set(allVoices.map(baseLang))].filter(l => l && !main.includes(l))
+    .sort((a, b) => langName(a).localeCompare(langName(b), ui));
+  const koName = OSNAME[ui].ko;
+  $("langCards").innerHTML = main.map(langCard).join("")
+    + (others.length ? `<details class="others"><summary>${t("otherLangs", others.length)}</summary>
+        ${others.map(l => `<label class="lrow"><input type="checkbox" data-on="${l}"> <span class="lname">${esc(langName(l))}</span> <span class="lcode">${esc(l.toUpperCase())}</span> <span class="lcnt">${t("voicesN", voicesFor(l).length)}</span></label>`).join("")}
+      </details>` : (allVoices.length ? "" : `<p class="hint" style="margin:0">${t("voiceWait")}</p>`))
+    + `<details class="guide" ${VOICE.ko ? "" : "open"}><summary>${t("guideTitle")}</summary>
+        <div class="os">${t("iphone")}</div><ol class="steps">${t("iosSteps", koName).map(x => `<li>${x}</li>`).join("")}</ol>
+        <div class="os">${t("android")}</div><ol class="steps">${t("andSteps", koName).map(x => `<li>${x}</li>`).join("")}</ol>
+        <p class="hint" style="margin:8px 0 0">${t("sameForOthers")}</p>
+        ${window.AndroidTTS ? `<button class="btn ghost" data-install="1" style="margin-top:8px">${t("installVoice")}</button>` : ""}
+      </details>`;
+}
+$("langCards").addEventListener("change", e => {
+  const on = e.target.dataset.on, vs = e.target.dataset.vs;
+  if (on) {
+    renderPills();
+    if (e.target.closest(".lrow") || !LANGS.includes(on)) { const open = $("langCards").querySelector(".others")?.open; renderCards(); if (open) { const d = $("langCards").querySelector(".others"); if (d) d.open = true; } }
+  }
+  if (vs) { store.set("voice-" + vs, e.target.value); VOICE[vs] = allVoices.find(v => v.name === e.target.value) || VOICE[vs]; renderPills(); }
+});
+const TESTS = { ko: "안녕하세요. 한국어 공부를 시작해요.", en: "Hello! Let's start learning Korean.", pl: "Cześć! Zaczynamy naukę koreańskiego." };
+$("langCards").addEventListener("click", e => {
+  if (e.target.closest("[data-install]")) { try { window.AndroidTTS.installVoices(); } catch (er) {} return; }
+  const l = e.target.closest("[data-test]")?.dataset.test; if (!l || !synth) return;
+  const btn = e.target.closest("[data-test]");
+  const u = utter(TESTS[l] || `${langName(l, l)}. 1, 2, 3.`, l);
+  u.onstart = () => { btn.textContent = "✓ " + t("works"); };
+  u.onerror = ev => { btn.textContent = t("test"); setStatus("bad", t("playErr", ev.error)); };
+  speakNow(u);
+  setTimeout(() => { if (!synth.speaking && !btn.textContent.startsWith("✓")) setStatus("bad", t("silent")); }, 2500);
+});
+
+/* ---------- translation into any language ---------- */
+const TR_LANGS = ["af","am","ar","az","be","bg","bn","bs","ca","cs","cy","da","de","el","en","es","et","eu","fa","fi","fil","fr","ga","gl","gu","he","hi","hr","hu","hy","id","is","it","ja","ka","kk","km","kn","lo","lt","lv","mk","ml","mn","mr","ms","my","ne","nl","no","pa","pl","pt","ro","ru","si","sk","sl","sq","sr","sv","sw","ta","te","th","tr","uk","ur","uz","vi","zh-CN","zh-TW"];
+trLang = store.get("trLang", "pl");
+let TRC = {};                       // translations of the current lesson into trLang: line text -> translation
+const trKey = () => `tr-${curId}-${trLang}`;
+function loadTr() { TRC = store.get(trKey(), {}) || {}; }
+function getTr(text) { return TRC[text] || (trLang === "pl" && PL_TR[text]) || ""; }
+function renderTrSel() {
+  const opts = TR_LANGS.map(c => [c, langName(c)]).sort((a, b) => a[1].localeCompare(b[1], ui));
+  $("trSel").innerHTML = opts.map(([c, n]) => `<option value="${c}" ${c === trLang ? "selected" : ""}>${esc(n)}</option>`).join("");
+}
+$("trSel").onchange = () => { trLang = $("trSel").value; store.set("trLang", trLang); loadTr(); renderPills(); render(); };
+const needsTr = l => /[\p{L}]/u.test(l.text) && !getTr(l.text);
+function renderTrBar(msg) {
+  $("cTr").textContent = t("trChip", langName(trLang));
+  const missing = lines.filter(needsTr).length;
+  const show = $("cTr").getAttribute("aria-pressed") === "true" && (missing > 0 || msg);
+  $("trBar").hidden = !show;
+  if (!show) return;
+  $("trMsg").textContent = msg || t("trAsk", langName(trLang)) + (window.claude && window.claude.use ? "" : " " + t("trOnline"));
+  $("trGo").textContent = t("trBtn"); $("trGo").hidden = missing === 0 || trBusy;
+}
+let trBusy = false;
+
+/* ---------- translators: the first one that works here is used ----------
+   Claude (KWS inside the Claude app) → Chrome's built-in translator (runs on this device)
+   → Google Translate → MyMemory. Each takes a list of lines and returns their translations. */
+const trSrc = s => HANGUL.test(s) ? "ko" : "en";     // lines are Korean, or English notes around them
+const tlFor = (tl, kind) => kind === "chrome" ? ({ "zh-CN": "zh", "zh-TW": "zh-Hant" }[tl] || tl) : tl === "fil" ? "tl" : tl;
+let claudeSample = null;
+async function trClaude(list, tl) {
+  if (!claudeSample) claudeSample = window.claude && window.claude.use ? await window.claude.use("sample").catch(() => null) : null;
+  if (!claudeSample) throw new Error("no claude");
+  const out = await claudeSample.json(
+    `You translate lines of a Korean language lesson for a learner. Translate each input line into ${langName(tl, "en")} (${tl}). ` +
+    `Lines can mix Korean and English; translate the meaning naturally and keep it short. Keep speaker names (like 수빈:) as names written in the target language's script, keep blanks like ____ and arrows (→) as they are. ` +
+    `Reply with only a JSON array of strings: exactly ${list.length} items, the same order as the input.\n\nInput JSON array:\n` + JSON.stringify(list),
+    { modelTier: "default", cache: { gcTime: 86400000 } });
+  if (!Array.isArray(out)) throw new Error("bad reply");
+  return list.map((_, k) => typeof out[k] === "string" ? out[k] : "");
+}
+const chromeTr = {};
+function chromeGet(src, tl) {
+  const k = src + ">" + tl;
+  if (!chromeTr[k]) chromeTr[k] = (async () => {
+    if ((await Translator.availability({ sourceLanguage: src, targetLanguage: tl })) === "unavailable") throw new Error("unavailable");
+    return Translator.create({ sourceLanguage: src, targetLanguage: tl });
+  })().catch(e => { delete chromeTr[k]; throw e; });
+  return chromeTr[k];
+}
+async function trChrome(list, tl) {
+  if (!("Translator" in self)) throw new Error("no chrome translator");
+  const to = tlFor(tl, "chrome"), out = [];
+  for (const s of list) { const src = trSrc(s); out.push(src === to ? s : await (await chromeGet(src, to)).translate(s)); }
+  return out;
+}
+async function trGoogle(list, tl) {
+  const one = async q => {
+    const r = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${tlFor(tl)}&dt=t&q=` + encodeURIComponent(q));
+    if (!r.ok) throw new Error("google " + r.status);
+    const d = await r.json();
+    return (d[0] || []).map(x => x[0] || "").join("");
+  };
+  // several lines per request (kept short enough for a URL); if the line breaks get lost, ask line by line
+  const out = [];
+  for (let i = 0; i < list.length;) {
+    const part = [list[i++]];
+    while (i < list.length && encodeURIComponent([...part, list[i]].join("\n")).length < 5000) part.push(list[i++]);
+    const got = part.length > 1 ? (await one(part.join("\n"))).split("\n") : [];
+    if (got.length === part.length) out.push(...got.map(s => s.trim()));
+    else for (const s of part) out.push((await one(s)).trim());
+  }
+  return out;
+}
+async function trMyMemory(list, tl) {
+  const to = tlFor(tl), out = [];
+  for (const s of list) {
+    const src = trSrc(s);
+    if (src === to) { out.push(s); continue; }
+    const r = await fetch(`https://api.mymemory.translated.net/get?langpair=${src}%7C${to}&q=` + encodeURIComponent(s.slice(0, 450)));
+    const d = await r.json();
+    if (!r.ok || d.quotaFinished || +d.responseStatus !== 200) throw new Error("mymemory " + d.responseStatus);
+    out.push(String(d.responseData.translatedText || ""));
+  }
+  return out;
+}
+const TRANSLATORS = [["claude", trClaude], ["chrome", trChrome], ["google", trGoogle], ["mymemory", trMyMemory]];
+let trWorks = null;          // the translator that worked last time is tried first
+async function translateLines(list, tl) {
+  const order = trWorks ? TRANSLATORS.slice().sort((a, b) => (b[0] === trWorks) - (a[0] === trWorks)) : TRANSLATORS;
+  let denied = false;
+  for (const [name, fn] of order) {
+    try {
+      const out = await fn(list, tl);
+      if (out.some(x => x && x.trim())) { trWorks = name; return out; }
+    } catch (e) {
+      if (e && ["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"].includes(e.code)) denied = true;
+    }
+  }
+  const err = new Error("no translator worked"); err.denied = denied; throw err;
+}
+const TR_NAMES = { claude: "Claude", chrome: "Chrome", google: "Google Translate", mymemory: "MyMemory" };
+
+$("trGo").onclick = async () => {
+  if (trBusy) return;
+  const todo = [...new Set(lines.filter(needsTr).map(l => l.text))];
+  const batches = []; let cur = [], size = 0;
+  for (const x of todo) { if (cur.length && (cur.length >= 45 || size + x.length > 3500)) { batches.push(cur); cur = []; size = 0; } cur.push(x); size += x.length; }
+  if (cur.length) batches.push(cur);
+  const key = trKey(), lessonAt = curId, tl = trLang;
+  trBusy = true; $("trGo").hidden = true;
+  try {
+    for (let b = 0; b < batches.length; b++) {
+      $("trMsg").textContent = t("trWorking", b + 1, batches.length);
+      const out = await translateLines(batches[b], tl);
+      if (lessonAt !== curId || tl !== trLang) return;
+      batches[b].forEach((src, k) => { if (typeof out[k] === "string" && out[k].trim()) TRC[src] = out[k].trim(); });
+      store.set(key, TRC);
+      render();
+    }
+    renderTrBar(t("trDone", TR_NAMES[trWorks] || "")); setTimeout(() => renderTrBar(), 3500);
+  } catch (e) {
+    renderTrBar(e && e.denied && !trWorks ? t("trDenied") : t("trFail"));
+  } finally { trBusy = false; if (!$("trBar").hidden && lines.some(needsTr)) $("trGo").hidden = false; }
+};
+
+/* ---------- translations to / from a file (translate once, use on another device) ---------- */
+function trFileMsg(m) { $("trFileMsg").hidden = !m; $("trFileMsg").textContent = m || ""; }
+$("trExport").onclick = () => {
+  const items = {}; for (const l of lines) { const v = getTr(l.text); if (v) items[l.text] = v; }
+  const n = Object.keys(items).length;
+  if (!n) return trFileMsg(t("trNothing"));
+  const name = (curId === SAMPLE_ID ? t("sampleName") : lib.find(l => l.id === curId)?.name || "lesson").replace(/\.[^.]+$/, "").replace(/[\\/:*?"<>|]+/g, "_");
+  const blob = new Blob([JSON.stringify({ kws: "translations", lesson: name, lang: trLang, items }, null, 1)], { type: "application/json" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${name} - ${trLang}.json`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  trFileMsg(t("trExported", n));
+};
+$("trImport").onchange = async () => {
+  const f = $("trImport").files[0]; $("trImport").value = ""; if (!f) return;
+  try {
+    const d = JSON.parse(await f.text());
+    if (!d || d.kws !== "translations" || typeof d.items !== "object") throw new Error("format");
+    const lang = TR_LANGS.includes(d.lang) ? d.lang : trLang, key = `tr-${curId}-${lang}`;
+    const into = lang === trLang ? TRC : (store.get(key, {}) || {});
+    const here = new Set(lines.map(l => l.text));
+    let n = 0;
+    for (const [src, v] of Object.entries(d.items)) if (here.has(src) && typeof v === "string" && v.trim()) { into[src] = v.trim(); n++; }
+    store.set(key, into);
+    if (lang !== trLang) { trLang = lang; store.set("trLang", lang); loadTr(); renderTrSel(); renderPills(); }
+    render();
+    trFileMsg(t("trImported", n, langName(lang)));
+  } catch (e) { trFileMsg(t("trBadFile")); }
+};
+
+/* ---------- editing a translation by hand ---------- */
+function editTr(row, i) {
+  if (row.querySelector(".tredit")) return;
+  stop();
+  const ed = document.createElement("div"); ed.className = "tredit";
+  ed.innerHTML = `<textarea rows="2" aria-label="${esc(t("trEdit"))}" placeholder="${esc(langName(trLang))}"></textarea>
+    <div class="row"><button class="btn" data-tr="save">${esc(t("save"))}</button><button class="btn ghost" data-tr="cancel">${esc(t("cancel"))}</button></div>`;
+  ed.querySelector("textarea").value = getTr(lines[i].text);
+  row.appendChild(ed); ed.querySelector("textarea").focus();
+}
+function saveTr(row, i) {
+  const v = row.querySelector(".tredit textarea").value.trim(), text = lines[i].text;
+  if (v) TRC[text] = v; else delete TRC[text];
+  store.set(trKey(), TRC);
+  render();
+}
+
+/* ---------- language detection ---------- */
+const HANGUL = /[가-힣ㄱ-ㆎ]/;
+// a Korean run ends at Hangul or sentence punctuation, so brackets, quotes and dashes stay in plain text style
+const RUN = /([가-힣ㄱ-ㆎ](?:[가-힣ㄱ-ㆎ\d.,!?…·:;]|\s+(?=[가-힣ㄱ-ㆎ\d]))*)/g;
+const SCRIPTS = [
+  ["ko", /[가-힣ㄱ-ㆎᄀ-ᇿ]/], ["cjk", /[぀-ヿ一-鿿㐀-䶿]/],
+  ["cyr", /[Ѐ-ӿ]/], ["el", /[Ͱ-Ͽ]/], ["ar", /[؀-ۿ]/], ["he", /[֐-׿]/],
+  ["th", /[฀-๿]/], ["deva", /[ऀ-ॿ]/], ["lat", /[A-Za-zÀ-ɏḀ-ỿ]/],
+];
+function scriptOf(ch) { for (const [k, re] of SCRIPTS) if (re.test(ch)) return k; return "x"; }
+const firstOn = list => list.find(l => readOn[l]) || null;
+const STOP = {
+  en: "the and is are you to of in it this that for with what do be have not a an i my your", pl: "i w z na się nie jest to że do jak co czy ale dla po od tak już jestem mam są bardzo dziś jutro ten ta tylko",
+  de: "der die das und ist nicht ich du sie er es ein eine zu mit auf für den dem von wir ihr sind", fr: "le la les et est un une des je tu il elle nous vous ne pas que qui dans pour avec sur du au",
+  es: "el la los las y es un una de que en no por con para se lo como más pero yo", it: "il lo la gli le e è un una di che non per con sono io tu ma come del della",
+  pt: "o a os as e é um uma de que não por com para se eu você mas do da em", nl: "de het een en is van ik je niet dat in op met voor zijn wat",
+  sv: "och är att det en ett jag du inte på med för som har", cs: "a je to že se na v ne jsem jak co ale pro s z",
+  tr: "ve bir bu da de ne için ile çok ben sen değil var mı", vi: "là và của không có tôi bạn những một các này cho được", id: "dan yang di ini itu saya kamu tidak ada dengan untuk apa",
+};
+const STOPSET = Object.fromEntries(Object.entries(STOP).map(([k, v]) => [k, new Set(v.split(" "))]));
+const ACCENT = { pl: /[ąćęłńśźż]/g, de: /[äöüß]/g, fr: /[çàâèêëîïôùûœ]/g, es: /[ñ¿¡]/g, pt: /[ãõ]/g, cs: /[ěščřžůťď]/g, tr: /[ğış]/g, vi: /[ăđơư]/g, sv: /[å]/g, ro: /[șț]/g, hu: /[őű]/g };
+const NONLATIN = new Set(["ko", "ja", "zh", "ru", "uk", "bg", "sr", "be", "mk", "kk", "el", "ar", "fa", "ur", "he", "iw", "th", "hi", "mr", "ne", "bn", "ta", "te", "gu", "kn", "ml", "pa", "si", "my", "km", "lo", "ka", "hy", "am", "yue"]);
+function latinLang(s) {
+  const cands = enabledLangs().filter(l => !NONLATIN.has(l));
+  if (cands.length <= 1) return cands[0] || null;
+  const low = s.toLowerCase(), words = low.match(/\p{L}+/gu) || [];
+  let best = null, bestScore = 0;
+  for (const l of cands) {
+    let sc = 0;
+    if (STOPSET[l]) for (const w of words) if (STOPSET[l].has(w)) sc++;
+    if (ACCENT[l]) sc += 2 * (low.match(ACCENT[l]) || []).length;
+    if (sc > bestScore) { best = l; bestScore = sc; }
+  }
+  return best || (readOn.en ? "en" : cands[0]);
+}
+function pickLang(cls, text) {
+  if (cls === "ko") return readOn.ko ? "ko" : null;
+  if (cls === "cjk") return /[぀-ヿ]/.test(text) ? (readOn.ja ? "ja" : null) : firstOn(["zh", "yue", "ja"]);
+  if (cls === "cyr") return /[ієїґ]/i.test(text) && readOn.uk ? "uk" : firstOn(["ru", "uk", "bg", "sr", "be", "mk", "kk"]);
+  if (cls === "el") return readOn.el ? "el" : null;
+  if (cls === "ar") return /[پچژگ]/.test(text) && readOn.fa ? "fa" : firstOn(["ar", "fa", "ur"]);
+  if (cls === "he") return firstOn(["he", "iw"]);
+  if (cls === "th") return readOn.th ? "th" : null;
+  if (cls === "deva") return firstOn(["hi", "mr", "ne"]);
+  if (cls === "lat") return latinLang(text);
+  return null;
+}
+
+/* ---------- speaking ---------- */
+function chunks(text) {
+  // pieces of the line with their language and start offset, so the spoken word can be highlighted
+  const out = [];
+  const push = (from, to, lang) => {
+    if (!readOn[lang]) return;
+    const raw = text.slice(from, to), lead = raw.length - raw.trimStart().length;
+    // symbols are swapped for same-length spaces so they are not read aloud and word offsets stay aligned
+    const tx = raw.trim().replace(/[→•]/g, ",").replace(/[()\[\]{}<>"“”„'‘’«»_*#\/\\|~=+–—\-]/g, " ").replace(/(?<!\p{L})[X✗✓](?!\p{L})/gu, " ");
+    if (/[\p{L}\p{N}]/u.test(tx)) out.push({ t: tx, lang, start: from + lead });
+  };
+  // runs of one alphabet each; spaces, digits and punctuation stay with the run they are in
+  let cur = null;
+  // skip a speaker label at the start of the line ("정민:", "Reporter:") so only what is said is read
+  const lab = text.match(/^\s*[^:：.!?()]{1,15}[:：]\s*/);
+  const from0 = lab && /[\p{L}]/u.test(text.slice(lab[0].length)) ? lab[0].length : 0;
+  const close = end => { if (cur && cur.cls !== "x") { const lang = pickLang(cur.cls, text.slice(cur.from, end)); if (lang) push(cur.from, end, lang); } };
+  [...text].reduce((i, ch) => {
+    if (i < from0) return i + ch.length;
+    const cls = scriptOf(ch);
+    if (!cur) cur = { cls, from: i };
+    else if (cls !== "x" && cls !== cur.cls) { if (cur.cls === "x") cur.cls = cls; else { close(i); cur = { cls, from: i }; } }
+    return i + ch.length;
+  }, 0);
+  close(text.length);
+  return out;
+}
+function utter(text, lang) {
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = BCP[lang] || (VOICE[lang] && VOICE[lang].lang) || lang; if (VOICE[lang]) u.voice = VOICE[lang];
+  u.rate = rate;
+  return u;
+}
+// Learned speaking speed per language and tempo (seconds per "unit"; one Korean syllable = 1 unit).
+// Phones stretch slow tempos differently, so the highlight is timed from real measurements.
+// Timing model for voices that don't report word positions:
+// duration = start delay + units × seconds-per-unit, fitted per language and tempo from real playback.
+const fit = store.get("fit2", {});
+const noBoundary = {};
+function units(w, ko) {
+  if (!ko) return Math.max(1, w.replace(/[^\p{L}\p{N}]/gu, "").length * 0.3);
+  let u = 0;
+  for (const ch of w) {
+    const c = ch.charCodeAt(0);
+    if (c >= 0xAC00 && c <= 0xD7A3) u += (c - 0xAC00) % 28 ? 1.2 : 1;   // syllables with a final consonant last longer
+  }
+  if (/[,;:]$/.test(w)) u += 1.5; else if (/[.!?…]$/.test(w)) u += 2.5;
+  return u || 1;
+}
+const GAP = 0.35;
+function model(key) {
+  const f = fit[key];
+  const def = { per: 0.21 / rate, lat: 0 };
+  if (!f || f.n < 1) return def;
+  if (f.n >= 3) {
+    const d = f.n * f.sxx - f.sx * f.sx;
+    if (d > 1e-6) {
+      const per = (f.n * f.sxy - f.sx * f.sy) / d, lat = (f.sy - per * f.sx) / f.n;
+      if (per > 0.03 && per < 3) return { per, lat: Math.min(Math.max(lat, 0), 1.2) };
+    }
+  }
+  return { per: f.sy / f.sx, lat: 0 };
+}
+function learn(key, x, y) {
+  const f = fit[key] || (fit[key] = { n: 0, sx: 0, sy: 0, sxy: 0, sxx: 0 });
+  if (f.n >= 40) { for (const k in f) f[k] *= 0.9; }   // let old measurements fade slowly
+  f.n++; f.sx += x; f.sy += y; f.sxy += x * y; f.sxx += x * x;
+  store.set("fit2", fit);
+}
+function say(c, my) {
+  return new Promise(res => {
+    if (my !== token) return res();
+    const u = utter(c.t, c.lang);
+    let fin = false, timers = [], gotBoundary = false, started = false;
+    const end = () => { if (!fin) { fin = true; clearInterval(w); timers.forEach(clearTimeout); res(); } };
+    hlAt(c.start);
+    u.onboundary = e => { if (e.name && e.name !== "word") return; gotBoundary = true; timers.forEach(clearTimeout); hlAt(c.start + e.charIndex); };
+    const ko = c.lang === "ko", key = c.lang + "|" + rate;
+    const ws = [...c.t.matchAll(/\S+/g)];
+    const total = ws.reduce((a, m) => a + units(m[0], ko), 0) + GAP * Math.max(0, ws.length - 1);
+    let t0 = 0;
+    u.onstart = () => {
+      t0 = performance.now();
+      // no word events from this voice: move the highlight with the fitted timing model
+      const { per, lat } = model(key);
+      let tAcc = lat;
+      ws.forEach((m, k) => {
+        const at = k === 0 ? 0 : tAcc;
+        timers.push(setTimeout(() => { if (!gotBoundary && !fin) hlAt(c.start + m.index); }, at * 1000));
+        tAcc += (units(m[0], ko) + GAP) * per;
+      });
+    };
+    u.onend = () => {
+      if (t0 && !gotBoundary && total >= 1) {
+        const dur = (performance.now() - t0) / 1000;
+        if (dur > 0.1 && dur < 60) learn(key, total, dur);
+      }
+      if (gotBoundary) noBoundary[c.lang] = false; else if (ws.length > 1) noBoundary[c.lang] = true;
+      // some Android browsers report the end too early while the word is still playing: then wait for real silence
+      if (synth.speaking && !window.AndroidTTS) return;
+      end();
+    };
+    u.onerror = e => { if (e.error !== "interrupted" && e.error !== "canceled") setStatus("bad", t("playErr", e.error)); end(); };
+    // some Android browsers never fire onend; poll as a fallback
+    const w = setInterval(() => { if (synth.speaking) started = true; else if (started && !synth.pending) end(); }, 250);
+    setTimeout(() => { if (!started) end(); }, 4000 + c.t.length * 300);
+    speakNow(u);
+  });
+}
+const wait = ms => new Promise(r => setTimeout(r, ms));
+// resolves once the phone has really stopped talking (or after 4 s at most)
+async function idle(my) {
+  const t0 = Date.now();
+  while (synth && (synth.speaking || synth.pending) && my === token && Date.now() - t0 < 4000) await wait(60);
+}
+
+/* Chrome drops utterances spoken right after cancel() and garbage-collects them mid-speech;
+   iOS needs the first speak() inside a tap. */
+const keep = [];
+/* A voice can fail on its own ("synthesis-failed"), e.g. an online voice whose service doesn't answer.
+   Then the same text is spoken again with the next voice for that language (local voices first),
+   and that voice is used for the rest of the session. */
+const badVoices = new Set();
+const VOICE_FAIL = ["synthesis-failed", "synthesis-unavailable", "voice-unavailable", "audio-busy", "audio-hardware", "network"];
+function nextVoice(lang, failed) {
+  if (failed) badVoices.add(failed.name);
+  return voicesFor(lang).filter(v => !badVoices.has(v.name)).sort((a, b) => (b.localService === true) - (a.localService === true))[0] || null;
+}
+function withFallback(u) {
+  const onerr = u.onerror;
+  u.onerror = e => {
+    const l = baseLang(u), tries = u._tries || 0;
+    const alt = VOICE_FAIL.includes(e.error) && tries < 3 ? nextVoice(l, u.voice || VOICE[l]) : null;
+    if (!alt) return onerr && onerr.call(u, e);
+    const from = (u.voice || VOICE[l] || {}).name || "?";
+    VOICE[l] = alt; renderPills();
+    setStatus("bad", t("voiceSwitched", from, alt.name));
+    const u2 = new SpeechSynthesisUtterance(u.text);
+    u2.lang = alt.lang; u2.voice = alt; u2.rate = u.rate; u2.pitch = u.pitch; u2.volume = u.volume;
+    u2.onstart = u.onstart; u2.onend = u.onend; u2.onboundary = u.onboundary; u2.onerror = onerr; u2._tries = tries + 1;
+    keep.push(u2); synth.speak(withFallback(u2));
+  };
+  return u;
+}
+function speakNow(u) {
+  withFallback(u);
+  keep.push(u); if (keep.length > 30) keep.shift();
+  try { synth.resume(); } catch (e) {}
+  if (synth.speaking || synth.pending) { synth.cancel(); setTimeout(() => synth.speak(u), 120); }
+  else synth.speak(u);
+}
+let unlocked = false;
+document.addEventListener("pointerdown", () => {
+  if (unlocked || !synth) return; unlocked = true;
+  if (!/iPhone|iPad|iPod/.test(navigator.userAgent)) return;   // only iOS needs a first utterance inside a tap
+  const u = new SpeechSynthesisUtterance(" "); u.volume = 0; keep.push(u);
+  try { synth.speak(u); setTimeout(() => { if (!playing) synth.cancel(); }, 400); } catch (e) {}
+}, { capture: true });
+
+let token = 0, playing = false;
+function gtLink(text) {
+  $("gt").href = `https://translate.google.com/?sl=auto&tl=${trLang === "fil" ? "tl" : trLang}&op=translate&text=` + encodeURIComponent(text);
+  $("gtRow").hidden = false;
+}
+function mark(i) {
+  document.querySelectorAll(".ln.playing").forEach(e => e.classList.remove("playing"));
+  document.querySelectorAll(".w.now").forEach(x => x.classList.remove("now"));
+  if (i == null) { curRow = null; return; }
+  lastIdx = i;
+  const el = document.querySelector(`.ln[data-i="${i}"]`);
+  if (lines[i]) gtLink(lines[i].text);
+  curRow = el;
+  if (el) { el.classList.add("playing"); el.scrollIntoView({ block: "center", behavior: "smooth" }); }
+}
+async function play(idx) {
+  if (!synth) return renderPills();
+  if (!enabledLangs().length) return setStatus("bad", t("noneOn"));
+  const busy = synth.speaking || synth.pending;
+  stop(true);
+  if (busy) await wait(150);
+  const my = ++token; playing = true; uiPlaying(true);
+  do {
+    for (const i of idx) {
+      if (my !== token) return;
+      const cs = chunks(lines[i].text);
+      if (!cs.length) continue;
+      mark(i);
+      for (const c of cs) {
+        // word-by-word mode, or slow tempo on a voice without word events: one word per utterance keeps the highlight exact
+        const exact = $("words").checked || ((rate <= 0.5 || exactHL) && noBoundary[c.lang] !== false);
+        if (exact && c.t.includes(" ")) {
+          for (const m of c.t.matchAll(/\S+/g)) {
+            if (my !== token) return;
+            await say({ t: m[0], lang: c.lang, start: c.start + m.index }, my);
+            await idle(my);
+            if ($("words").checked) await wait(Math.round(650 / Math.sqrt(rate)));
+          }
+          if (cs.length > 1) await wait(Math.round(250 / rate));
+        } else {
+          // smooth mode: each clause is its own utterance, so timing errors can't pile up across a long sentence
+          const parts = noBoundary[c.lang] === false ? [[c.t, 0]] : [...c.t.matchAll(/[^.,!?;:…]+[.,!?;:…]*/g)].map(m => [m[0], m.index]);
+          for (const [pt, off] of parts) {
+            const lead = pt.length - pt.trimStart().length, tx = pt.trim();
+            if (/[\p{L}\p{N}]/u.test(tx)) await say({ t: tx, lang: c.lang, start: c.start + off + lead }, my);
+          }
+          if (cs.length > 1) await wait(Math.round(250 / rate));
+        }
+      }
+      await wait(450);
+    }
+    if ($("loop").checked) await wait(900);
+  } while ($("loop").checked && my === token);
+  if (my === token) stop();
+}
+function stop(silent) {
+  token++; playing = false;
+  if (synth) synth.cancel();
+  if (!silent) { mark(null); uiPlaying(false); }
+}
+function uiPlaying(on) {
+  $("playSel").textContent = on ? t("stop") : t("playSel", sel.size);
+  $("playSel").classList.toggle("stop", on);
+  $("playAll").textContent = t("playAll");
+}
+
+/* ---------- list ---------- */
+let lines = [], sel = new Set(), docName = null, curRow = null;
+function visible() { return lines.map((l, i) => i).filter(i => $("cKo").getAttribute("aria-pressed") !== "true" || HANGUL.test(lines[i].text)); }
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function words(str, base) {
+  // only the letters of a word get highlighted; brackets, arrows and other symbols around it stay plain
+  return str.replace(/\S+/g, (w, o) => {
+    const m = w.match(/^([^\p{L}\p{N}]*)(.*?)([^\p{L}\p{N}]*)$/u);
+    if (!m[2]) return esc(w);
+    const a = base + o + m[1].length;
+    return `${esc(m[1])}<span class="w" data-a="${a}" data-b="${a + m[2].length}">${esc(m[2])}</span>${esc(m[3])}`;
+  });
+}
+function fmt(tx) {
+  let out = "", last = 0;
+  tx.replace(RUN, (m, _g, i) => { out += `<span class="o">${words(tx.slice(last, i), last)}</span><span class="k" lang="ko">${words(m, i)}</span>`; last = i + m.length; });
+  return out + `<span class="o">${words(tx.slice(last), last)}</span>`;
+}
+function hlAt(pos) {
+  if (!curRow) return;
+  curRow.querySelectorAll(".w.now").forEach(x => x.classList.remove("now"));
+  const ws = [...curRow.querySelectorAll(".w")];
+  const hit = ws.find(w => pos >= +w.dataset.a && pos < +w.dataset.b) || ws.find(w => +w.dataset.a >= pos);
+  if (hit) hit.classList.add("now");
+}
+function render() {
+  const v = visible();
+  if (!v.length) { $("list").innerHTML = `<p class="empty">${lines.length ? t("empty") : t("welcome")}</p>`; renderTrBar(); return; }
+  let html = "", pg = null;
+  for (const i of v) {
+    const l = lines[i];
+    if (l.page && l.page !== pg) { pg = l.page; html += `<div class="page">${t("page", pg)}</div>`; }
+    html += `<div class="ln${sel.has(i) ? " sel" : ""}" data-i="${i}"><button class="pick" aria-label="${t("pick")}">${sel.has(i) ? "✓" : "○"}</button><button class="txt">${fmt(l.text)}${getTr(l.text) ? `<span class="trl"><span class="tag" title="${esc(langName(trLang))}">${esc(langName(trLang))}</span><span>${esc(getTr(l.text))}</span></span>` : ""}</button><button class="tre" aria-label="${esc(t("trEdit"))}" title="${esc(t("trEdit"))}">✏️</button></div>`;
+  }
+  $("list").innerHTML = html;
+  renderTrBar();
+}
+$("list").addEventListener("click", e => {
+  const row = e.target.closest(".ln"); if (!row) return;
+  const i = +row.dataset.i;
+  if (e.target.closest(".tre")) return editTr(row, i);
+  const trb = e.target.closest("[data-tr]");
+  if (trb) return trb.dataset.tr === "save" ? saveTr(row, i) : row.querySelector(".tredit").remove();
+  if (e.target.closest(".tredit")) return;
+  if (e.target.closest(".pick")) {
+    sel.has(i) ? sel.delete(i) : sel.add(i);
+    row.classList.toggle("sel", sel.has(i));
+    row.querySelector(".pick").textContent = sel.has(i) ? "✓" : "○";
+    uiPlaying(playing);
+  } else if ($("list").classList.contains("hide") && e.target.closest(".k .w:not(.shown)")) {
+    const w = e.target.closest(".w");
+    w.classList.add("shown");
+    if (synth) { stop(); speakNow(utter(w.textContent, "ko")); }
+  } else if (e.target.closest(".txt")) play([i]);
+});
+$("vWarn").addEventListener("click", e => { if (e.target.id === "vWarnSet") openSet(); });
+/* keyboard (computer): Space = play / stop from the current line, ↓ / ↑ = next / previous line */
+let lastIdx = -1;
+document.addEventListener("keydown", e => {
+  if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+  if (e.target.closest && e.target.closest("input, textarea, select, [contenteditable]")) return;
+  if (!$("viewer").hidden || !$("sheet").hidden || $("listView").hidden) return;
+  const v = visible(); if (!v.length) return;
+  if (e.key === " ") {
+    e.preventDefault();
+    if (playing) stop();
+    else if (sel.size) play([...sel].sort((a, b) => a - b));
+    else play(v.slice(Math.max(0, v.indexOf(lastIdx))));
+  } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault();
+    const p = v.indexOf(lastIdx);
+    const n = e.key === "ArrowDown" ? (p < 0 ? 0 : Math.min(v.length - 1, p + 1)) : Math.max(0, p - 1);
+    play([v[n]]);
+  }
+});
+$("list").addEventListener("pointerdown", e => e.target.closest(".ln")?.classList.add("peek"));
+["pointerup", "pointercancel", "pointerleave"].forEach(ev => $("list").addEventListener(ev, () => document.querySelectorAll(".ln.peek").forEach(x => x.classList.remove("peek")), true));
+
+let fileMsg = null;
+function showFileName() { $("fileName").textContent = fileMsg || t("lines", lines.length); }
+function setLines(arr, name) {
+  try { loadTr(); } catch (e) {}
+  covered = new Set(); textCache.clear(); D = null; S.i = 0;
+  // a quiz from the previous lesson must not carry over
+  Q = null; $("qBox").innerHTML = ""; $("qStart").hidden = false;
+  loadProg(); lastIdx = -1;
+  stop(); lines = arr; sel = new Set(); docName = name; fileMsg = null;
+  showFileName(); render(); uiPlaying(false);
+  if (!$("quizView").hidden) showPractice(P);
+}
+function fromText(txt) {
+  return txt.split(/\r?\n/).map(s => s.replace(/\s+/g, " ").trim()).filter(Boolean).map(text => ({ page: 0, text }));
+}
+
+/* ---------- file loading ---------- */
+$("fileIn").onchange = async () => {
+  const f = $("fileIn").files[0]; if (!f) return;
+  fileMsg = t("loading", f.name); showFileName();
+  try {
+    const buf = await f.arrayBuffer();
+    if (/\.pdf$/i.test(f.name) || f.type === "application/pdf") {
+      if (!window.pdfjsLib) throw new Error(t("pdfFail"));
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buf).slice(), verbosity: 0 }).promise;
+      const out = [];
+      for (let p = 1; p <= doc.numPages; p++) {
+        const tc = await (await doc.getPage(p)).getTextContent();
+        let cur = "", lastY = null, lastEnd = null;
+        const flush = () => { const x = cur.replace(/\s+/g, " ").trim(); if (x) out.push({ page: p, text: x }); cur = ""; lastEnd = null; };
+        for (const it of tc.items) {
+          const tr = it.transform;
+          const y = tr ? Math.round(tr[5]) : lastY;
+          if (lastY !== null && y !== null && Math.abs(y - lastY) > 3) flush();
+          // many PDFs leave out the space character between words and only move the next piece to the right:
+          // a horizontal gap wider than ~0.15 of the font size counts as a space
+          if (tr && it.str) {
+            const fs = Math.hypot(tr[2], tr[3]) || it.height || 10;
+            if (lastEnd !== null && tr[4] - lastEnd > fs * 0.15 && cur && !/\s$/.test(cur) && !/^\s/.test(it.str)) cur += " ";
+            lastEnd = tr[4] + (it.width || 0);
+          }
+          cur += it.str; lastY = y;
+          if (it.hasEOL) { flush(); lastY = null; }
+        }
+        flush();
+      }
+      await addLesson(f.name, out, { type: "pdf", data: new Uint8Array(buf) });
+    } else if (/\.docx$/i.test(f.name)) {
+      if (!window.mammoth) throw new Error(t("docxFail"));
+      const r = await mammoth.extractRawText({ arrayBuffer: buf });
+      let o = { type: "text", text: r.value };
+      try { const h = await mammoth.convertToHtml({ arrayBuffer: buf }); o = { type: "html", html: h.value }; } catch (e) {}
+      await addLesson(f.name, fromText(r.value), o);
+    } else {
+      const txt = new TextDecoder().decode(buf);
+      await addLesson(f.name, fromText(txt), { type: "text", text: txt });
+    }
+  } catch (err) {
+    fileMsg = t("loadFail", err.message); showFileName();
+  }
+  $("fileIn").value = "";
+};
+$("usePaste").onclick = () => {
+  const x = $("paste").value.trim(); if (!x) return;
+  const d = new Date(), name = `${t("pasted")} ${d.getDate()}.${d.getMonth() + 1} ${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`;
+  addLesson(name, fromText(x), { type: "text", text: x }); $("paste").value = "";
+};
+
+/* ---------- controls ---------- */
+$("playSel").onclick = () => {
+  if (playing) return stop();
+  const idx = [...sel].sort((a, b) => a - b);
+  if (!idx.length) { $("playSel").textContent = t("pickFirst"); setTimeout(() => uiPlaying(false), 1600); return; }
+  play(idx);
+};
+$("playAll").onclick = () => playing ? stop() : play(visible());
+let rate = store.get("rate", 0.7);
+let exactHL = store.get("exact", true);
+$("exact").checked = exactHL;
+$("exact").onchange = () => { exactHL = $("exact").checked; store.set("exact", exactHL); };
+function setRate(r) {
+  rate = r;
+  document.querySelectorAll(".sp").forEach(b => b.setAttribute("aria-pressed", parseFloat(b.dataset.r) === r));
+  store.set("rate", r);
+}
+// collapse the player to a slim bar with just the play buttons
+let pmin = store.get("pmin", false);
+function setPmin(on) {
+  pmin = on; store.set("pmin", on);
+  document.querySelector(".player").classList.toggle("min", on);
+  document.body.classList.toggle("pmin", on);
+  $("pMin").setAttribute("aria-expanded", !on);
+  $("pMinTxt").textContent = on ? t("showCtrl") : t("hideCtrl");
+  $("rateChip").textContent = rate + "×";
+}
+$("pMin").onclick = () => setPmin(!pmin);
+$("speeds").onclick = e => { const b = e.target.closest(".sp"); if (b) setRate(parseFloat(b.dataset.r)); };
+const tog = (b, f) => b.onclick = () => { b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true"); f(b.getAttribute("aria-pressed") === "true"); };
+tog($("cKo"), () => render());
+tog($("cHide"), on => {
+  $("list").classList.toggle("hide", on); $("hideHint").hidden = !on;
+  document.querySelectorAll("#list .w.shown").forEach(w => w.classList.remove("shown"));
+});
+tog($("cTr"), on => { $("list").classList.toggle("notr", !on); store.set("tr", on); renderTrBar(); });
+if (store.get("tr", true) === false) { $("cTr").setAttribute("aria-pressed", "false"); $("list").classList.add("notr"); }
+$("cClear").onclick = () => { sel.clear(); render(); uiPlaying(playing); };
+
+const openSet = () => { stop(); renderCards(); $("sheet").hidden = false; $("sheet").scrollTop = 0; $("closeSet").focus(); };
+$("openSet").onclick = openSet; $("openSet2").onclick = openSet;
+$("closeSet").onclick = () => { $("sheet").hidden = true; renderPills(); };
+$("uiSeg").onclick = e => { const b = e.target.closest("button"); if (!b) return; ui = b.dataset.l; store.set("ui", ui); try { applyUI(); } catch (e) { console.error(e); } };
+
+/* ---------- original file ---------- */
+let orig = null;   // {type: "pdf", data: Uint8Array} | {type: "html", html} | {type: "text", text}
+// IndexedDB can be blocked or hang in some browsers and app views: every call gives up after 4 s
+let idbConn = null;
+function idbOpen() {
+  if (idbConn) return idbConn;
+  idbConn = new Promise(res => {
+    try {
+      const rq = indexedDB.open("kws", 1);
+      rq.onupgradeneeded = () => rq.result.createObjectStore("f");
+      rq.onsuccess = () => res(rq.result);
+      rq.onerror = rq.onblocked = () => res(null);
+    } catch (e) { res(null); }
+    setTimeout(() => res(null), 4000);
+  }).then(db => { if (!db) idbConn = null; return db; });
+  return idbConn;
+}
+const idb = (mode, fn) => new Promise(async res => {
+  setTimeout(() => res(null), 4000);
+  const db = await idbOpen(); if (!db) return res(null);
+  try {
+    const tx = db.transaction("f", mode), r = fn(tx.objectStore("f"));
+    tx.oncomplete = () => res(r && r.result !== undefined ? r.result : true);
+    tx.onerror = tx.onabort = () => res(null);
+  } catch (e) { res(null); }
+});
+function setOrig(o) { textCache.clear(); orig = o; origDrawn = false; if (!$("origView").hidden) renderOrig(); }
+function samplePdf() {
+  if (!SAMPLE_PDF) return null;
+  const b = atob(SAMPLE_PDF), u = new Uint8Array(b.length);
+  for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i);
+  return { type: "pdf", data: u };
+}
+let origDrawn = false, drawTok = 0;
+/* ---------- covering Korean words in the original ---------- */
+let covered = new Set(), coverMode = false;
+const HWORD = /[\uAC00-\uD7A3\u3131-\u318E]+/g;
+function textPageHtml(p) {
+  return lines.filter(l => (l.page || 0) === p).map((l, li) => {
+    let out = "", last = 0;
+    l.text.replace(HWORD, (w, i) => {
+      const k = `${p}:L${li}:${i}`;
+      out += esc(l.text.slice(last, i)) + `<span class="cov t${covered.has(k) ? " on" : ""}" data-k="${k}" data-g="${p}:L${li}" data-w="${esc(w)}">${esc(w)}</span>`;
+      last = i + w.length;
+    });
+    return out + esc(l.text.slice(last));
+  }).join("\n");
+}
+const textCache = new Map(), mctx = document.createElement("canvas").getContext("2d");
+// boxes over the Korean words of a PDF page, in % of the page so they scale with any canvas size
+async function addCovers(box, page, p) {
+  let tc = textCache.get(p);
+  if (!tc) { tc = await page.getTextContent(); textCache.set(p, tc); }
+  const vp1 = page.getViewport({ scale: 1 });
+  mctx.font = "100px sans-serif";
+  const frag = document.createDocumentFragment();
+  tc.items.forEach((it, ii) => {
+    if (!it.str || !HANGUL.test(it.str) || !it.transform) return;
+    const [, , c, d, e, f] = it.transform;
+    const fs = Math.hypot(c, d) || it.height || 10;
+    const full = mctx.measureText(it.str).width || 1;
+    for (const m of it.str.matchAll(HWORD)) {
+      const f0 = mctx.measureText(it.str.slice(0, m.index)).width / full;
+      const f1 = mctx.measureText(it.str.slice(0, m.index + m[0].length)).width / full;
+      const r = vp1.convertToViewportRectangle([e + it.width * f0, f - fs * 0.24, e + it.width * f1, f + fs * 0.9]);
+      const x = Math.min(r[0], r[2]), y = Math.min(r[1], r[3]), w = Math.abs(r[2] - r[0]), h = Math.abs(r[3] - r[1]);
+      const k = `${p}:${ii}:${m.index}`;
+      const el = document.createElement("span");
+      el.className = "cov pdf" + (covered.has(k) ? " on" : "");
+      el.dataset.k = k; el.dataset.w = m[0]; el.dataset.g = `${p}:y${Math.round(f)}`;   // words on one line form a sentence group
+      el.style.cssText = `left:${(x / vp1.width) * 100}%;top:${(y / vp1.height) * 100}%;width:${(w / vp1.width) * 100}%;height:${(h / vp1.height) * 100}%`;
+      frag.appendChild(el);
+    }
+  });
+  box.appendChild(frag);
+}
+function setCover(k, on) {
+  on ? covered.add(k) : covered.delete(k);
+  document.querySelectorAll(`.cov[data-k="${k}"]`).forEach(x => x.classList.toggle("on", on));
+}
+function setCoverMode(on) {
+  coverMode = on;
+  for (const id of ["covMode", "vCov"]) $(id).setAttribute("aria-pressed", on);
+  $("orig").classList.toggle("covering", on); $("vBody").classList.toggle("covering", on);
+  $("origHint").textContent = on ? t("coverHint") : t("origHint");
+}
+let painting = null, skipClick = false, openTimer = 0;
+let lastTap = { t: 0, g: null, all: false };
+const groupKeys = g => [...new Set([...document.querySelectorAll(`.cov[data-g="${g}"]`)].map(x => x.dataset.k))];
+const groupAll = g => { const ks = groupKeys(g); return ks.length > 0 && ks.every(k => covered.has(k)); };
+function coverDown(e) {
+  const c = e.target.closest(".cov"); if (!c) return;
+  const now = performance.now(), g = c.dataset.g;
+  // quick double tap: cover the whole sentence (or uncover it if it was all covered)
+  if (g && lastTap.g === g && now - lastTap.t < 380) {
+    e.preventDefault(); skipClick = true; clearTimeout(openTimer); painting = null;
+    // double tap on a covered word uncovers the whole sentence; on an uncovered word it covers it
+    const on = !lastTap.was;
+    groupKeys(g).forEach(k => setCover(k, on));
+    if (!on && synth) {
+      stop();
+      const words = [...document.querySelectorAll(`#orig .cov[data-g="${g}"], #vBody .cov[data-g="${g}"]`)].filter((x, i, a) => a.findIndex(y => y.dataset.k === x.dataset.k) === i).map(x => x.dataset.w);
+      speakNow(utter(words.join(" "), "ko"));
+    }
+    lastTap = { t: 0, g: null, all: false };
+    return;
+  }
+  lastTap = { t: now, g, all: g ? groupAll(g) : false, was: covered.has(c.dataset.k) };
+  if (!coverMode) {
+    if (!c.classList.contains("on")) return;
+    // tap on a covered word: show it and say it
+    e.preventDefault(); skipClick = true;
+    setCover(c.dataset.k, false); c.classList.add("peekw"); setTimeout(() => c.classList.remove("peekw"), 400);
+    if (synth) { stop(); speakNow(utter(c.dataset.w, "ko")); }
+    return;
+  }
+  e.preventDefault(); skipClick = true;
+  painting = !covered.has(c.dataset.k);
+  setCover(c.dataset.k, painting);
+}
+function coverMove(e) {
+  if (painting === null) return;
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const c = el && el.closest && el.closest(".cov");
+  if (c && covered.has(c.dataset.k) !== painting) setCover(c.dataset.k, painting);
+}
+for (const root of [$("orig"), $("vBody")]) {
+  root.addEventListener("pointerdown", coverDown);
+  root.addEventListener("pointermove", coverMove);
+  root.addEventListener("click", e => { if (skipClick) { skipClick = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+}
+window.addEventListener("pointerup", () => { painting = null; });
+window.addEventListener("pointercancel", () => { painting = null; });
+$("covMode").onclick = () => setCoverMode(!coverMode);
+$("vCov").onclick = () => setCoverMode(!coverMode);
+$("covAll").onclick = () => { document.querySelectorAll(".cov").forEach(c => covered.add(c.dataset.k)); document.querySelectorAll(".cov").forEach(c => c.classList.add("on")); };
+$("covNone").onclick = () => { covered.clear(); document.querySelectorAll(".cov.on").forEach(c => c.classList.remove("on")); };
+
+function origAsText(box) {
+  // the file's own text, page by page, when the page images can't be shown
+  const pages = new Map();
+  for (const l of lines) { const k = l.page || 0; if (!pages.has(k)) pages.set(k, []); pages.get(k).push(l.text); }
+  box.innerHTML = "";
+  for (const [p, ls] of pages) {
+    const wrap = document.createElement("div"); wrap.className = "opage";
+    wrap.innerHTML = `<div class="ph"><span>${p ? t("page", p) : ""}</span>${p ? `<button class="btn ghost" data-pp="${p}">${t("playPage")}</button>` : ""}</div><div class="otext"></div>`;
+    wrap.querySelector(".otext").innerHTML = textPageHtml(p);
+    wrap.querySelector(".otext").dataset.full = p;
+    box.appendChild(wrap);
+  }
+  if (!pages.size) box.innerHTML = `<p class="empty">${lines.length ? t("empty") : t("welcome")}</p>`;
+}
+let pdfDoc = null;
+async function renderOrig() {
+  if (origDrawn) return;
+  pdfDoc = null;
+  const box = $("orig"), my = ++drawTok;
+  if (!orig) { origAsText(box); return; }
+  origDrawn = true;
+  if (orig.type === "text") { box.innerHTML = `<div class="otext"></div>`; box.firstChild.textContent = orig.text; return; }
+  if (orig.type === "html") { box.innerHTML = `<div class="otext html">${orig.html}</div>`; return; }
+  if (!window.pdfjsLib) { origAsText(box); origDrawn = false; return; }
+  box.innerHTML = `<p class="hint">${t("origLoading")}</p>`;
+  try {
+    const doc = await pdfjsLib.getDocument({ data: orig.data.slice(), verbosity: 0 }).promise;
+    pdfDoc = doc;
+    box.innerHTML = "";
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    for (let p = 1; p <= doc.numPages; p++) {
+      if (my !== drawTok) return;
+      const page = await doc.getPage(p);
+      const wrap = document.createElement("div"); wrap.className = "opage";
+      wrap.innerHTML = `<div class="ph"><span>${t("page", p)}</span>${lines.some(l => l.page === p) ? `<button class="btn ghost" data-pp="${p}">${t("playPage")}</button>` : ""}</div>`;
+      const pg = document.createElement("div"); pg.className = "pgbox"; pg.dataset.full = p;
+      const cv = document.createElement("canvas"); pg.appendChild(cv); wrap.appendChild(pg); box.appendChild(wrap);
+      const w = Math.max(280, box.clientWidth - 22);
+      const vp0 = page.getViewport({ scale: 1 }), vp = page.getViewport({ scale: (w / vp0.width) * dpr });
+      cv.width = vp.width; cv.height = vp.height;
+      await page.render({ canvasContext: cv.getContext("2d"), viewport: vp }).promise;
+      try { await addCovers(pg, page, p); } catch (er) {}
+    }
+  } catch (e) { origAsText(box); origDrawn = false; }
+}
+/* full-screen page viewer */
+const V = { p: 1, zoom: 1, tok: 0 };
+function pageList() { return pdfDoc ? Array.from({ length: pdfDoc.numPages }, (_, i) => i + 1) : [...new Set(lines.map(l => l.page || 0))]; }
+async function drawViewer() {
+  const my = ++V.tok, pages = pageList(), idx = pages.indexOf(V.p), body = $("vBody");
+  $("vTitle").textContent = (V.p ? t("page", V.p) : "") + ` · ${idx + 1} / ${pages.length}`;
+  $("vPrev").disabled = idx <= 0; $("vNext").disabled = idx >= pages.length - 1;
+  $("vZoom").textContent = Math.round(V.zoom * 100) + "%";
+  $("vPlay").textContent = t("playPage"); $("vPlay").hidden = !lines.some(l => (l.page || 0) === V.p);
+  if (pdfDoc) {
+    const page = await pdfDoc.getPage(V.p);
+    if (my !== V.tok) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const vp0 = page.getViewport({ scale: 1 });
+    const fit = Math.min(body.clientWidth / vp0.width, (body.clientHeight - 4) / vp0.height);
+    const cssScale = fit * V.zoom, vp = page.getViewport({ scale: cssScale * dpr });
+    const cv = document.createElement("canvas");
+    cv.width = vp.width; cv.height = vp.height;
+    cv.style.width = vp0.width * cssScale + "px"; cv.style.height = vp0.height * cssScale + "px";
+    await page.render({ canvasContext: cv.getContext("2d"), viewport: vp }).promise;
+    if (my !== V.tok) return;
+    const pg = document.createElement("div"); pg.className = "pgbox"; pg.appendChild(cv);
+    try { await addCovers(pg, page, V.p); } catch (er) {}
+    if (my !== V.tok) return;
+    body.innerHTML = ""; body.appendChild(pg);
+  } else {
+    body.innerHTML = `<div class="otext"></div>`;
+    body.firstChild.style.fontSize = 1.25 * V.zoom + "rem";
+    body.firstChild.innerHTML = textPageHtml(V.p);
+  }
+}
+function openViewer(p) {
+  stop(); V.p = p; V.zoom = 1;
+  $("viewer").hidden = false; document.body.style.overflow = "hidden";
+  try { $("viewer").requestFullscreen?.().catch(() => {}); } catch (e) {}
+  drawViewer();
+}
+function closeViewer() {
+  stop(); $("viewer").hidden = true; document.body.style.overflow = "";
+  try { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch (e) {}
+}
+function stepPage(d) {
+  const pages = pageList(), i = pages.indexOf(V.p) + d;
+  if (i >= 0 && i < pages.length) { stop(); V.p = pages[i]; V.zoom = 1; $("vBody").scrollTo(0, 0); drawViewer(); }
+}
+$("vClose").onclick = closeViewer;
+$("vPrev").onclick = () => stepPage(-1);
+$("vNext").onclick = () => stepPage(1);
+$("vIn").onclick = () => { V.zoom = Math.min(4, V.zoom * 1.5); drawViewer(); };
+$("vOut").onclick = () => { V.zoom = Math.max(1, V.zoom / 1.5); drawViewer(); };
+$("vPlay").onclick = () => {
+  if (playing) return stop();
+  const idx = lines.map((l, i) => (l.page || 0) === V.p ? i : -1).filter(i => i >= 0);
+  $("vPlay").textContent = t("stop"); play(idx).then(() => { $("vPlay").textContent = t("playPage"); });
+};
+window.__kwsBack = () => {
+  if (!$("viewer").hidden) { closeViewer(); return true; }
+  if (!$("sheet").hidden) { $("closeSet").click(); return true; }
+  if ($("origView").hidden) { setMode("orig"); return true; }
+  return false;
+};
+document.addEventListener("keydown", e => {
+  if ($("viewer").hidden) return;
+  if (e.key === "Escape") closeViewer();
+  if (e.key === "ArrowLeft") stepPage(-1);
+  if (e.key === "ArrowRight") stepPage(1);
+});
+// swipe left/right to change page when not zoomed
+let sx = null, sy = 0;
+$("vBody").addEventListener("touchstart", e => { if (e.touches.length === 1 && V.zoom === 1 && !coverMode && !e.target.closest(".cov")) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; } else sx = null; }, { passive: true });
+$("vBody").addEventListener("touchend", e => {
+  if (sx === null) return;
+  const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; sx = null;
+  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) stepPage(dx < 0 ? 1 : -1);
+});
+window.addEventListener("resize", () => { if (!$("viewer").hidden) drawViewer(); });
+
+$("orig").addEventListener("click", e => {
+  const full = e.target.closest("[data-full]");
+  if (full) {
+    if (coverMode) return;
+    // on a word, wait a moment: a second tap means "cover the sentence", not "open full screen"
+    if (e.target.closest(".cov")) { clearTimeout(openTimer); openTimer = setTimeout(() => openViewer(+full.dataset.full), 400); return; }
+    return openViewer(+full.dataset.full);
+  }
+  const p = e.target.closest("[data-pp]")?.dataset.pp; if (!p) return;
+  const idx = lines.map((l, i) => l.page === +p ? i : -1).filter(i => i >= 0);
+  if (playing) { stop(); return; }
+  setMode("list"); play(idx);
+});
+
+/* ---------- quiz ---------- */
+const SYL = c => c >= 0xAC00 && c <= 0xD7A3;
+const GROUPS = {
+  L: [[0, 1, 15], [3, 4, 16], [7, 8, 17], [9, 10], [12, 13, 14], [2, 5], [11, 18]],
+  V: [[1, 5], [4, 8], [13, 18], [6, 12], [3, 7], [10, 11, 15], [0, 4], [17, 13], [2, 6]],
+  T: [[0, 21, 4], [7, 19, 20, 22, 23, 25, 27], [1, 2, 24], [17, 26], [8, 9, 11], [4, 21], [16, 17]],
+};
+function alt(kind, x) {
+  const gs = GROUPS[kind].filter(g => g.includes(x));
+  if (!gs.length) return null;
+  const g = gs[Math.floor(Math.random() * gs.length)].filter(v => v !== x);
+  return g[Math.floor(Math.random() * g.length)];
+}
+function mutate(word) {
+  const chars = [...word];
+  const idx = chars.map((c, i) => SYL(c.charCodeAt(0)) ? i : -1).filter(i => i >= 0);
+  for (let tries = 0; tries < 20; tries++) {
+    const i = idx[Math.floor(Math.random() * idx.length)];
+    const code = chars[i].charCodeAt(0) - 0xAC00;
+    let L = Math.floor(code / 588), V = Math.floor((code % 588) / 28), T = code % 28;
+    const kind = ["L", "V", "T"][Math.floor(Math.random() * 3)];
+    const n = alt(kind, kind === "L" ? L : kind === "V" ? V : T);
+    if (n == null) continue;
+    if (kind === "L") L = n; else if (kind === "V") V = n; else T = n;
+    const out = chars.slice(); out[i] = String.fromCharCode(0xAC00 + (L * 21 + V) * 28 + T);
+    return out.join("");
+  }
+  return null;
+}
+function quizWords(src) {
+  const ids = src === "sel" && sel.size ? [...sel].sort((a, b) => a - b) : lines.map((_, i) => i);
+  const seen = new Map();
+  for (const i of ids) {
+    const tx = lines[i].text;
+    for (const w of tx.match(/[가-힣]+/g) || []) {
+      if (w.length < 2 || seen.has(w)) continue;
+      seen.set(w, { w, line: tx });
+    }
+  }
+  const out = [...seen.values()];
+  return src === "review" ? out.filter(x => isDue(prog.w[x.w])) : out;
+}
+
+/* ---------- progress and spaced review (per lesson, on this device) ----------
+   Leitner boxes: a right answer moves the word or sentence up a box and it comes back after
+   1, 3, 7, 14 or 30 days; a wrong answer sends it back to the start, due again right away. */
+const DAY = 864e5, BOX_DAYS = [0, 1, 3, 7, 14, 30];
+let prog = { w: {}, s: {} };
+function loadProg() { prog = (curId && store.get("prog-" + curId, null)) || { w: {}, s: {} }; }
+function saveProg() { if (curId) store.set("prog-" + curId, prog); }
+const isDue = r => !!r && r.due <= Date.now();
+function grade(kind, key, ok, score) {
+  const m = prog[kind], r = m[key] || (m[key] = { box: 0, due: 0, ok: 0, bad: 0 });
+  if (ok) { r.ok++; r.box = Math.min(r.box + 1, BOX_DAYS.length - 1); r.due = Date.now() + BOX_DAYS[r.box] * DAY; }
+  else { r.bad++; r.box = 0; r.due = Date.now(); }
+  if (score != null) r.last = score;
+  saveProg(); renderProg();
+}
+function renderProg() {
+  const ws = quizWords("all"), ss = sentences("all");
+  if (!ws.length && !ss.length) { $("progInfo").hidden = true; return; }
+  const learned = ws.filter(x => (prog.w[x.w]?.box || 0) >= 3).length;
+  const done = ss.filter(x => prog.s[x.ko] && prog.s[x.ko].last != null);
+  const avg = done.length ? Math.round(done.reduce((a, x) => a + prog.s[x.ko].last, 0) / done.length) : null;
+  const due = ws.filter(x => isDue(prog.w[x.w])).length + ss.filter(x => isDue(prog.s[x.ko])).length;
+  $("progInfo").hidden = false;
+  $("progInfo").textContent = t("progLine", learned, ws.length, done.length, ss.length, avg, due);
+}
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+function options(w, pool) {
+  const set = new Set([w]);
+  for (let k = 0; k < 40 && set.size < 4; k++) { const m = mutate(w); if (m) set.add(m); }
+  for (const p of shuffle(pool.slice())) { if (set.size >= 4) break; if (Math.abs(p.w.length - w.length) <= 1) set.add(p.w); }
+  return shuffle([...set]);
+}
+let Q = null;
+function speakWord(w) { if (synth) speakNow(utter(w, "ko")); }
+function ctxHtml(line, w) {
+  const i = line.indexOf(w);
+  return fmt(line.slice(0, i)) + '<span class="gap"></span>' + fmt(line.slice(i + w.length));
+}
+function startQuiz(ws) {
+  const pool = quizWords("all");
+  Q = { items: ws.map(x => ({ ...x, opts: options(x.w, pool) })), i: 0, score: 0, miss: [], done: false };
+  $("qStart").hidden = true; showQ();
+}
+function showQ(silent) {
+  const it = Q.items[Q.i], n = Q.items.length;
+  $("qBox").innerHTML = `<div class="qcard">
+    <div class="qbar"><span>${t("qNum")} <b>${Q.i + 1} / ${n}</b></span><span>${t("score")} <b>${Q.score}</b></span></div>
+    <div class="prog"><i style="width:${(Q.i / n) * 100}%"></i></div>
+    <div class="qhead">${t("qPrompt")}</div>
+    <div class="ctx">${ctxHtml(it.line, it.w)}</div>
+    <button class="btn ghost listen" id="qPlay">${t("again")}</button>
+    <div class="opts">${it.opts.map((o, k) => `<button class="opt" data-o="${o}" lang="ko"><span class="n">${"ABCD"[k]}</span>${o}</button>`).join("")}</div>
+    <div class="fb" id="qFb"></div>
+    <div class="row"><button class="btn" id="qNext" hidden style="flex:1">${Q.i + 1 < n ? t("next") : t("seeResult")}</button><button class="btn ghost" id="qQuit">${t("quit")}</button></div>
+  </div>`;
+  if (!silent) speakWord(it.w);
+}
+function answer(btn) {
+  const it = Q.items[Q.i], ok = btn.dataset.o === it.w;
+  grade("w", it.w, ok);
+  document.querySelectorAll(".opt").forEach(b => { b.disabled = true; if (b.dataset.o === it.w) b.classList.add("right"); });
+  if (ok) { Q.score++; $("qFb").className = "fb good"; $("qFb").textContent = t("right", it.w); }
+  else { btn.classList.add("wrong"); Q.miss.push(it); $("qFb").className = "fb bad"; $("qFb").textContent = t("wrong", it.w); }
+  document.querySelector(".ctx .gap").outerHTML = `<b style="color:var(${ok ? "--ok" : "--red"})">${it.w}</b>`;
+  speakWord(it.w);
+  $("qNext").hidden = false; $("qNext").focus();
+}
+function result() {
+  Q.done = true;
+  const n = Q.items.length, pct = Math.round((Q.score / n) * 100);
+  $("qBox").innerHTML = `<div class="qcard result">
+    <div class="big">${Q.score} / ${n}</div>
+    <div>${pct === 100 ? t("perfect") : pct >= 70 ? t("good") : t("keep")}</div>
+    ${Q.miss.length ? `<p class="hint">${t("review")}</p><div class="miss">${Q.miss.map(m => `<button lang="ko" data-say="${esc(m.w)}">🔊 ${esc(m.w)}</button>`).join("")}</div>` : ""}
+    <div class="row" style="justify-content:center">
+      ${Q.miss.length ? `<button class="btn" id="qRetry">${t("retry", Q.miss.length)}</button>` : ""}
+      <button class="btn ghost" id="qNew">${t("newQuiz")}</button>
+    </div></div>`;
+}
+function newQuiz() {
+  const all = quizWords($("qSrc").value);
+  if (!all.length) { $("qInfo").textContent = t("noWords"); return; }
+  startQuiz(shuffle(all).slice(0, parseInt($("qCount").value)));
+}
+function updateInfo() {
+  const n = quizWords($("qSrc").value).length;
+  $("qInfo").textContent = t("available", n) + ($("qSrc").value === "sel" && !sel.size ? t("noSelUsed") : "") + ($("qSrc").value === "review" && !n ? t("noDue") : "");
+}
+$("qGo").onclick = newQuiz;
+$("qSrc").onchange = updateInfo;
+// result screens: tap a missed word or sentence to hear it
+for (const box of ["qBox", "dBox"]) $(box).addEventListener("click", e => { const s = e.target.closest("[data-say]"); if (s) { stop(); speakKo(s.dataset.say); } });
+$("qBox").addEventListener("click", e => {
+  const o = e.target.closest(".opt"); if (o && !o.disabled) return answer(o);
+  const id = e.target.closest("button")?.id;
+  if (id === "qPlay") speakWord(Q.items[Q.i].w);
+  if (id === "qNext") { Q.i++; Q.i < Q.items.length ? showQ() : result(); }
+  if (id === "qQuit" || id === "qNew") { Q = null; $("qBox").innerHTML = ""; $("qStart").hidden = false; updateInfo(); }
+  if (id === "qRetry") startQuiz(shuffle(Q.miss.slice()));
+});
+function setMode(m) {
+  stop();
+  const ids = { list: "mListen", quiz: "mQuiz", orig: "mOrig" };
+  for (const k in ids) $(ids[k]).setAttribute("aria-selected", k === m);
+  $("listView").hidden = m !== "list"; $("quizView").hidden = m !== "quiz"; $("origView").hidden = m !== "orig";
+  document.querySelector(".player").hidden = m !== "list";
+  if (m === "quiz") showPractice(P); else { stopRec(); }
+  if (m === "orig") renderOrig();
+}
+$("mListen").onclick = () => setMode("list");
+$("mQuiz").onclick = () => setMode("quiz");
+$("mOrig").onclick = () => setMode("orig");
+
+
+/* ---------- lesson library (saved on this device) ---------- */
+let lib = store.get("lib", []);          // [{id, name, n, added}]; the lessons themselves live in IndexedDB
+let curId = store.get("cur", null);
+function renderLessons() {
+  const opts = lib.slice().sort((a, b) => b.added - a.added).map(l => `<option value="${l.id}">${esc(l.id === SAMPLE_ID ? t("sampleName") : l.name)}</option>`);
+  $("lessonSel").innerHTML = opts.length ? opts.join("") : `<option value="" disabled selected>${esc(t("noLessons"))}</option>`;
+  if (lib.some(l => l.id === curId)) $("lessonSel").value = curId;
+  $("delLesson").hidden = !lib.length;
+  $("delLesson").textContent = "🗑"; $("delLesson").classList.remove("danger"); delArm = false;
+}
+const memLessons = new Map();   // lessons opened or added in this session
+async function getLesson(id) {
+  if (memLessons.has(id)) return memLessons.get(id);
+  let rec = await idb("readonly", st => st.get("lesson:" + id));
+  // the example lesson ships inside the app, so it can always be rebuilt
+  if ((!rec || !rec.lines) && id === SAMPLE_ID && SAMPLE.length) rec = { lines: SAMPLE.map(([page, text]) => ({ page, text })), orig: samplePdf() };
+  if (!rec || !rec.lines) { const ls = store.get("ln-" + id, null); rec = ls ? { lines: ls, orig: null } : null; }   // text-only backup
+  if (rec) memLessons.set(id, rec);
+  return rec;
+}
+async function openLesson(id) {
+  stop();
+  if (id) {
+    const meta = lib.find(l => l.id === id);
+    fileMsg = t("loading", meta ? meta.name : ""); showFileName();
+    const rec = meta ? await getLesson(id) : null;
+    fileMsg = null;
+    if (rec) { curId = id; store.set("cur", id); setLines(rec.lines, meta.name); setOrig(rec.orig || null); renderLessons(); return; }
+    // could not read it back: say so instead of silently showing another lesson
+    renderLessons(); fileMsg = t("lessonGone"); showFileName();
+    if (curId === id) { curId = null; store.set("cur", null); }
+    return;
+  }
+  // no such lesson: open the newest one, or show the empty library
+  const next = lib.slice().sort((a, b) => b.added - a.added)[0];
+  if (next && next.id !== id) return openLesson(next.id);
+  curId = null; store.set("cur", null);
+  setLines([], ""); setOrig(null); renderLessons();
+}
+async function addLesson(name, ls, o) {
+  const id = Date.now().toString(36);
+  memLessons.set(id, { lines: ls, orig: o });
+  const ok = await idb("readwrite", st => st.put({ lines: ls, orig: o }, "lesson:" + id));
+  if (!ok) store.set("ln-" + id, ls);   // phone storage refused the file: keep at least the text
+  lib.push({ id, name, n: ls.length, added: Date.now() }); store.set("lib", lib);
+  curId = id; store.set("cur", id);
+  setLines(ls, name); setOrig(o); renderLessons(); window.scrollTo({ top: 0 });
+}
+let delArm = false;
+$("delLesson").onclick = async () => {
+  const id = $("lessonSel").value; if (!id) return;
+  if (!delArm) { delArm = true; $("delLesson").textContent = t("delConfirm"); $("delLesson").classList.add("danger"); setTimeout(() => { if (delArm) renderLessons(); }, 3000); return; }
+  delArm = false;
+  await idb("readwrite", st => st.delete("lesson:" + id));
+  await idb("readwrite", st => st.delete(IDBKeyRange.bound(`rec:${id}:`, `rec:${id}:￿`)));   // its recordings
+  memLessons.delete(id); try { localStorage.removeItem("kws-ln-" + id); localStorage.removeItem("kws-prog-" + id); for (const k of Object.keys(localStorage)) if (k.startsWith(`kws-tr-${id}-`)) localStorage.removeItem(k); } catch (e) {}
+  lib = lib.filter(l => l.id !== id); store.set("lib", lib);
+  openLesson(null);
+};
+$("lessonSel").onchange = () => openLesson($("lessonSel").value);
+async function initLibrary() {
+  // one-time move of the single saved file from earlier versions into the library
+  const old = store.get("doc", null);
+  if (old && old.lines?.length && !lib.length) {
+    const isSample = old.lines.length === SAMPLE.length && old.lines.every((l, i) => l.text === SAMPLE[i][1]);
+    if (!isSample) {
+      const o = await idb("readonly", st => st.get("orig"));
+      const id = "old1";
+      await idb("readwrite", st => st.put({ lines: old.lines, orig: o || null }, "lesson:" + id));
+      lib.push({ id, name: old.name === "#pasted" ? t("pasted") : old.name, n: old.lines.length, added: Date.now() }); store.set("lib", lib);
+      curId = id; store.set("cur", id);
+    }
+    try { localStorage.removeItem("kws-doc"); } catch (e) {}
+  }
+  // the example lesson is added once as a normal lesson in the library (it can be deleted like any other)
+  if (!store.get("sampleAdded", false) && SAMPLE.length) {
+    if (!lib.some(l => l.id === SAMPLE_ID)) {
+      const ls = SAMPLE.map(([page, text]) => ({ page, text }));
+      memLessons.set(SAMPLE_ID, { lines: ls, orig: samplePdf() });
+      idb("readwrite", st => st.put({ lines: ls, orig: samplePdf() }, "lesson:" + SAMPLE_ID));
+      lib.push({ id: SAMPLE_ID, name: t("sampleName"), n: ls.length, added: 1 }); store.set("lib", lib);
+    }
+    store.set("sampleAdded", true);
+    if (!curId || curId === "sample") { curId = SAMPLE_ID; store.set("cur", curId); }
+  }
+  if (curId === "sample") { curId = lib.some(l => l.id === SAMPLE_ID) ? SAMPLE_ID : null; store.set("cur", curId); }
+  renderLessons();
+  openLesson(curId || (lib[0] && lib[0].id) || null);
+}
+
+/* ---------- practice sub-modes ---------- */
+let P = store.get("pmode", "quiz");
+function showPractice(m) {
+  P = m; store.set("pmode", m);
+  document.querySelectorAll("#pSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.p === m));
+  $("pQuiz").hidden = m !== "quiz"; $("pDict").hidden = m !== "dict"; $("pSpeak").hidden = m !== "speak";
+  stop(); stopRec(); renderProg();
+  if (m === "quiz") updateInfo();
+  if (m === "dict") { if (D) (D.done ? dictResult() : showD(true)); else { $("dBox").innerHTML = ""; $("dStart").hidden = false; dictInfo(); } }
+  if (m === "speak") renderSpeak();
+}
+$("pSeg").onclick = e => { const b = e.target.closest("button"); if (b) showPractice(b.dataset.p); };
+
+/* Korean sentences of the lesson: [{i: line index, ko}] */
+function sentences(src) {
+  const ids = src === "sel" && sel.size ? [...sel].sort((a, b) => a - b) : lines.map((_, i) => i);
+  const seen = new Set(), out = [];
+  for (const i of ids) {
+    let ko = (lines[i].text.match(RUN) || []).map(x => x.trim()).join(" ").replace(/\s+/g, " ").trim();
+    // drop a speaker label like "수빈:" so only what is said goes into the exercise
+    const lab = ko.match(/^[^:：.!?]{1,15}[:：]\s*/);
+    if (lab && /[\uAC00-\uD7A3]/.test(ko.slice(lab[0].length))) ko = ko.slice(lab[0].length);
+    const norm = ko.replace(/[^가-힣\d]/g, "");
+    if (norm.length < 2 || seen.has(norm)) continue;
+    seen.add(norm); out.push({ i, ko });
+  }
+  return src === "review" ? out.filter(x => isDue(prog.s[x.ko])) : out;
+}
+const normK = x => [...x.replace(/[^가-힣ㄱ-ㆎ\d]/g, "")];
+function speakKo(text, r) {
+  return new Promise(res => {
+    if (!synth) return res();
+    const u = utter(text, "ko"); if (r) u.rate = r;
+    let done = false; const fin = () => { if (!done) { done = true; res(); } };
+    u.onend = fin; u.onerror = fin; setTimeout(fin, 3000 + text.length * 600);
+    speakNow(u);
+  });
+}
+
+/* ---------- dictation ---------- */
+let D = null;
+function dictInfo() { const n = sentences($("dSrc").value).length; $("dInfo").textContent = t("sentAvail", n) + ($("dSrc").value === "sel" && !sel.size ? t("noSelUsed") : "") + ($("dSrc").value === "review" && !n ? t("noDue") : ""); }
+$("dSrc").onchange = dictInfo;
+$("dGo").onclick = () => {
+  const all = sentences($("dSrc").value);
+  if (!all.length) { $("dInfo").textContent = t("noSent"); return; }
+  startDict(shuffle(all).slice(0, parseInt($("dCount").value)));
+};
+function startDict(items) { D = { items: items.map(x => ({ ...x, ans: "", score: null })), i: 0, done: false }; $("dStart").hidden = true; showD(); }
+function lcs(a, b) {
+  const n = a.length, m = b.length, L = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i][j] = a[i] === b[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  const ma = new Array(n).fill(false), mb = new Array(m).fill(false);
+  let i = 0, j = 0;
+  while (i < n && j < m) { if (a[i] === b[j]) { ma[i] = mb[j] = true; i++; j++; } else if (L[i + 1][j] >= L[i][j + 1]) i++; else j++; }
+  return { ma, mb, len: L[0][0] };
+}
+function markText(str, flags, okCls, badCls) {
+  let k = 0, out = "";
+  for (const ch of str) {
+    if (/[가-힣ㄱ-ㆎ\d]/.test(ch)) { out += `<span class="${flags[k] ? okCls : badCls}">${esc(ch)}</span>`; k++; }
+    else out += esc(ch);
+  }
+  return out;
+}
+function showD(silent) {
+  const it = D.items[D.i], n = D.items.length, tr = getTr(lines[it.i]?.text || "");
+  const boxes = it.ko.split(" ").map(w => "□".repeat(normK(w).length || 1)).join("  ");
+  $("dBox").innerHTML = `<div class="qcard">
+    <div class="qbar"><span>${t("dSent")} <b>${D.i + 1} / ${n}</b></span></div>
+    <div class="prog"><i style="width:${(D.i / n) * 100}%"></i></div>
+    <div class="dgrid">
+      <button class="btn" id="dPlay">${t("again")}</button>
+      <button class="btn ghost" id="dSlow">${t("slow")}</button>
+      <button class="btn ghost" id="dHint">${t("hintWords")}</button>
+      ${tr ? `<button class="btn ghost" id="dMean">${t("meaning")}</button>` : ""}
+    </div>
+    <div class="boxes" id="dBoxes" hidden>${boxes}</div>
+    ${tr ? `<div class="strl" id="dTr" hidden>${esc(tr)}</div>` : ""}
+    <textarea id="dAns" class="dans" lang="ko" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="${t("typeHere")}">${esc(it.ans)}</textarea>
+    <div class="row"><button class="btn" id="dCheck" style="flex:1">${t("check")}</button><button class="btn ghost" id="dQuit">${t("quit")}</button></div>
+    <div class="dres" id="dRes" hidden></div>
+    <div class="row"><button class="btn" id="dNext" hidden style="flex:1">${D.i + 1 < n ? t("next") : t("seeResult")}</button></div>
+  </div>`;
+  if (it.score !== null) checkD(true);
+  if (!silent) speakKo(it.ko);
+}
+function checkD(again) {
+  const it = D.items[D.i];
+  it.ans = $("dAns").value;
+  const a = normK(it.ko), b = normK(it.ans), r = lcs(a, b);
+  const score = Math.round((r.len / Math.max(a.length, b.length, 1)) * 100);
+  it.score = score;
+  if (!again) grade("s", it.ko, score >= 90, score);
+  const perfect = r.len === a.length && a.length === b.length;
+  $("dRes").hidden = false;
+  $("dRes").innerHTML = `<div class="fb ${perfect ? "good" : "bad"}">${perfect ? t("perfect") : t("dScore", score)}</div>
+    <div><div class="lbl2">${t("correctAns")}</div><div lang="ko">${markText(it.ko, r.ma, "ok", "mz")}</div></div>
+    ${perfect ? "" : `<div><div class="lbl2">${t("yourAns")}</div><div lang="ko">${it.ans.trim() ? markText(it.ans, r.mb, "", "extra") : "—"}</div></div>`}`;
+  $("dNext").hidden = false;
+  if (!again) { $("dNext").focus(); speakKo(it.ko); }
+}
+function dictResult() {
+  D.done = true;
+  const sc = D.items.map(x => x.score ?? 0), avg = Math.round(sc.reduce((a, b) => a + b, 0) / sc.length);
+  const miss = D.items.filter(x => (x.score ?? 0) < 100);
+  $("dBox").innerHTML = `<div class="qcard result">
+    <div class="big">${avg}%</div><div>${t("avgScore", avg)}</div>
+    ${miss.length ? `<p class="hint">${t("review")}</p><div class="miss" style="flex-direction:column;align-items:center">${miss.map(m => `<button lang="ko" data-say="${esc(m.ko)}">🔊 ${esc(m.ko)}</button>`).join("")}</div>` : `<div>${t("perfect")}</div>`}
+    <div class="row" style="justify-content:center">
+      ${miss.length ? `<button class="btn" id="dRetry">${t("retry", miss.length)}</button>` : ""}
+      <button class="btn ghost" id="dNew">${t("newQuiz")}</button>
+    </div></div>`;
+}
+$("dBox").addEventListener("click", e => {
+  const id = e.target.closest("button")?.id; if (!id || !D) return;
+  const it = D.items[D.i];
+  if (id === "dPlay") speakKo(it.ko);
+  if (id === "dSlow") speakKo(it.ko, Math.max(0.3, Math.round(rate * 0.65 * 100) / 100));   // about ⅔ of the chosen tempo
+  if (id === "dHint") $("dBoxes").hidden = !$("dBoxes").hidden;
+  if (id === "dMean") $("dTr").hidden = !$("dTr").hidden;
+  if (id === "dCheck") checkD();
+  if (id === "dNext") { D.i++; D.i < D.items.length ? showD() : dictResult(); }
+  if (id === "dQuit" || id === "dNew") { D = null; stop(); $("dBox").innerHTML = ""; $("dStart").hidden = false; dictInfo(); }
+  if (id === "dRetry") startDict(D.items.filter(x => (x.score ?? 0) < 100).map(x => ({ i: x.i, ko: x.ko })));
+});
+$("dBox").addEventListener("input", e => { if (e.target.id === "dAns" && D) D.items[D.i].ans = e.target.value; });
+$("dBox").addEventListener("keydown", e => { if (e.target.id === "dAns" && e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("dNext").hidden ? checkD() : $("dNext").click(); } });
+
+/* ---------- speaking: record yourself and compare ---------- */
+const S = { i: 0 };
+const recs = new Map();          // recKey(sentence) -> object URL of the recording
+// recordings are also kept in IndexedDB, per lesson, so they survive closing the app
+const recKey = ko => `rec:${curId}:${ko}`;
+const recTried = new Set();
+async function loadRec(ko) {
+  const k = recKey(ko);
+  if (recs.has(k) || recTried.has(k)) return false;
+  recTried.add(k);
+  const blob = await idb("readonly", st => st.get(k));
+  if (!(blob instanceof Blob)) return false;
+  recs.set(k, URL.createObjectURL(blob)); return true;
+}
+let recState = null;             // {mr, stream, t0, timer}
+function renderSpeak(msg) {
+  const list = sentences("all");
+  if (!list.length) { $("sBox").innerHTML = `<p class="empty">${t("noSent")}</p>`; return; }
+  S.i = Math.min(S.i, list.length - 1);
+  const it = list[S.i], tr = getTr(lines[it.i]?.text || ""), has = recs.has(recKey(it.ko));
+  if (!has) loadRec(it.ko).then(found => { if (found && S.list && S.list[S.i] && S.list[S.i].ko === it.ko && !recState) renderSpeak(msg); });
+  $("sBox").innerHTML = `<div class="qcard">
+    <p class="hint" style="margin:0">${t("speakIntro")}</p>
+    <div class="snav"><button class="btn ghost" id="sPrev" ${S.i === 0 ? "disabled" : ""} aria-label="Previous">◀</button><b>${S.i + 1} / ${list.length}</b><button class="btn ghost" id="sNext" ${S.i >= list.length - 1 ? "disabled" : ""} aria-label="Next">▶</button></div>
+    <div class="sbig" lang="ko">${esc(it.ko)}</div>
+    ${tr ? `<div class="strl">${esc(tr)}</div>` : ""}
+    <span class="lbl">${t("speed")}</span>
+    <div class="speeds" id="sSpeeds">${[0.3, 0.5, 0.7, 0.9, 1].map((r, k) => `<button class="sp" data-r="${r}" aria-pressed="${r === rate}">${r}×<small>${t("sp" + (k + 1))}</small></button>`).join("")}</div>
+    <div class="dgrid">
+      <button class="btn ghost" id="sLector">${t("lector")}</button>
+      <button class="btn recbtn${recState ? " on" : ""}" id="sRec">${recState ? t("stop") : t("rec")}</button>
+      <button class="btn ghost" id="sMine" ${has ? "" : "disabled"}>${t("mine")}</button>
+      <button class="btn ghost" id="sComp" ${has ? "" : "disabled"}>${t("compare")}</button>
+    </div>
+    <div class="fb${msg === t("micErr") || msg === t("noRec") ? " bad" : ""}" id="sMsg">${msg ? esc(msg) : ""}</div>
+  </div>`;
+  S.list = list;
+}
+async function startRec() {
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) return renderSpeak(t("micErr"));
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+  catch (e) { return renderSpeak(t("micErr")); }
+  const key = recKey(S.list[S.i].ko), chunksA = [];
+  const mr = new MediaRecorder(stream);
+  mr.ondataavailable = e => { if (e.data.size) chunksA.push(e.data); };
+  mr.onstop = () => {
+    stream.getTracks().forEach(tr => tr.stop());
+    if (chunksA.length) {
+      const blob = new Blob(chunksA, { type: mr.mimeType || "audio/webm" });
+      if (recs.has(key)) URL.revokeObjectURL(recs.get(key));
+      recs.set(key, URL.createObjectURL(blob));
+      idb("readwrite", st => st.put(blob, key));
+    }
+    recState = null; renderSpeak(t("recDone"));
+  };
+  recState = { mr, stream, t0: Date.now() };
+  mr.start();
+  renderSpeak(t("recording", 0));
+  recState.timer = setInterval(() => {
+    if (!recState) return;
+    const sec = Math.floor((Date.now() - recState.t0) / 1000);
+    if ($("sMsg")) $("sMsg").textContent = t("recording", sec);
+    if (sec >= 20) stopRec();
+  }, 250);
+}
+function stopRec() { if (recState) { clearInterval(recState.timer); try { recState.mr.stop(); } catch (e) { recState = null; } } }
+let audioEl = null;
+function playMine() {
+  return new Promise(res => {
+    const url = recs.get(recKey(S.list[S.i].ko)); if (!url) { renderSpeak(t("noRec")); return res(); }
+    if (audioEl) audioEl.pause();
+    audioEl = new Audio(url); audioEl.onended = res; audioEl.onerror = res;
+    audioEl.play().catch(res);
+  });
+}
+$("sBox").addEventListener("click", async e => {
+  const sp = e.target.closest(".sp");
+  if (sp) { setRate(parseFloat(sp.dataset.r)); try { setPmin(pmin); } catch (er) {} const it = S.list && S.list[S.i]; if (it) { stop(); speakKo(it.ko); } return; }
+  const id = e.target.closest("button")?.id; if (!id || !S.list) return;
+  const it = S.list[S.i];
+  if (id === "sPrev" || id === "sNext") { stopRec(); stop(); S.i += id === "sNext" ? 1 : -1; renderSpeak(); return; }
+  if (id === "sLector") { stop(); speakKo(it.ko); }
+  if (id === "sRec") { stop(); recState ? stopRec() : startRec(); }
+  if (id === "sMine") { stop(); playMine(); }
+  if (id === "sComp") { stop(); await speakKo(it.ko); await wait(400); playMine(); }
+});
+
+/* ---------- start ---------- */
+lines = SAMPLE.map(([page, text]) => ({ page, text }));
+orig = SAMPLE.length ? samplePdf() : null;
+setRate(rate);
+loadTr();
+try { applyUI(); } catch (e) { console.error(e); }
+setPmin(pmin);
+setMode("orig");
+initLibrary();
+// links like …#dictation open the right place (used by the KWS checklist)
+function route() {
+  const h = location.hash.slice(1);
+  if (!h) return;
+  if (!$("viewer").hidden) closeViewer();
+  if (!$("sheet").hidden) $("closeSet").click();
+  if (h === "original") setMode("orig");
+  else if (h === "listen") setMode("list");
+  else if (h === "spelling" || h === "dictation" || h === "speaking") { setMode("quiz"); showPractice(h === "spelling" ? "quiz" : h === "dictation" ? "dict" : "speak"); }
+  else if (h === "library") { setMode("orig"); window.scrollTo({ top: 0 }); $("lessonSel").focus(); }
+  else if (h === "voices") openSet();
+}
+window.addEventListener("hashchange", route);
+route();
+// offline: when KWS is opened from a web address (e.g. GitHub Pages), keep the app and its libraries on the phone
+if (/^https?:$/.test(location.protocol) && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+</script>
+
+</body>
+</html>
