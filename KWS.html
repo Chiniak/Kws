@@ -162,7 +162,7 @@ button:focus-visible, select:focus-visible { outline: 2px solid var(--blue); out
 .notr .trl { display: none; }
 .ln { grid-template-columns: 52px 1fr auto; }
 .tre { border: 0; border-left: 1px solid var(--line); background: transparent; cursor: pointer; color: var(--muted); font-size: 1rem; padding: 0 10px; }
-.notr .tre { display: none; }
+.hdtag { display: inline-block; font-size: .7rem; font-weight: 600; letter-spacing: .04em; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 0 5px; margin-right: 8px; vertical-align: 2px; }
 .tredit { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 12px; border-top: 1px dashed var(--line); }
 .tredit textarea { font: inherit; font-size: 1rem; width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--fg); resize: vertical; }
 .hidetr .trl > span:last-child { filter: blur(5px); }
@@ -560,7 +560,8 @@ const TX = {
     koVoice: "Korean voice", trLangT: "Translation language", trLangHint: "Lines are translated into this language. Claude translates the whole lesson for you inside the Claude app; elsewhere use the Google Translate link while listening.",
     trChip: n => `🌐 Translation · ${n}`, trAsk: n => `This lesson has no ${n} translation yet.`, trBtn: "🌐 Translate lesson", trWorking: (a, b) => `Translating… ${a} / ${b}`, trDone: n => `Translated${n ? " (" + n + ")" : ""}. Machine translation can be wrong: tap ✏️ to fix a line.`,
     trOnline: "If your browser can't translate on this device, the lines are sent to Google Translate or MyMemory.",
-    trEdit: "Edit translation", save: "Save", cancel: "Cancel",
+    trEdit: "Edit line", save: "Save", cancel: "Cancel",
+    headTag: "HEADING", isHeading: "Heading: leave this line out of exercises",
     trFileHint: "Save this lesson's translations to a file and load them on another device.", trExport: "⬇ Save translations", trImportBtn: "⬆ Load translations",
     trNothing: "This lesson has no translations to save yet.", trExported: n => `Saved ${n} translations.`, trImported: (n, l) => `Loaded ${n} translations (${l}).`, trBadFile: "This isn't a KWS translations file.",
     dueOnly: "Due for review", noDue: " Nothing to review right now: come back later.",
@@ -622,7 +623,8 @@ const TX = {
     koVoice: "Głos koreański", trLangT: "Język tłumaczenia", trLangHint: "Na ten język tłumaczone są linie lekcji. W aplikacji Claude całą lekcję tłumaczy Claude; poza nią użyj linku do Tłumacza Google podczas słuchania.",
     trChip: n => `🌐 Tłumaczenie · ${n}`, trAsk: n => `Ta lekcja nie ma jeszcze tłumaczenia: ${n}.`, trBtn: "🌐 Przetłumacz lekcję", trWorking: (a, b) => `Tłumaczę… ${a} / ${b}`, trDone: n => `Przetłumaczone${n ? " (" + n + ")" : ""}. Tłumaczenie maszynowe może się mylić: dotknij ✏️, żeby poprawić linię.`,
     trOnline: "Jeśli przeglądarka nie umie tłumaczyć na tym urządzeniu, linie zostaną wysłane do Tłumacza Google lub MyMemory.",
-    trEdit: "Edytuj tłumaczenie", save: "Zapisz", cancel: "Anuluj",
+    trEdit: "Edytuj linię", save: "Zapisz", cancel: "Anuluj",
+    headTag: "NAGŁÓWEK", isHeading: "Nagłówek: pomijaj tę linię w ćwiczeniach",
     trFileHint: "Zapisz tłumaczenia tej lekcji do pliku i wczytaj je na innym urządzeniu.", trExport: "⬇ Zapisz tłumaczenia", trImportBtn: "⬆ Wczytaj tłumaczenia",
     trNothing: "Ta lekcja nie ma jeszcze tłumaczeń do zapisania.", trExported: n => `Zapisano tłumaczenia: ${n}.`, trImported: (n, l) => `Wczytano tłumaczenia: ${n} (${l}).`, trBadFile: "To nie jest plik z tłumaczeniami KWS.",
     dueOnly: "Do powtórki", noDue: " Na razie nie ma nic do powtórki: wróć później.",
@@ -684,7 +686,8 @@ const TX = {
     koVoice: "한국어 음성", trLangT: "번역 언어", trLangHint: "수업 문장을 이 언어로 번역해요. Claude 앱에서는 Claude가 수업 전체를 번역하고, 다른 곳에서는 듣는 중에 Google 번역 링크를 쓰세요.",
     trChip: n => `🌐 번역 · ${n}`, trAsk: n => `이 수업에는 아직 ${n} 번역이 없어요.`, trBtn: "🌐 수업 번역하기", trWorking: (a, b) => `번역 중… ${a} / ${b}`, trDone: n => `번역했어요${n ? " (" + n + ")" : ""}. 기계 번역은 틀릴 수 있어요. ✏️를 눌러 고칠 수 있어요.`,
     trOnline: "브라우저가 기기에서 번역할 수 없으면 문장이 Google 번역이나 MyMemory로 보내져요.",
-    trEdit: "번역 고치기", save: "저장", cancel: "취소",
+    trEdit: "줄 고치기", save: "저장", cancel: "취소",
+    headTag: "제목", isHeading: "제목: 연습에서 이 줄 빼기",
     trFileHint: "이 수업의 번역을 파일로 저장하고 다른 기기에서 불러올 수 있어요.", trExport: "⬇ 번역 저장", trImportBtn: "⬆ 번역 불러오기",
     trNothing: "이 수업에는 아직 저장할 번역이 없어요.", trExported: n => `번역 ${n}개를 저장했어요.`, trImported: (n, l) => `번역 ${n}개를 불러왔어요 (${l}).`, trBadFile: "KWS 번역 파일이 아니에요.",
     dueOnly: "복습할 것", noDue: " 지금은 복습할 게 없어요. 나중에 다시 오세요.",
@@ -1002,20 +1005,33 @@ $("trImport").onchange = async () => {
   } catch (e) { trFileMsg(t("trBadFile")); }
 };
 
-/* ---------- editing a translation by hand ---------- */
+/* ---------- headings: titles of the lesson, not its content, so exercises leave them out ----------
+   A line is a heading if the PDF prints it in bigger letters, or it starts like a section title
+   ("Lesson 3", "Vocabulary", "Gramatyka", "어휘", "3과"…). The ✏️ panel can change that per line. */
+const HEAD_RE = /^\s*(?:lesson|unit|chapter|part|section|vocabulary|vocab|grammar|dialogue|dialog|conversation|exercises?|practice|review|lekcja|rozdział|część|słownictwo|słówka|gramatyka|ćwiczeni[ae]|단원|어휘|단어|문법|대화|연습|복습)(?![\p{L}])|^\s*(?:제\s*)?\d+\s*과(?![\p{L}])/iu;
+let headOv = {};             // this lesson's manual choices: line text -> true / false
+function loadHeads() { headOv = (curId && store.get("hd-" + curId, null)) || {}; }
+const autoHead = l => !!l.h || HEAD_RE.test(l.text);
+const isHead = l => l.text in headOv ? headOv[l.text] : autoHead(l);
+
+/* ---------- editing a line by hand: its translation, and whether it is a heading ---------- */
 function editTr(row, i) {
   if (row.querySelector(".tredit")) return;
   stop();
   const ed = document.createElement("div"); ed.className = "tredit";
   ed.innerHTML = `<textarea rows="2" aria-label="${esc(t("trEdit"))}" placeholder="${esc(langName(trLang))}"></textarea>
+    <label class="ctrl"><input type="checkbox" data-hd ${isHead(lines[i]) ? "checked" : ""}> <span>${esc(t("isHeading"))}</span></label>
     <div class="row"><button class="btn" data-tr="save">${esc(t("save"))}</button><button class="btn ghost" data-tr="cancel">${esc(t("cancel"))}</button></div>`;
   ed.querySelector("textarea").value = getTr(lines[i].text);
   row.appendChild(ed); ed.querySelector("textarea").focus();
 }
 function saveTr(row, i) {
-  const v = row.querySelector(".tredit textarea").value.trim(), text = lines[i].text;
+  const v = row.querySelector(".tredit textarea").value.trim(), l = lines[i], text = l.text;
   if (v) TRC[text] = v; else delete TRC[text];
   store.set(trKey(), TRC);
+  const hd = row.querySelector(".tredit [data-hd]").checked;
+  if (hd === autoHead(l)) delete headOv[text]; else headOv[text] = hd;
+  if (curId) store.set("hd-" + curId, headOv);
   render();
 }
 
@@ -1324,7 +1340,8 @@ function render() {
   for (const i of v) {
     const l = lines[i];
     if (l.page && l.page !== pg) { pg = l.page; html += `<div class="page">${t("page", pg)}</div>`; }
-    html += `<div class="ln${sel.has(i) ? " sel" : ""}" data-i="${i}"><button class="pick" aria-label="${t("pick")}">${sel.has(i) ? "✓" : "○"}</button><button class="txt">${fmt(l.text)}${getTr(l.text) ? `<span class="trl"><span class="tag" title="${esc(langName(trLang))}">${esc(langName(trLang))}</span><span>${esc(getTr(l.text))}</span></span>` : ""}</button><button class="tre" aria-label="${esc(t("trEdit"))}" title="${esc(t("trEdit"))}">✏️</button></div>`;
+    const hd = isHead(l);
+    html += `<div class="ln${sel.has(i) ? " sel" : ""}${hd ? " hd" : ""}" data-i="${i}"><button class="pick" aria-label="${t("pick")}">${sel.has(i) ? "✓" : "○"}</button><button class="txt">${hd ? `<span class="hdtag">${esc(t("headTag"))}</span>` : ""}${fmt(l.text)}${getTr(l.text) ? `<span class="trl"><span class="tag" title="${esc(langName(trLang))}">${esc(langName(trLang))}</span><span>${esc(getTr(l.text))}</span></span>` : ""}</button><button class="tre" aria-label="${esc(t("trEdit"))}" title="${esc(t("trEdit"))}">✏️</button></div>`;
   }
   $("list").innerHTML = html;
   renderTrBar();
@@ -1377,7 +1394,7 @@ function setLines(arr, name) {
   covered = new Set(); textCache.clear(); D = null; S.i = 0;
   // a quiz from the previous lesson must not carry over
   Q = null; $("qBox").innerHTML = ""; $("qStart").hidden = false;
-  loadProg(); lastIdx = -1;
+  loadProg(); loadHeads(); lastIdx = -1;
   stop(); lines = arr; sel = new Set(); docName = name; fileMsg = null;
   showFileName(); render(); uiPlaying(false);
   if (!$("quizView").hidden) showPractice(P);
@@ -1399,8 +1416,9 @@ $("fileIn").onchange = async () => {
       const out = [];
       for (let p = 1; p <= doc.numPages; p++) {
         const tc = await (await doc.getPage(p)).getTextContent();
-        let cur = "", lastY = null, lastEnd = null;
-        const flush = () => { const x = cur.replace(/\s+/g, " ").trim(); if (x) out.push({ page: p, text: x }); cur = ""; lastEnd = null; };
+        let cur = "", lastY = null, lastEnd = null, curFs = 0;
+        const pageLines = [], sizeChars = {};   // font size -> characters in it, to find the page's body text size
+        const flush = () => { const x = cur.replace(/\s+/g, " ").trim(); if (x) pageLines.push({ page: p, text: x, fs: curFs }); cur = ""; lastEnd = null; curFs = 0; };
         for (const it of tc.items) {
           const tr = it.transform;
           const y = tr ? Math.round(tr[5]) : lastY;
@@ -1411,11 +1429,15 @@ $("fileIn").onchange = async () => {
             const fs = Math.hypot(tr[2], tr[3]) || it.height || 10;
             if (lastEnd !== null && tr[4] - lastEnd > fs * 0.15 && cur && !/\s$/.test(cur) && !/^\s/.test(it.str)) cur += " ";
             lastEnd = tr[4] + (it.width || 0);
+            if (it.str.trim()) { const k = Math.round(fs * 2) / 2; sizeChars[k] = (sizeChars[k] || 0) + it.str.trim().length; curFs = Math.max(curFs, fs); }
           }
           cur += it.str; lastY = y;
           if (it.hasEOL) { flush(); lastY = null; }
         }
         flush();
+        // a short line in clearly bigger letters than the page's body text is a heading
+        const body = +Object.entries(sizeChars).sort((a, b) => b[1] - a[1])[0]?.[0] || 0;
+        for (const l of pageLines) { if (body && l.fs >= body * 1.25 && l.text.length <= 80) l.h = 1; delete l.fs; out.push(l); }
       }
       await addLesson(f.name, out, { type: "pdf", data: new Uint8Array(buf) });
     } else if (/\.docx$/i.test(f.name)) {
@@ -1790,6 +1812,7 @@ function quizWords(src) {
   const ids = src === "sel" && sel.size ? [...sel].sort((a, b) => a - b) : lines.map((_, i) => i);
   const seen = new Map();
   for (const i of ids) {
+    if (isHead(lines[i])) continue;
     const tx = lines[i].text;
     for (const w of tx.match(/[가-힣]+/g) || []) {
       if (w.length < 2 || seen.has(w)) continue;
@@ -1969,7 +1992,7 @@ $("delLesson").onclick = async () => {
   delArm = false;
   await idb("readwrite", st => st.delete("lesson:" + id));
   await idb("readwrite", st => st.delete(IDBKeyRange.bound(`rec:${id}:`, `rec:${id}:￿`)));   // its recordings
-  memLessons.delete(id); try { localStorage.removeItem("kws-ln-" + id); localStorage.removeItem("kws-prog-" + id); for (const k of Object.keys(localStorage)) if (k.startsWith(`kws-tr-${id}-`)) localStorage.removeItem(k); } catch (e) {}
+  memLessons.delete(id); try { localStorage.removeItem("kws-ln-" + id); localStorage.removeItem("kws-prog-" + id); localStorage.removeItem("kws-hd-" + id); for (const k of Object.keys(localStorage)) if (k.startsWith(`kws-tr-${id}-`)) localStorage.removeItem(k); } catch (e) {}
   lib = lib.filter(l => l.id !== id); store.set("lib", lib);
   openLesson(null);
 };
@@ -2022,6 +2045,7 @@ function sentences(src) {
   const ids = src === "sel" && sel.size ? [...sel].sort((a, b) => a - b) : lines.map((_, i) => i);
   const seen = new Set(), out = [];
   for (const i of ids) {
+    if (isHead(lines[i])) continue;
     let ko = (lines[i].text.match(RUN) || []).map(x => x.trim()).join(" ").replace(/\s+/g, " ").trim();
     // drop a speaker label like "수빈:" so only what is said goes into the exercise
     const lab = ko.match(/^[^:：.!?]{1,15}[:：]\s*/);
