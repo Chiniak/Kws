@@ -2,7 +2,7 @@
    App files: network first (so updates arrive at once), the saved copy when offline.
    Libraries and fonts from CDNs: saved copy first (they never change at a fixed version).
    Everything else (translation, voices from the internet) goes straight to the network. */
-const CACHE = "kws-v2";
+const CACHE = "kws-v3";
 const APP = ["./", "./index.html", "./KWS.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 const LIBS = [
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
