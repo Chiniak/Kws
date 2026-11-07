@@ -288,14 +288,12 @@ body.pmin .wrap { padding-bottom: 120px; }
 body { margin: 0; }
 .wrap { padding-block: 10px 210px; }
 
-/* header: flag, name and settings in one compact row */
-.hdr { justify-content: space-between; align-items: center; padding: 4px 0 14px; }
-.hdr .brand { display: flex; align-items: center; gap: 12px; line-height: 1.1; margin: 0; }
-.hdr .flag { width: 52px; margin: 0; border-radius: 4px; }
-.brand-t { display: flex; flex-direction: column; text-align: left; }
-.brand-name { font-family: var(--display); font-weight: 700; font-size: 1.55rem; color: var(--blue); letter-spacing: .03em; }
-.withsubin { margin: 0; font-size: 1rem; letter-spacing: .03em; }
-.hdr .gear-icon { position: static; width: 44px; height: 44px; min-height: 44px; border: 1px solid var(--line); box-shadow: var(--shadow); color: var(--fg); }
+/* header: a small flag with "with Subin" under it, settings on the right */
+.hdr { justify-content: center; align-items: center; padding: 2px 56px 12px; }
+.hdr .brand { display: flex; flex-direction: column; align-items: center; gap: 4px; line-height: 1.1; margin: 0; }
+.hdr .flag { width: 46px; margin: 0; border-radius: 3px; }
+.withsubin { margin: 0; font-size: .95rem; letter-spacing: .03em; }
+.hdr .gear-icon { position: absolute; top: 50%; right: 0; transform: translateY(-50%); margin-top: -5px; width: 44px; height: 44px; min-height: 44px; border: 1px solid var(--line); box-shadow: var(--shadow); color: var(--fg); }
 .hdr .gear-icon svg { display: block; }
 .hdr + .sub { display: none; }
 
@@ -327,6 +325,11 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
 .orighint { margin: 0 2px 8px; }
 .origbar.chips { flex-wrap: nowrap; gap: 6px; }
 .opage .otext { border: 0; box-shadow: none; padding: 4px 2px; }
+
+/* covered words in the Original: blurred like "Hide Korean" in Listen, not a solid block */
+.cov.on { box-shadow: none; }
+.cov.t.on { color: inherit; filter: blur(6px); background: color-mix(in srgb, var(--cover) 18%, transparent); border-radius: 6px; }
+.cov.pdf.on { color: transparent; background: color-mix(in srgb, var(--cover) 14%, transparent); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); border-radius: 5px; }
 
 /* one "selected" look everywhere: soft blue with blue text */
 .chip[aria-pressed="true"], .covbtn[aria-pressed="true"], .seg button[aria-pressed="true"] { background: var(--soft); color: var(--blue); border-color: var(--blue); }
@@ -362,15 +365,15 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
 
 @media (min-width: 760px) {
   .ln { grid-template-columns: 52px 1fr auto; }
-  .hdr .flag { width: 60px; }
-  .brand-name { font-size: 1.8rem; }
+  .hdr .flag { width: 52px; }
+  .withsubin { font-size: 1.05rem; }
 }
 </style>
 
 <div class="wrap">
   <div class="hdr">
     <div class="hdr-brand">
-      <h1 class="brand"><svg class="flag" viewBox="0 0 72 48" role="img" aria-label="Korea"><rect width="72" height="48" fill="#fff"/><g transform="translate(36 24)"><g transform="rotate(33.69)"><circle r="12" fill="#0047A0"/><path d="M-12 0A12 12 0 0 1 12 0A6 6 0 0 0 0 0A6 6 0 0 1 -12 0Z" fill="#CD2E3A"/></g><g fill="#000"><g transform="rotate(-56.31)"><rect x="-6" y="-20" width="12" height="2"/><rect x="-6" y="-23" width="12" height="2"/><rect x="-6" y="-26" width="12" height="2"/></g><g transform="rotate(56.31)"><rect x="-6" y="-20" width="5.5" height="2"/><rect x="0.5" y="-20" width="5.5" height="2"/><rect x="-6" y="-23" width="12" height="2"/><rect x="-6" y="-26" width="5.5" height="2"/><rect x="0.5" y="-26" width="5.5" height="2"/></g><g transform="rotate(123.69)"><rect x="-6" y="-20" width="5.5" height="2"/><rect x="0.5" y="-20" width="5.5" height="2"/><rect x="-6" y="-23" width="5.5" height="2"/><rect x="0.5" y="-23" width="5.5" height="2"/><rect x="-6" y="-26" width="5.5" height="2"/><rect x="0.5" y="-26" width="5.5" height="2"/></g><g transform="rotate(-123.69)"><rect x="-6" y="-20" width="12" height="2"/><rect x="-6" y="-23" width="5.5" height="2"/><rect x="0.5" y="-23" width="5.5" height="2"/><rect x="-6" y="-26" width="12" height="2"/></g></g></g></svg><span class="brand-t"><span class="brand-name">KWS</span><span class="withsubin">with Subin</span></span></h1>
+      <h1 class="brand"><svg class="flag" viewBox="0 0 72 48" role="img" aria-label="Korea"><rect width="72" height="48" fill="#fff"/><g transform="translate(36 24)"><g transform="rotate(33.69)"><circle r="12" fill="#0047A0"/><path d="M-12 0A12 12 0 0 1 12 0A6 6 0 0 0 0 0A6 6 0 0 1 -12 0Z" fill="#CD2E3A"/></g><g fill="#000"><g transform="rotate(-56.31)"><rect x="-6" y="-20" width="12" height="2"/><rect x="-6" y="-23" width="12" height="2"/><rect x="-6" y="-26" width="12" height="2"/></g><g transform="rotate(56.31)"><rect x="-6" y="-20" width="5.5" height="2"/><rect x="0.5" y="-20" width="5.5" height="2"/><rect x="-6" y="-23" width="12" height="2"/><rect x="-6" y="-26" width="5.5" height="2"/><rect x="0.5" y="-26" width="5.5" height="2"/></g><g transform="rotate(123.69)"><rect x="-6" y="-20" width="5.5" height="2"/><rect x="0.5" y="-20" width="5.5" height="2"/><rect x="-6" y="-23" width="5.5" height="2"/><rect x="0.5" y="-23" width="5.5" height="2"/><rect x="-6" y="-26" width="5.5" height="2"/><rect x="0.5" y="-26" width="5.5" height="2"/></g><g transform="rotate(-123.69)"><rect x="-6" y="-20" width="12" height="2"/><rect x="-6" y="-23" width="5.5" height="2"/><rect x="0.5" y="-23" width="5.5" height="2"/><rect x="-6" y="-26" width="12" height="2"/></g></g></g></svg><span class="vh">KWS</span><span class="withsubin">with Subin</span></h1>
     </div>
     <button class="gear gear-icon" id="openSet"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </div>
