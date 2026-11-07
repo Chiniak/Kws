@@ -697,6 +697,7 @@ const TX = {
     ],
     dueBanner: n => `📚 ${n} to review`, practiceNow: "Practise",
     dueOnly: "Due for review", noDue: " Nothing to review right now: come back later.",
+    hardest: s => `Most often wrong: ${s}. They will come up more often.`,
     progLine: (wm, wn, sd, sn, avg, due) => `Progress: ${wm}/${wn} words learned · ${sd}/${sn} sentences dictated${avg != null ? ` (average ${avg}%)` : ""} · ${due} due for review`,
     trFail: "Translation didn't work. Check the internet connection and try again, or tap ✏️ to write a translation yourself.", trDenied: "Claude isn't allowed to translate here. You can allow it the next time you open the page.",
     noLessons: "No lessons yet: load a file",
@@ -780,6 +781,7 @@ const TX = {
     ],
     dueBanner: n => `📚 Do powtórki: ${n}`, practiceNow: "Ćwicz",
     dueOnly: "Do powtórki", noDue: " Na razie nie ma nic do powtórki: wróć później.",
+    hardest: s => `Najczęściej mylone: ${s}. Będą pojawiać się częściej.`,
     progLine: (wm, wn, sd, sn, avg, due) => `Postęp: ${wm}/${wn} słów opanowanych · ${sd}/${sn} zdań z dyktanda${avg != null ? ` (średnio ${avg}%)` : ""} · do powtórki: ${due}`,
     trFail: "Tłumaczenie się nie udało. Sprawdź internet i spróbuj ponownie albo dotknij ✏️ i wpisz tłumaczenie sam.", trDenied: "Claude nie ma tu zgody na tłumaczenie. Możesz ją dać przy następnym otwarciu strony.",
     noLessons: "Brak lekcji: wczytaj plik",
@@ -863,6 +865,7 @@ const TX = {
     ],
     dueBanner: n => `📚 복습할 것 ${n}개`, practiceNow: "연습하기",
     dueOnly: "복습할 것", noDue: " 지금은 복습할 게 없어요. 나중에 다시 오세요.",
+    hardest: s => `자주 틀린 단어: ${s}. 더 자주 나와요.`,
     progLine: (wm, wn, sd, sn, avg, due) => `진도: 단어 ${wm}/${wn}개 익힘 · 받아쓰기 ${sd}/${sn}문장${avg != null ? ` (평균 ${avg}%)` : ""} · 복습할 것 ${due}개`,
     trFail: "번역하지 못했어요. 인터넷 연결을 확인하고 다시 해 보거나 ✏️를 눌러 직접 써 보세요.", trDenied: "여기서는 Claude가 번역할 수 없어요. 다음에 페이지를 열 때 허용할 수 있어요.",
     noLessons: "수업이 없어요: 파일을 불러오세요",
@@ -2107,11 +2110,46 @@ function renderProg() {
   $("progInfo").textContent = t("progLine", learned, ws.length, done.length, ss.length, avg, due);
 }
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+/* How often an item should come up, from its history: often-missed ones much more, well-known ones less.
+   errRate is smoothed so one answer doesn't decide everything; new items sit in the middle. */
+function weightOf(r) {
+  if (!r) return 1.5;
+  const err = (r.bad + 1) / (r.ok + r.bad + 2);
+  let w = 0.2 + 8 * err * err;                // always right ≈ 0.3, missed half the time ≈ 2.2, mostly missed ≈ 5+
+  if (r.box === 0 && r.bad) w *= 1.8;         // missed last time
+  if (isDue(r)) w *= 1.4;
+  return w / (1 + 0.25 * r.box);              // the longer it has been right, the rarer
+}
+// pick n items without repeats, each with chance proportional to its weight (Efraimidis–Spirakis)
+function pickWeighted(items, n, recOf) {
+  return items.map(x => ({ x, k: Math.pow(Math.random(), 1 / weightOf(recOf(x))) }))
+    .sort((a, b) => b.k - a.k).slice(0, n).map(o => o.x);
+}
 function options(w, pool) {
   const set = new Set([w]);
   for (let k = 0; k < 40 && set.size < 4; k++) { const m = mutate(w); if (m) set.add(m); }
   for (const p of shuffle(pool.slice())) { if (set.size >= 4) break; if (Math.abs(p.w.length - w.length) <= 1) set.add(p.w); }
   return shuffle([...set]);
+}
+/* Where the right answer goes: each block of 4 questions uses A, B, C and D once each (in random order),
+   so over 10 questions every letter is right 2–3 times and never the same letter many times in a row. */
+function answerSlots(n) {
+  const out = [];
+  while (out.length < n) {
+    let b = shuffle([0, 1, 2, 3]);
+    if (out.length && b[0] === out[out.length - 1]) b.push(b.shift());
+    out.push(...b);
+  }
+  return out.slice(0, n);
+}
+function placeRight(opts, w, slot) {
+  const rest = opts.filter(o => o !== w), i = slot % opts.length;
+  rest.splice(i, 0, w);
+  return rest;
+}
+// the most often missed words of this lesson, for a hint before the quiz
+function hardest(k) {
+  return Object.entries(prog.w).filter(([, r]) => r.bad > 0).sort((a, b) => (b[1].bad - b[1].ok * 0.5) - (a[1].bad - a[1].ok * 0.5)).slice(0, k);
 }
 let Q = null;
 function speakWord(w) { if (synth) speakNow(utter(w, "ko")); }
@@ -2120,8 +2158,8 @@ function ctxHtml(line, w) {
   return fmt(line.slice(0, i)) + '<span class="gap"></span>' + fmt(line.slice(i + w.length));
 }
 function startQuiz(ws) {
-  const pool = quizWords("all");
-  Q = { items: ws.map(x => ({ ...x, opts: options(x.w, pool) })), i: 0, score: 0, miss: [], done: false };
+  const pool = quizWords("all"), slots = answerSlots(ws.length);
+  Q = { items: ws.map((x, k) => ({ ...x, opts: placeRight(options(x.w, pool), x.w, slots[k]) })), i: 0, score: 0, miss: [], done: false };
   $("qStart").hidden = true; showQ();
 }
 function showQ(silent) {
@@ -2163,11 +2201,13 @@ function result() {
 function newQuiz() {
   const all = quizWords($("qSrc").value);
   if (!all.length) { $("qInfo").textContent = t("noWords"); return; }
-  startQuiz(shuffle(all).slice(0, parseInt($("qCount").value)));
+  // words you often get wrong come up more often, words you know well less often
+  startQuiz(shuffle(pickWeighted(all, parseInt($("qCount").value), x => prog.w[x.w])));
 }
 function updateInfo() {
-  const n = quizWords($("qSrc").value).length;
-  $("qInfo").textContent = t("available", n) + ($("qSrc").value === "sel" && !sel.size ? t("noSelUsed") : "") + ($("qSrc").value === "review" && !n ? t("noDue") : "");
+  const n = quizWords($("qSrc").value).length, hard = hardest(3);
+  $("qInfo").textContent = t("available", n) + ($("qSrc").value === "sel" && !sel.size ? t("noSelUsed") : "") + ($("qSrc").value === "review" && !n ? t("noDue") : "")
+    + (hard.length ? " " + t("hardest", hard.map(([w, r]) => `${w} (${r.bad}×)`).join(", ")) : "");
 }
 $("qGo").onclick = newQuiz;
 $("qSrc").onchange = updateInfo;
@@ -2332,7 +2372,7 @@ $("dSrc").onchange = dictInfo;
 $("dGo").onclick = () => {
   const all = sentences($("dSrc").value);
   if (!all.length) { $("dInfo").textContent = t("noSent"); return; }
-  startDict(shuffle(all).slice(0, parseInt($("dCount").value)));
+  startDict(shuffle(pickWeighted(all, parseInt($("dCount").value), x => prog.s[x.ko])));
 };
 function startDict(items) { D = { items: items.map(x => ({ ...x, ans: "", score: null })), i: 0, done: false }; $("dStart").hidden = true; showD(); }
 function lcs(a, b) {
