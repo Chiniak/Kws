@@ -363,6 +363,9 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
 .pseg button { border: 0; border-radius: var(--r); min-height: 40px; background: transparent; color: var(--muted); }
 .pseg button[aria-pressed="true"] { background: var(--soft); color: var(--blue); }
 #progInfo { text-align: center; }
+.duebar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 8px 8px 12px; border-radius: var(--r); background: var(--soft); color: var(--blue); font-weight: 600; }
+.duebar .btn { min-height: 38px; padding: 6px 16px; }
+#remHour { min-height: 40px; }
 .opt { border-width: 1.5px; border-radius: var(--r-lg); }
 .seg button { border-width: 1px; border-radius: var(--r); }
 .lang, .others { border-width: 1px; }
@@ -402,6 +405,7 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
     </details>
     <div class="vstat"><span data-t="reading"></span> <span id="pills"></span> <button class="linkbtn" id="openSet2" data-t="voiceSettings"></button></div>
     <div class="status" id="status" hidden><span class="dot"></span><span id="statusText"></span></div>
+    <div class="duebar" id="dueBar" hidden><span id="dueText"></span><button class="btn" id="dueGo" data-t="practiceNow"></button></div>
   </section>
 
   <div class="modes" role="tablist">
@@ -555,6 +559,15 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
       </div>
       <p class="hint" id="trFileMsg" style="margin:0" hidden></p>
     </section>
+
+    <section class="panel">
+      <h3 data-t="remT"></h3>
+      <p class="hint" style="margin:0" data-t="remHint"></p>
+      <label class="ctrl"><input type="checkbox" id="remOn"> <span data-t="remOn"></span></label>
+      <label class="ctrl"><span data-t="remAt"></span> <select id="remHour"></select></label>
+      <div class="row"><button class="btn ghost" id="remTest" data-t="remTest"></button></div>
+      <p class="hint" id="remMsg" style="margin:0"></p>
+    </section>
   </div>
 </div>
 
@@ -663,6 +676,15 @@ const TX = {
     headTag: "HEADING", isHeading: "Heading: leave this line out of exercises",
     trFileHint: "Save this lesson's translations to a file and load them on another device.", trExport: "⬇ Save translations", trImportBtn: "⬆ Load translations",
     trNothing: "This lesson has no translations to save yet.", trExported: n => `Saved ${n} translations.`, trImported: (n, l) => `Loaded ${n} translations (${l}).`, trBadFile: "This isn't a KWS translations file.",
+    remT: "Reminders", remHint: "Once a day, after the chosen hour, KWS reminds you when words or sentences are due for review.",
+    remOn: "Remind me about reviews", remAt: "From", remTest: "🔔 Send a test notification",
+    remOk: "Reminders are on. Android decides the exact moment, so it may come a little later than the chosen hour.",
+    remFg: "Reminders are on, but this browser can't check in the background: you'll see what's due when you open KWS. They work best in the installed KWS app.",
+    remNoSupport: "Notifications don't work here. Open KWS from https://chiniak.github.io/Kws/ or the installed app.",
+    remDenied: "Notifications are blocked. Allow them for KWS in the phone's settings (Apps → KWS → Notifications).",
+    remSent: "Sent. If you don't see it, check that notifications for KWS are allowed.",
+    notifTitle: "KWS: time for a review", notifBody: n => `${n} to review. A few minutes is enough!`, notifTest: "This is how review reminders will look.",
+    dueBanner: n => `📚 ${n} to review`, practiceNow: "Practise",
     dueOnly: "Due for review", noDue: " Nothing to review right now: come back later.",
     progLine: (wm, wn, sd, sn, avg, due) => `Progress: ${wm}/${wn} words learned · ${sd}/${sn} sentences dictated${avg != null ? ` (average ${avg}%)` : ""} · ${due} due for review`,
     trFail: "Translation didn't work. Check the internet connection and try again, or tap ✏️ to write a translation yourself.", trDenied: "Claude isn't allowed to translate here. You can allow it the next time you open the page.",
@@ -726,6 +748,15 @@ const TX = {
     headTag: "NAGŁÓWEK", isHeading: "Nagłówek: pomijaj tę linię w ćwiczeniach",
     trFileHint: "Zapisz tłumaczenia tej lekcji do pliku i wczytaj je na innym urządzeniu.", trExport: "⬇ Zapisz tłumaczenia", trImportBtn: "⬆ Wczytaj tłumaczenia",
     trNothing: "Ta lekcja nie ma jeszcze tłumaczeń do zapisania.", trExported: n => `Zapisano tłumaczenia: ${n}.`, trImported: (n, l) => `Wczytano tłumaczenia: ${n} (${l}).`, trBadFile: "To nie jest plik z tłumaczeniami KWS.",
+    remT: "Przypomnienia", remHint: "Raz dziennie, po wybranej godzinie, KWS przypomni, że masz słowa albo zdania do powtórki.",
+    remOn: "Przypominaj o powtórkach", remAt: "Od godziny", remTest: "🔔 Wyślij próbne powiadomienie",
+    remOk: "Przypomnienia włączone. Dokładną chwilę wybiera Android, więc mogą przyjść trochę później niż wybrana godzina.",
+    remFg: "Przypomnienia włączone, ale ta przeglądarka nie sprawdza powtórek w tle: zobaczysz je po otwarciu KWS. Najlepiej działają w zainstalowanej aplikacji KWS.",
+    remNoSupport: "Tutaj powiadomienia nie działają. Otwórz KWS z https://chiniak.github.io/Kws/ albo z zainstalowanej aplikacji.",
+    remDenied: "Powiadomienia są zablokowane. Zezwól na nie dla KWS w ustawieniach telefonu (Aplikacje → KWS → Powiadomienia).",
+    remSent: "Wysłane. Jeśli go nie widzisz, sprawdź, czy KWS może wysyłać powiadomienia.",
+    notifTitle: "KWS: czas na powtórkę", notifBody: n => `Do powtórki: ${n}. Wystarczy kilka minut!`, notifTest: "Tak będą wyglądać przypomnienia o powtórkach.",
+    dueBanner: n => `📚 Do powtórki: ${n}`, practiceNow: "Ćwicz",
     dueOnly: "Do powtórki", noDue: " Na razie nie ma nic do powtórki: wróć później.",
     progLine: (wm, wn, sd, sn, avg, due) => `Postęp: ${wm}/${wn} słów opanowanych · ${sd}/${sn} zdań z dyktanda${avg != null ? ` (średnio ${avg}%)` : ""} · do powtórki: ${due}`,
     trFail: "Tłumaczenie się nie udało. Sprawdź internet i spróbuj ponownie albo dotknij ✏️ i wpisz tłumaczenie sam.", trDenied: "Claude nie ma tu zgody na tłumaczenie. Możesz ją dać przy następnym otwarciu strony.",
@@ -789,6 +820,15 @@ const TX = {
     headTag: "제목", isHeading: "제목: 연습에서 이 줄 빼기",
     trFileHint: "이 수업의 번역을 파일로 저장하고 다른 기기에서 불러올 수 있어요.", trExport: "⬇ 번역 저장", trImportBtn: "⬆ 번역 불러오기",
     trNothing: "이 수업에는 아직 저장할 번역이 없어요.", trExported: n => `번역 ${n}개를 저장했어요.`, trImported: (n, l) => `번역 ${n}개를 불러왔어요 (${l}).`, trBadFile: "KWS 번역 파일이 아니에요.",
+    remT: "알림", remHint: "하루에 한 번, 고른 시간 이후에 복습할 단어나 문장이 있으면 알려 줘요.",
+    remOn: "복습 알림 받기", remAt: "시작 시간", remTest: "🔔 테스트 알림 보내기",
+    remOk: "알림이 켜졌어요. 정확한 시간은 안드로이드가 정해서 조금 늦게 올 수 있어요.",
+    remFg: "알림이 켜졌지만 이 브라우저는 백그라운드에서 확인할 수 없어요. KWS를 열면 복습할 것을 보여 줘요. 설치된 KWS 앱에서 가장 잘 돼요.",
+    remNoSupport: "여기서는 알림이 안 돼요. https://chiniak.github.io/Kws/ 나 설치된 앱에서 KWS를 여세요.",
+    remDenied: "알림이 차단되어 있어요. 휴대폰 설정(앱 → KWS → 알림)에서 허용하세요.",
+    remSent: "보냈어요. 안 보이면 KWS 알림이 허용되어 있는지 확인하세요.",
+    notifTitle: "KWS: 복습할 시간이에요", notifBody: n => `복습할 것 ${n}개. 몇 분이면 돼요!`, notifTest: "복습 알림은 이렇게 보여요.",
+    dueBanner: n => `📚 복습할 것 ${n}개`, practiceNow: "연습하기",
     dueOnly: "복습할 것", noDue: " 지금은 복습할 게 없어요. 나중에 다시 오세요.",
     progLine: (wm, wn, sd, sn, avg, due) => `진도: 단어 ${wm}/${wn}개 익힘 · 받아쓰기 ${sd}/${sn}문장${avg != null ? ` (평균 ${avg}%)` : ""} · 복습할 것 ${due}개`,
     trFail: "번역하지 못했어요. 인터넷 연결을 확인하고 다시 해 보거나 ✏️를 눌러 직접 써 보세요.", trDenied: "여기서는 Claude가 번역할 수 없어요. 다음에 페이지를 열 때 허용할 수 있어요.",
@@ -845,6 +885,7 @@ function applyUI() {
   showFileName(); renderPills(); renderCards(); render(); uiPlaying(playing);
   try { renderLessons(); } catch (e) {}
   try { setPmin(pmin); } catch (e) {}
+  try { renderRem(); renderDue(); } catch (e) {}
   origDrawn = false; if (!$("origView").hidden) renderOrig();
   setCoverMode(coverMode);
   if (!$("quizView").hidden) { updateInfo(); if (Q) (Q.done ? result() : showQ(true)); if (P !== "quiz") showPractice(P); }
@@ -1940,7 +1981,79 @@ function quizWords(src) {
 const DAY = 864e5, BOX_DAYS = [0, 1, 3, 7, 14, 30];
 let prog = { w: {}, s: {} };
 function loadProg() { prog = (curId && store.get("prog-" + curId, null)) || { w: {}, s: {} }; }
-function saveProg() { if (curId) store.set("prog-" + curId, prog); }
+function saveProg() { if (curId) store.set("prog-" + curId, prog); syncReminder(); }
+
+/* ---------- reminders about reviews ----------
+   The page keeps, in IndexedDB, when each word and sentence of every lesson becomes due. The service worker
+   reads that from the background (periodic sync, which Android/Chrome runs about once or twice a day for an
+   installed app) and shows a notification once a day, after the chosen hour, if something is due. */
+let remOn = store.get("remOn", false), remHour = store.get("remHour", 18);
+function allDues() {
+  const out = [];
+  try {
+    for (const k of Object.keys(localStorage)) {
+      if (!k.startsWith("kws-prog-")) continue;
+      const p = JSON.parse(localStorage.getItem(k) || "null"); if (!p) continue;
+      for (const m of [p.w || {}, p.s || {}]) for (const r of Object.values(m)) if (r && r.due) out.push(r.due);
+    }
+  } catch (e) {}
+  return out;
+}
+const dueNow = () => allDues().filter(d => d <= Date.now()).length;
+async function syncReminder() {
+  const old = (await idb("readonly", st => st.get("reminder"))) || {};
+  await idb("readwrite", st => st.put({ on: remOn, hour: remHour, dues: allDues(), last: old.last || "",
+    title: t("notifTitle"), body: t("notifBody", "{n}"), icon: "icon-192.png" }, "reminder"));
+  renderDue();
+}
+function renderDue() {
+  const n = dueNow();
+  $("dueBar").hidden = !n;
+  if (n) $("dueText").textContent = t("dueBanner", n);
+}
+$("dueGo").onclick = () => { location.hash = ""; goReview(); };
+function goReview() { setMode("quiz"); showPractice("quiz"); $("qSrc").value = "review"; updateInfo(); window.scrollTo({ top: 0 }); }
+function renderRem(msg) {
+  $("remOn").checked = remOn;
+  $("remHour").innerHTML = Array.from({ length: 15 }, (_, i) => i + 7).map(h => `<option value="${h}" ${h === remHour ? "selected" : ""}>${String(h).padStart(2, "0")}:00</option>`).join("");
+  $("remHour").disabled = !remOn;
+  const support = "Notification" in window && "serviceWorker" in navigator && /^https?:$/.test(location.protocol);
+  $("remMsg").textContent = msg || (!support ? t("remNoSupport") : Notification.permission === "denied" ? t("remDenied") : remOn ? t("remOk") : "");
+}
+async function enableBackground() {
+  // ask Chrome to wake the service worker now and then; only installed apps get this
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    if (!("periodicSync" in reg)) return false;
+    const st = await navigator.permissions.query({ name: "periodic-background-sync" }).catch(() => ({ state: "denied" }));
+    if (st.state !== "granted") return false;
+    await reg.periodicSync.register("kws-review", { minInterval: 6 * 3600 * 1000 });
+    return true;
+  } catch (e) { return false; }
+}
+$("remOn").onchange = async () => {
+  if ($("remOn").checked) {
+    if (!("Notification" in window) || !("serviceWorker" in navigator) || !/^https?:$/.test(location.protocol)) { $("remOn").checked = false; return renderRem(t("remNoSupport")); }
+    const p = Notification.permission === "granted" ? "granted" : await Notification.requestPermission().catch(() => "denied");
+    if (p !== "granted") { $("remOn").checked = false; remOn = false; store.set("remOn", false); return renderRem(t("remDenied")); }
+    remOn = true; store.set("remOn", true);
+    const bg = await enableBackground();
+    await syncReminder(); renderRem(bg ? t("remOk") : t("remFg"));
+  } else {
+    remOn = false; store.set("remOn", false);
+    try { const reg = await navigator.serviceWorker.ready; await reg.periodicSync?.unregister("kws-review"); } catch (e) {}
+    await syncReminder(); renderRem();
+  }
+};
+$("remHour").onchange = () => { remHour = +$("remHour").value; store.set("remHour", remHour); syncReminder(); };
+$("remTest").onclick = async () => {
+  try {
+    if (Notification.permission !== "granted" && (await Notification.requestPermission()) !== "granted") return renderRem(t("remDenied"));
+    const reg = await navigator.serviceWorker.ready, n = dueNow();
+    await reg.showNotification(t("notifTitle"), { body: n ? t("notifBody", n) : t("notifTest"), icon: "icon-192.png", badge: "icon-192.png", tag: "kws-review" });
+    renderRem(t("remSent"));
+  } catch (e) { renderRem(t("remNoSupport")); }
+};
 const isDue = r => !!r && r.due <= Date.now();
 function grade(kind, key, ok, score) {
   const m = prog[kind], r = m[key] || (m[key] = { box: 0, due: 0, ok: 0, bad: 0 });
@@ -2365,6 +2478,7 @@ try { applyUI(); } catch (e) { console.error(e); }
 setPmin(pmin);
 setMode("orig");
 initLibrary();
+renderRem(); syncReminder();
 // links like …#dictation open the right place (used by the KWS checklist)
 function route() {
   const h = location.hash.slice(1);
@@ -2376,6 +2490,7 @@ function route() {
   else if (h === "spelling" || h === "dictation" || h === "speaking") { setMode("quiz"); showPractice(h === "spelling" ? "quiz" : h === "dictation" ? "dict" : "speak"); }
   else if (h === "library") { setMode("orig"); window.scrollTo({ top: 0 }); $("lessonSel").focus(); }
   else if (h === "voices") openSet();
+  else if (h === "review") goReview();
 }
 window.addEventListener("hashchange", route);
 route();
