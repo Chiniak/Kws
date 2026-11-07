@@ -2,7 +2,7 @@
    App files: network first (so updates arrive at once), the saved copy when offline.
    Libraries and fonts from CDNs: saved copy first (they never change at a fixed version).
    Everything else (translation, voices from the internet) goes straight to the network. */
-const CACHE = "kws-v1";
+const CACHE = "kws-v2";
 const APP = ["./", "./index.html", "./KWS.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 const LIBS = [
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
@@ -35,7 +35,8 @@ self.addEventListener("fetch", e => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   if (url.origin === location.origin) {
-    e.respondWith(fetch(req).then(res => save(req, res)).catch(async () =>
+    // "no-cache": always ask the server whether the file changed (cheap), so a new KWS.html shows up at once
+    e.respondWith(fetch(req, { cache: "no-cache" }).then(res => save(req, res)).catch(async () =>
       (await caches.match(req, { ignoreSearch: true })) || (req.mode === "navigate" ? caches.match("./KWS.html") : Response.error())));
   } else if (CDN_HOSTS.includes(url.hostname)) {
     e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => save(req, res))));

@@ -127,7 +127,6 @@ button:focus-visible, select:focus-visible { outline: 2px solid var(--blue); out
 .hide .txt .k .w.now { filter: none; }
 .modes { grid-template-columns: repeat(3, 1fr); }
 .mode { font-size: .95rem; }
-.origbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-start; margin-bottom: 10px; }
 .opage { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px; }
 .opage canvas { width: 100%; height: auto; border-radius: 6px; background: #fff; display: block; }
 .opage .ph { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: .85rem; color: var(--muted); font-weight: 600; }
@@ -279,15 +278,101 @@ body.pmin .wrap { padding-bottom: 120px; }
 .vwarn { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; border: 1.5px solid var(--red); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; color: var(--fg); background: color-mix(in srgb, var(--red) 8%, var(--surface)); }
 .vwarn b { color: var(--red); flex: 1 1 100%; }
 .vwarn span { flex: 1 1 260px; color: var(--muted); font-size: .92rem; }
+
+/* ===== Look: one system of corners, borders, shadows and "selected" colour for the whole app ===== */
+:root {
+  --r-sm: 8px; --r: 12px; --r-lg: 16px;
+  --soft: color-mix(in srgb, var(--blue) 13%, var(--surface));
+  --shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 1px 3px rgba(16, 24, 40, .06);
+}
+body { margin: 0; }
+.wrap { padding-block: 10px 210px; }
+
+/* header: flag, name and settings in one compact row */
+.hdr { justify-content: space-between; align-items: center; padding: 4px 0 14px; }
+.hdr .brand { display: flex; align-items: center; gap: 12px; line-height: 1.1; margin: 0; }
+.hdr .flag { width: 52px; margin: 0; border-radius: 4px; }
+.brand-t { display: flex; flex-direction: column; text-align: left; }
+.brand-name { font-family: var(--display); font-weight: 700; font-size: 1.55rem; color: var(--blue); letter-spacing: .03em; }
+.withsubin { margin: 0; font-size: 1rem; letter-spacing: .03em; }
+.hdr .gear-icon { position: static; width: 44px; height: 44px; min-height: 44px; border: 1px solid var(--line); box-shadow: var(--shadow); color: var(--fg); }
+.hdr .gear-icon svg { display: block; }
+.hdr + .sub { display: none; }
+
+/* cards */
+.panel, .qcard, .opage, .lang, .others, .otext, .ln, .trbar, #qStart, #dStart { border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); }
+.trbar, .guide { box-shadow: none; }
+.panel { padding: 12px 14px; gap: 10px; }
+.lbl { text-transform: uppercase; letter-spacing: .07em; font-size: .72rem; }
+
+/* buttons and fields */
+.btn { border-radius: var(--r); min-height: 44px; padding: 10px 16px; font-size: .95rem; }
+.btn.ghost { border: 1px solid var(--line); background: var(--surface); }
+select, .lessonrow select, #trSel { border-radius: var(--r); min-height: 44px; border: 1px solid var(--line); }
+textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
+#delLesson { width: 44px; padding: 0; flex: 0 0 auto; }
+.lessonrow { flex-wrap: nowrap; }
+.lessonrow select { flex: 1 1 auto; }
+.vstat { font-size: .85rem; color: var(--muted); }
+.vpill { font-size: .78rem; padding: 2px 9px; }
+
+/* the three main tabs stay at the top while scrolling */
+.modes { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; padding: 4px; gap: 4px; border-radius: var(--r-lg); box-shadow: var(--shadow); margin: 2px 0 12px; }
+.mode { min-height: 42px; font-size: .9rem; white-space: nowrap; border-radius: var(--r); }
+
+/* option chips: one line that scrolls sideways instead of wrapping */
+.chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -16px 10px; padding: 2px 16px; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: 0 0 auto; min-height: 38px; padding: 6px 14px; font-size: .9rem; white-space: nowrap; border-width: 1px; }
+.orighint { margin: 0 2px 8px; }
+.origbar.chips { flex-wrap: nowrap; gap: 6px; }
+.opage .otext { border: 0; box-shadow: none; padding: 4px 2px; }
+
+/* one "selected" look everywhere: soft blue with blue text */
+.chip[aria-pressed="true"], .covbtn[aria-pressed="true"], .seg button[aria-pressed="true"] { background: var(--soft); color: var(--blue); border-color: var(--blue); }
+
+/* lesson lines */
+.ln { grid-template-columns: 44px 1fr auto; margin-bottom: 10px; border-width: 1px; }
+.ln.playing { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue); }
+.ln.sel { border-color: var(--red); }
+.pick { font-size: 1.05rem; }
+.txt { padding: 12px; }
+.tre { padding: 0 12px; font-size: .95rem; opacity: .75; }
+.tre:hover { opacity: 1; }
+.page { margin: 18px 2px 8px; border-bottom: 0; }
+.trl .tag { border-radius: 6px; }
+
+/* player: a rounded sheet at the bottom */
+.player { border-radius: 18px 18px 0 0; box-shadow: 0 -6px 20px rgba(16, 24, 40, .08); padding-top: 4px; }
+.pin { gap: 8px; }
+.speeds { gap: 3px; background: var(--bg); padding: 3px; border-radius: var(--r); }
+.sp { border: 0; background: transparent; min-height: 40px; border-radius: var(--r-sm); }
+.pin .row .ctrl { font-size: .9rem; min-height: 34px; }
+.pin .row .btn { white-space: nowrap; padding-inline: 12px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* practice */
+.pseg { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 4px; gap: 4px; box-shadow: var(--shadow); }
+.pseg button { border: 0; border-radius: var(--r); min-height: 40px; background: transparent; color: var(--muted); }
+.pseg button[aria-pressed="true"] { background: var(--soft); color: var(--blue); }
+#progInfo { text-align: center; }
+.opt { border-width: 1.5px; border-radius: var(--r-lg); }
+.seg button { border-width: 1px; border-radius: var(--r); }
+.lang, .others { border-width: 1px; }
+.guide { border-width: 1px; border-radius: var(--r-lg); }
+
+@media (min-width: 760px) {
+  .ln { grid-template-columns: 52px 1fr auto; }
+  .hdr .flag { width: 60px; }
+  .brand-name { font-size: 1.8rem; }
+}
 </style>
 
 <div class="wrap">
   <div class="hdr">
     <div class="hdr-brand">
-      <h1 class="brand"><svg class="flag" viewBox="0 0 72 48" role="img" aria-label="Korea"><rect width="72" height="48" fill="#fff"/><g transform="translate(36 24)"><g transform="rotate(33.69)"><circle r="12" fill="#0047A0"/><path d="M-12 0A12 12 0 0 1 12 0A6 6 0 0 0 0 0A6 6 0 0 1 -12 0Z" fill="#CD2E3A"/></g><g fill="#000"><g transform="rotate(-56.31)"><rect x="-6" y="-20" width="12" height="2"/><rect x="-6" y="-23" width="12" height="2"/><rect x="-6" y="-26" width="12" height="2"/></g><g transform="rotate(56.31)"><rect x="-6" y="-20" width="5.5" height="2"/><rect x="0.5" y="-20" width="5.5" height="2"/><rect x="-6" y="-23" width="12" height="2"/><rect x="-6" y="-26" width="5.5" height="2"/><rect x="0.5" y="-26" width="5.5" height="2"/></g><g transform="rotate(123.69)"><rect x="-6" y="-20" width="5.5" height="2"/><rect x="0.5" y="-20" width="5.5" height="2"/><rect x="-6" y="-23" width="5.5" height="2"/><rect x="0.5" y="-23" width="5.5" height="2"/><rect x="-6" y="-26" width="5.5" height="2"/><rect x="0.5" y="-26" width="5.5" height="2"/></g><g transform="rotate(-123.69)"><rect x="-6" y="-20" width="12" height="2"/><rect x="-6" y="-23" width="5.5" height="2"/><rect x="0.5" y="-23" width="5.5" height="2"/><rect x="-6" y="-26" width="12" height="2"/></g></g></g></svg><span class="vh">KWS</span></h1>
-      <p class="withsubin">with Subin</p>
+      <h1 class="brand"><svg class="flag" viewBox="0 0 72 48" role="img" aria-label="Korea"><rect width="72" height="48" fill="#fff"/><g transform="translate(36 24)"><g transform="rotate(33.69)"><circle r="12" fill="#0047A0"/><path d="M-12 0A12 12 0 0 1 12 0A6 6 0 0 0 0 0A6 6 0 0 1 -12 0Z" fill="#CD2E3A"/></g><g fill="#000"><g transform="rotate(-56.31)"><rect x="-6" y="-20" width="12" height="2"/><rect x="-6" y="-23" width="12" height="2"/><rect x="-6" y="-26" width="12" height="2"/></g><g transform="rotate(56.31)"><rect x="-6" y="-20" width="5.5" height="2"/><rect x="0.5" y="-20" width="5.5" height="2"/><rect x="-6" y="-23" width="12" height="2"/><rect x="-6" y="-26" width="5.5" height="2"/><rect x="0.5" y="-26" width="5.5" height="2"/></g><g transform="rotate(123.69)"><rect x="-6" y="-20" width="5.5" height="2"/><rect x="0.5" y="-20" width="5.5" height="2"/><rect x="-6" y="-23" width="5.5" height="2"/><rect x="0.5" y="-23" width="5.5" height="2"/><rect x="-6" y="-26" width="5.5" height="2"/><rect x="0.5" y="-26" width="5.5" height="2"/></g><g transform="rotate(-123.69)"><rect x="-6" y="-20" width="12" height="2"/><rect x="-6" y="-23" width="5.5" height="2"/><rect x="0.5" y="-23" width="5.5" height="2"/><rect x="-6" y="-26" width="12" height="2"/></g></g></g></svg><span class="brand-t"><span class="brand-name">KWS</span><span class="withsubin">with Subin</span></span></h1>
     </div>
-    <button class="gear gear-icon" id="openSet">⚙️</button>
+    <button class="gear gear-icon" id="openSet"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </div>
   <p class="sub" data-t="tagline"></p>
 
@@ -331,8 +416,8 @@ body.pmin .wrap { padding-bottom: 120px; }
   </div>
 
   <div id="origView">
-    <div class="origbar">
-      <span class="hint" id="origHint" data-t="origHint"></span>
+    <p class="hint orighint" id="origHint" data-t="origHint"></p>
+    <div class="origbar chips">
       <button class="chip covbtn" id="covMode" aria-pressed="false" data-t="coverMode"></button>
       <button class="chip" id="covAll" data-t="coverAll"></button>
       <button class="chip" id="covNone" data-t="uncoverAll"></button>
