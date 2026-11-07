@@ -248,7 +248,7 @@ button:focus-visible, select:focus-visible { outline: 2px solid var(--blue); out
 .pmin-btn { font: inherit; font-size: .85rem; font-weight: 600; color: var(--muted); background: transparent; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 30px; margin-top: -4px; }
 .pmin-btn .bar { width: 40px; height: 5px; border-radius: 3px; background: var(--line); }
 .pmin-btn:hover .bar { background: var(--muted); }
-.player.min .gtrow, .player.min .lbl, .player.min .speeds, .player.min .pin > .row:last-child { display: none !important; }
+.player.min .gtrow, .player.min .lbl, .player.min .speeds, .player.min .pchips, .player.min .pin > .row:last-child { display: none !important; }
 .player.min .pin { gap: 6px; }
 .player.min .pin > .row .btn { min-height: 44px; padding-block: 8px; }
 .ratechip { display: none; font-size: .85rem; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -286,7 +286,7 @@ body.pmin .wrap { padding-bottom: 120px; }
   --shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 1px 3px rgba(16, 24, 40, .06);
 }
 body { margin: 0; }
-.wrap { padding-block: 10px 210px; }
+.wrap, body.pmin .wrap { padding-block: 10px calc(var(--player-h, 200px) + 24px); }
 
 /* header: a small flag with "with Subin" under it, settings on the right */
 .hdr { justify-content: center; align-items: center; padding: 2px 56px 12px; }
@@ -320,6 +320,11 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
 
 /* option chips: one line that scrolls sideways instead of wrapping */
 .chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -16px 10px; padding: 2px 16px; }
+/* Listen options (above the list and in the player): two even rows, nothing to scroll */
+#listView > .chips, .pchips { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; overflow: visible; margin: 0 0 10px; padding: 0; }
+.pchips { margin: 0; }
+#listView > .chips .chip, .pchips .chip { white-space: normal; line-height: 1.2; min-height: 40px; padding: 6px 10px; text-align: center; overflow-wrap: anywhere; }
+@media (min-width: 760px) { #listView > .chips, .pchips { grid-template-columns: repeat(4, 1fr); } .pin .pchips { grid-column: 1 / -1; } }
 .chips::-webkit-scrollbar { display: none; }
 .chip { flex: 0 0 auto; min-height: 38px; padding: 6px 14px; font-size: .9rem; white-space: nowrap; border-width: 1px; }
 .orighint { margin: 0 2px 8px; }
@@ -485,6 +490,12 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
       <button class="sp" data-r="0.7">0.7×<small data-t="sp3"></small></button>
       <button class="sp" data-r="0.9">0.9×<small data-t="sp4"></small></button>
       <button class="sp" data-r="1">1×<small data-t="sp5"></small></button>
+    </div>
+    <div class="pchips" id="pChips">
+      <button class="chip" data-for="cKo"></button>
+      <button class="chip" data-for="cTr"></button>
+      <button class="chip" data-for="cHide"></button>
+      <button class="chip" data-for="cClear"></button>
     </div>
     <div class="row">
       <label class="ctrl"><input type="checkbox" id="words"> <span data-t="wordByWord"></span></label>
@@ -669,7 +680,7 @@ const TX = {
     pasted: "Pasted text", page: n => `Page ${n}`, pick: "Select",
     empty: "No text to read. If the PDF is only images (a scan), the app can't extract text from it. Paste the text instead.",
     cantHear: "Can't hear it?", openGT: "Translate this line in Google Translate ↗",
-    playSel: n => `▶ Play selected${n ? ` (${n})` : ""}`, playAll: "▶ Everything", stop: "■ Stop", pickFirst: "Select lines with ○ first",
+    playSel: n => `▶ Selected${n ? ` (${n})` : ""}`, playAll: "▶ Everything", stop: "■ Stop", pickFirst: "Select lines with ○ first",
     speed: "Speed", sp1: "very slow", sp2: "slow", sp3: "calm", sp4: "almost", sp5: "normal", wordByWord: "Word by word", loop: "Loop",
     uiLang: "App language", readLangs: "Reading languages",
     readLangsHint: "The app recognizes each part of the text by its alphabet (Korean, Japanese, Russian…) or, for Latin letters, by its words (English, Polish, German…), and reads it with that language's voice. Turn on the languages you want to hear.",
@@ -732,7 +743,7 @@ const TX = {
     pasted: "Wklejony tekst", page: n => `Strona ${n}`, pick: "Zaznacz",
     empty: "Brak tekstu do odczytania. Jeśli PDF to same obrazki (skan), aplikacja nie wyciągnie z niego tekstu. Wklej wtedy tekst ręcznie.",
     cantHear: "Nie słychać?", openGT: "Przetłumacz tę linię w Tłumaczu Google ↗",
-    playSel: n => `▶ Odtwórz zaznaczone${n ? ` (${n})` : ""}`, playAll: "▶ Wszystko", stop: "■ Stop", pickFirst: "Zaznacz linie kółkiem ○",
+    playSel: n => `▶ Zaznaczone${n ? ` (${n})` : ""}`, playAll: "▶ Wszystko", stop: "■ Stop", pickFirst: "Zaznacz linie kółkiem ○",
     speed: "Tempo", sp1: "b. wolno", sp2: "wolno", sp3: "spokojnie", sp4: "prawie", sp5: "normalnie", wordByWord: "Słowo po słowie", loop: "W kółko",
     uiLang: "Język aplikacji", readLangs: "Języki czytania",
     readLangsHint: "Aplikacja rozpoznaje język każdego fragmentu po alfabecie (koreański, japoński, rosyjski…), a przy literach łacińskich po słowach (angielski, polski, niemiecki…), i czyta go głosem tego języka. Włącz języki, które chcesz słyszeć.",
@@ -795,7 +806,7 @@ const TX = {
     pasted: "붙여넣은 텍스트", page: n => `${n}쪽`, pick: "선택",
     empty: "읽을 텍스트가 없어요. PDF가 이미지(스캔)로만 되어 있으면 텍스트를 꺼낼 수 없어요. 텍스트를 직접 붙여넣으세요.",
     cantHear: "소리가 안 들리나요?", openGT: "Google 번역에서 이 문장 열기 ↗",
-    playSel: n => `▶ 선택한 문장 재생${n ? ` (${n})` : ""}`, playAll: "▶ 전체", stop: "■ 정지", pickFirst: "먼저 ○로 문장을 선택하세요",
+    playSel: n => `▶ 선택한 줄${n ? ` (${n})` : ""}`, playAll: "▶ 전체", stop: "■ 정지", pickFirst: "먼저 ○로 문장을 선택하세요",
     speed: "속도", sp1: "아주 느리게", sp2: "느리게", sp3: "차분하게", sp4: "조금 느리게", sp5: "보통", wordByWord: "단어씩", loop: "반복",
     uiLang: "앱 언어", readLangs: "읽기 언어",
     readLangsHint: "앱이 글자(한국어, 일본어, 러시아어…)나 단어(영어, 폴란드어, 독일어…)로 언어를 알아보고 그 언어의 음성으로 읽어요. 듣고 싶은 언어를 켜세요.",
@@ -952,7 +963,7 @@ function renderTrSel() {
 $("trSel").onchange = () => { trLang = $("trSel").value; store.set("trLang", trLang); loadTr(); renderPills(); render(); };
 const needsTr = l => /[\p{L}]/u.test(l.text) && !getTr(l.text);
 function renderTrBar(msg) {
-  $("cTr").textContent = t("trChip", langName(trLang));
+  $("cTr").textContent = t("trChip", langName(trLang)); syncChips();
   const missing = lines.filter(needsTr).length;
   const show = $("cTr").getAttribute("aria-pressed") === "true" && (missing > 0 || msg);
   $("trBar").hidden = !show;
@@ -1578,7 +1589,18 @@ function setPmin(on) {
 }
 $("pMin").onclick = () => setPmin(!pmin);
 $("speeds").onclick = e => { const b = e.target.closest(".sp"); if (b) setRate(parseFloat(b.dataset.r)); };
-const tog = (b, f) => b.onclick = () => { b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true"); f(b.getAttribute("aria-pressed") === "true"); };
+const tog = (b, f) => b.onclick = () => { b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true"); f(b.getAttribute("aria-pressed") === "true"); syncChips(); };
+// the same four options also sit in the player's "speed and options" panel: they mirror the buttons above the list
+function syncChips() {
+  document.querySelectorAll("#pChips [data-for]").forEach(m => {
+    const src = $(m.dataset.for); if (!src) return;
+    m.textContent = src.textContent;
+    if (src.hasAttribute("aria-pressed")) m.setAttribute("aria-pressed", src.getAttribute("aria-pressed"));
+  });
+}
+// keep room under the list for the player, whatever its height (folded, unfolded, hidden)
+try { new ResizeObserver(() => document.documentElement.style.setProperty("--player-h", document.querySelector(".player").offsetHeight + "px")).observe(document.querySelector(".player")); } catch (e) {}
+$("pChips").onclick = e => { const m = e.target.closest("[data-for]"); if (m) { $(m.dataset.for).click(); syncChips(); } };
 tog($("cKo"), () => render());
 tog($("cHide"), on => {
   $("list").classList.toggle("hide", on); $("hideHint").hidden = !on;
@@ -1586,6 +1608,7 @@ tog($("cHide"), on => {
 });
 tog($("cTr"), on => { $("list").classList.toggle("notr", !on); store.set("tr", on); renderTrBar(); });
 if (store.get("tr", true) === false) { $("cTr").setAttribute("aria-pressed", "false"); $("list").classList.add("notr"); }
+syncChips();
 $("cClear").onclick = () => { sel.clear(); render(); uiPlaying(playing); };
 
 const openSet = () => { stop(); renderCards(); $("sheet").hidden = false; $("sheet").scrollTop = 0; $("closeSet").focus(); };
