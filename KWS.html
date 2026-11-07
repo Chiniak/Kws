@@ -684,6 +684,17 @@ const TX = {
     remDenied: "Notifications are blocked. Allow them for KWS in the phone's settings (Apps → KWS → Notifications).",
     remSent: "Sent. If you don't see it, check that notifications for KWS are allowed.",
     notifTitle: "KWS: time for a review", notifBody: n => `${n} to review. A few minutes is enough!`, notifTest: "This is how review reminders will look.",
+    notifBodies: [
+      "{n} to review. A few minutes is enough!",
+      "A few minutes a day makes the difference. {n} to review.",
+      "Words won't learn themselves 😉 {n} to review.",
+      "Your Korean grows with every review. Waiting today: {n}.",
+      "Review today, so you don't relearn tomorrow. {n} to review.",
+      "A quick Korean break? {n} to review. 조금만 더!",
+      "Just a moment more and these words will stay with you. {n} to review.",
+      "Got a minute? Do a quick review: {n}. 할 수 있어요!",
+      "A daily review is the easiest way to fluency. Waiting: {n}.",
+    ],
     dueBanner: n => `📚 ${n} to review`, practiceNow: "Practise",
     dueOnly: "Due for review", noDue: " Nothing to review right now: come back later.",
     progLine: (wm, wn, sd, sn, avg, due) => `Progress: ${wm}/${wn} words learned · ${sd}/${sn} sentences dictated${avg != null ? ` (average ${avg}%)` : ""} · ${due} due for review`,
@@ -756,6 +767,17 @@ const TX = {
     remDenied: "Powiadomienia są zablokowane. Zezwól na nie dla KWS w ustawieniach telefonu (Aplikacje → KWS → Powiadomienia).",
     remSent: "Wysłane. Jeśli go nie widzisz, sprawdź, czy KWS może wysyłać powiadomienia.",
     notifTitle: "KWS: czas na powtórkę", notifBody: n => `Do powtórki: ${n}. Wystarczy kilka minut!`, notifTest: "Tak będą wyglądać przypomnienia o powtórkach.",
+    notifBodies: [
+      "Do powtórki: {n}. Wystarczy kilka minut!",
+      "Kilka minut dziennie robi różnicę. Masz {n} do powtórki.",
+      "Słówka same się nie nauczą 😉 Do powtórki: {n}.",
+      "Twój koreański rośnie z każdą powtórką. Dziś czeka: {n}.",
+      "Lepiej powtórzyć dziś niż uczyć się od nowa jutro. Do powtórki: {n}.",
+      "Krótka przerwa na koreański? {n} do powtórki. 조금만 더!",
+      "Jeszcze chwila, a te słowa zostaną z Tobą na długo. Do powtórki: {n}.",
+      "Masz chwilę? Zrób szybką powtórkę: {n}. 할 수 있어요!",
+      "Codzienna powtórka to najprostsza droga do płynności. Czeka: {n}.",
+    ],
     dueBanner: n => `📚 Do powtórki: ${n}`, practiceNow: "Ćwicz",
     dueOnly: "Do powtórki", noDue: " Na razie nie ma nic do powtórki: wróć później.",
     progLine: (wm, wn, sd, sn, avg, due) => `Postęp: ${wm}/${wn} słów opanowanych · ${sd}/${sn} zdań z dyktanda${avg != null ? ` (średnio ${avg}%)` : ""} · do powtórki: ${due}`,
@@ -828,6 +850,17 @@ const TX = {
     remDenied: "알림이 차단되어 있어요. 휴대폰 설정(앱 → KWS → 알림)에서 허용하세요.",
     remSent: "보냈어요. 안 보이면 KWS 알림이 허용되어 있는지 확인하세요.",
     notifTitle: "KWS: 복습할 시간이에요", notifBody: n => `복습할 것 ${n}개. 몇 분이면 돼요!`, notifTest: "복습 알림은 이렇게 보여요.",
+    notifBodies: [
+      "복습할 것 {n}개. 몇 분이면 돼요!",
+      "하루 몇 분이 큰 차이를 만들어요. 복습할 것 {n}개.",
+      "단어는 저절로 외워지지 않아요 😉 복습할 것 {n}개.",
+      "복습할 때마다 한국어 실력이 늘어요. 오늘은 {n}개.",
+      "내일 다시 외우는 것보다 오늘 복습하는 게 쉬워요. {n}개 남았어요.",
+      "잠깐 한국어 쉬는 시간? 복습할 것 {n}개. 조금만 더!",
+      "조금만 더 하면 이 단어들이 오래 기억돼요. 복습할 것 {n}개.",
+      "1분 있어요? 빠르게 복습해요: {n}개. 할 수 있어요!",
+      "매일 복습이 가장 쉬운 길이에요. 기다리는 것: {n}개.",
+    ],
     dueBanner: n => `📚 복습할 것 ${n}개`, practiceNow: "연습하기",
     dueOnly: "복습할 것", noDue: " 지금은 복습할 게 없어요. 나중에 다시 오세요.",
     progLine: (wm, wn, sd, sn, avg, due) => `진도: 단어 ${wm}/${wn}개 익힘 · 받아쓰기 ${sd}/${sn}문장${avg != null ? ` (평균 ${avg}%)` : ""} · 복습할 것 ${due}개`,
@@ -1987,7 +2020,7 @@ function saveProg() { if (curId) store.set("prog-" + curId, prog); syncReminder(
    The page keeps, in IndexedDB, when each word and sentence of every lesson becomes due. The service worker
    reads that from the background (periodic sync, which Android/Chrome runs about once or twice a day for an
    installed app) and shows a notification once a day, after the chosen hour, if something is due. */
-let remOn = store.get("remOn", false), remHour = store.get("remHour", 18);
+let remOn = store.get("remOn", false), remHour = store.get("remHour", 6);
 function allDues() {
   const out = [];
   try {
@@ -2002,8 +2035,8 @@ function allDues() {
 const dueNow = () => allDues().filter(d => d <= Date.now()).length;
 async function syncReminder() {
   const old = (await idb("readonly", st => st.get("reminder"))) || {};
-  await idb("readwrite", st => st.put({ on: remOn, hour: remHour, dues: allDues(), last: old.last || "",
-    title: t("notifTitle"), body: t("notifBody", "{n}"), icon: "icon-192.png" }, "reminder"));
+  await idb("readwrite", st => st.put({ on: remOn, hour: remHour, dues: allDues(), last: old.last || "", lastBody: old.lastBody,
+    title: t("notifTitle"), body: t("notifBody", "{n}"), bodies: t("notifBodies"), icon: "icon-192.png" }, "reminder"));
   renderDue();
 }
 function renderDue() {
@@ -2015,7 +2048,7 @@ $("dueGo").onclick = () => { location.hash = ""; goReview(); };
 function goReview() { setMode("quiz"); showPractice("quiz"); $("qSrc").value = "review"; updateInfo(); window.scrollTo({ top: 0 }); }
 function renderRem(msg) {
   $("remOn").checked = remOn;
-  $("remHour").innerHTML = Array.from({ length: 15 }, (_, i) => i + 7).map(h => `<option value="${h}" ${h === remHour ? "selected" : ""}>${String(h).padStart(2, "0")}:00</option>`).join("");
+  $("remHour").innerHTML = Array.from({ length: 18 }, (_, i) => i + 5).map(h => `<option value="${h}" ${h === remHour ? "selected" : ""}>${String(h).padStart(2, "0")}:00</option>`).join("");
   $("remHour").disabled = !remOn;
   const support = "Notification" in window && "serviceWorker" in navigator && /^https?:$/.test(location.protocol);
   $("remMsg").textContent = msg || (!support ? t("remNoSupport") : Notification.permission === "denied" ? t("remDenied") : remOn ? t("remOk") : "");
@@ -2050,7 +2083,8 @@ $("remTest").onclick = async () => {
   try {
     if (Notification.permission !== "granted" && (await Notification.requestPermission()) !== "granted") return renderRem(t("remDenied"));
     const reg = await navigator.serviceWorker.ready, n = dueNow();
-    await reg.showNotification(t("notifTitle"), { body: n ? t("notifBody", n) : t("notifTest"), icon: "icon-192.png", badge: "icon-192.png", tag: "kws-review" });
+    const pool = t("notifBodies"), pick = pool[Math.floor(Math.random() * pool.length)];
+    await reg.showNotification(t("notifTitle"), { body: n ? pick.replace("{n}", n) : t("notifTest"), icon: "icon-192.png", badge: "icon-192.png", tag: "kws-review" });
     renderRem(t("remSent"));
   } catch (e) { renderRem(t("remNoSupport")); }
 };

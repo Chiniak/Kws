@@ -65,9 +65,14 @@ async function remind() {
   if (!r || !r.on) return;
   const now = new Date(), today = now.toDateString();
   const n = (r.dues || []).filter(d => d <= now.getTime()).length;
-  if (!n || r.last === today || now.getHours() < (r.hour ?? 18)) return;
+  if (!n || r.last === today || now.getHours() < (r.hour ?? 6)) return;
+  // a different encouraging sentence each day (not the same one twice in a row)
+  const pool = Array.isArray(r.bodies) && r.bodies.length ? r.bodies : [r.body || "{n}"];
+  let i = Math.floor(Math.random() * pool.length);
+  if (pool.length > 1 && i === r.lastBody) i = (i + 1) % pool.length;
+  r.lastBody = i;
   await self.registration.showNotification(r.title || "KWS", {
-    body: String(r.body || "{n}").replace("{n}", n), icon: r.icon || "icon-192.png", badge: "icon-192.png", tag: "kws-review",
+    body: String(pool[i]).replace("{n}", n), icon: r.icon || "icon-192.png", badge: "icon-192.png", tag: "kws-review",
   });
   r.last = today;
   await idbReq("readwrite", st => st.put(r, "reminder"));
