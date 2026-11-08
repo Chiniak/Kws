@@ -395,6 +395,9 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
 .mprompt { font-size: 1.35rem; font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
 .mprompt.tr { font-size: 1.15rem; }
 .opts.mopts { grid-template-columns: 1fr; }
+.msurf { display: block; font-size: .85rem; font-weight: 500; color: var(--muted); margin-top: 2px; }
+.mflag { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: var(--r); font-size: .95rem; }
+#mFlag { flex: 0 0 auto; padding-inline: 12px; }
 .opt.mopt { font-size: 1.05rem; font-weight: 500; justify-content: flex-start; text-align: left; min-height: 54px; padding: 10px 14px; line-height: 1.4; }
 .opt.mopt[lang="ko"] { font-size: 1.2rem; font-weight: 600; }
 @media (min-width: 1200px) { .opts.mopts { grid-template-columns: 1fr 1fr; } }
@@ -819,11 +822,11 @@ const TX = {
     dueBanner: n => `📚 ${n} to review`, practiceNow: "Practise",
     dueOnly: "Due for review", noDue: " Nothing to review right now: come back later.",
     hardest: s => `Most often wrong: ${s}. They will come up more often.`,
-    againSoon: "↻ It will come back in a moment.", bMeans: "It means:", bTranslating: "Translating…", answersIn: "Answers in", mLangTr: "translation language",
+    againSoon: "↻ It will come back in a moment.", bMeans: "It means:", bTranslating: "Translating…", dictLoading: "Loading the dictionary…", dictFail: "The dictionary could not be loaded. Open KWS once with internet.", inLesson: "in the lesson", flagT: "Report a mistake", flagNotWord: "🚫 Not a word", flagFix: "✏️ Fix the meaning", flagAsk: w => `Meaning of ${w}:`, flagDone: "Removed: it won't come up again.", flagFixed: "Saved: your meaning will be used.", answersIn: "Answers in", mLangTr: "translation language",
     segBuild: "Build", segMean: "Meaning",
     buildTitle: "Build the sentence", buildIntro: "Listen and tap the pieces in the right order. No Korean keyboard needed.",
     startBuild: "Start", buildPh: "Tap the pieces below in the right order…", clearB: "↺ Clear", bAvail: n => `Sentences available: ${n}`,
-    meanTitle: "What does it mean?", meanIntro: "Match Korean words from the lesson with their translations. Names, headings and English are left out.",
+    meanTitle: "What does it mean?", meanIntro: "Match Korean words from the lesson with their meanings (dictionary: Wiktionary, CC BY-SA). Names, headings and grammar endings are left out; 🚩 reports a mistake.",
     direction: "Direction", dirKo: "Korean → translation", dirTr: "Translation → Korean", dirMix: "Mixed", startMean: "Start",
     meanQko: "What does this word mean?", meanQtr: "Which Korean word is it?",
     meanAvail: n => `Words available: ${n}`, meanNeed: "The words could not be translated. Connect to the internet and try again.",
@@ -925,11 +928,11 @@ const TX = {
     dueBanner: n => `📚 Do powtórki: ${n}`, practiceNow: "Ćwicz",
     dueOnly: "Do powtórki", noDue: " Na razie nie ma nic do powtórki: wróć później.",
     hardest: s => `Najczęściej mylone: ${s}. Będą pojawiać się częściej.`,
-    againSoon: "↻ To pytanie wróci za chwilę.", bMeans: "Znaczy:", bTranslating: "Tłumaczę…", answersIn: "Odpowiedzi po", mLangTr: "język tłumaczenia",
+    againSoon: "↻ To pytanie wróci za chwilę.", bMeans: "Znaczy:", bTranslating: "Tłumaczę…", dictLoading: "Wczytuję słownik…", dictFail: "Nie udało się wczytać słownika. Otwórz raz KWS z internetem.", inLesson: "w lekcji", flagT: "Zgłoś błąd", flagNotWord: "🚫 To nie jest słowo", flagFix: "✏️ Popraw znaczenie", flagAsk: w => `Znaczenie słowa ${w}:`, flagDone: "Usunięte: to słowo już się nie pojawi.", flagFixed: "Zapisane: będzie używane Twoje znaczenie.", answersIn: "Odpowiedzi po", mLangTr: "język tłumaczenia",
     segBuild: "Ułóż", segMean: "Znaczenie",
     buildTitle: "Ułóż zdanie", buildIntro: "Posłuchaj i dotykaj kawałków w dobrej kolejności. Nie potrzeba koreańskiej klawiatury.",
     startBuild: "Zacznij", buildPh: "Dotykaj kawałków poniżej w dobrej kolejności…", clearB: "↺ Wyczyść", bAvail: n => `Dostępnych zdań: ${n}`,
-    meanTitle: "Co to znaczy?", meanIntro: "Dopasuj koreańskie słowa z lekcji do tłumaczeń. Imiona, nagłówki i angielski są pomijane.",
+    meanTitle: "Co to znaczy?", meanIntro: "Dopasuj koreańskie słowa z lekcji do znaczeń (słownik: Wikisłownik, CC BY-SA). Imiona, nagłówki i końcówki gramatyczne są pomijane; 🚩 zgłasza błąd.",
     direction: "Kierunek", dirKo: "Koreański → tłumaczenie", dirTr: "Tłumaczenie → koreański", dirMix: "Na zmianę", startMean: "Zacznij",
     meanQko: "Co znaczy to słowo?", meanQtr: "Które to słowo po koreańsku?",
     meanAvail: n => `Dostępnych słów: ${n}`, meanNeed: "Nie udało się przetłumaczyć słów. Połącz się z internetem i spróbuj jeszcze raz.",
@@ -1031,11 +1034,11 @@ const TX = {
     dueBanner: n => `📚 복습할 것 ${n}개`, practiceNow: "연습하기",
     dueOnly: "복습할 것", noDue: " 지금은 복습할 게 없어요. 나중에 다시 오세요.",
     hardest: s => `자주 틀린 단어: ${s}. 더 자주 나와요.`,
-    againSoon: "↻ 이 문제는 곧 다시 나와요.", bMeans: "뜻:", bTranslating: "번역 중…", answersIn: "답 언어", mLangTr: "번역 언어",
+    againSoon: "↻ 이 문제는 곧 다시 나와요.", bMeans: "뜻:", bTranslating: "번역 중…", dictLoading: "사전을 불러오는 중…", dictFail: "사전을 불러오지 못했어요. 인터넷에 연결해서 KWS를 한 번 여세요.", inLesson: "레슨에서", flagT: "오류 신고", flagNotWord: "🚫 단어가 아니에요", flagFix: "✏️ 뜻 고치기", flagAsk: w => `${w}의 뜻:`, flagDone: "삭제했어요. 다시 나오지 않아요.", flagFixed: "저장했어요. 이 뜻을 사용해요.", answersIn: "답 언어", mLangTr: "번역 언어",
     segBuild: "문장 만들기", segMean: "뜻",
     buildTitle: "문장 만들기", buildIntro: "듣고 조각을 맞는 순서로 누르세요. 한국어 키보드가 필요 없어요.",
     startBuild: "시작", buildPh: "아래 조각을 맞는 순서로 누르세요…", clearB: "↺ 지우기", bAvail: n => `사용할 수 있는 문장: ${n}개`,
-    meanTitle: "무슨 뜻일까요?", meanIntro: "레슨의 한국어 단어와 번역을 맞춰 보세요. 이름, 제목, 영어는 빠져요.",
+    meanTitle: "무슨 뜻일까요?", meanIntro: "레슨의 한국어 단어와 뜻을 맞춰 보세요 (사전: 위키낱말사전, CC BY-SA). 이름, 제목, 어미는 빠져요. 🚩로 오류를 신고해요.",
     direction: "방향", dirKo: "한국어 → 번역", dirTr: "번역 → 한국어", dirMix: "섞어서", startMean: "시작",
     meanQko: "이 단어는 무슨 뜻일까요?", meanQtr: "한국어 단어는 무엇일까요?",
     meanAvail: n => `사용할 수 있는 단어: ${n}개`, meanNeed: "단어를 번역하지 못했어요. 인터넷에 연결하고 다시 해 보세요.",
@@ -3039,30 +3042,108 @@ function meanWords(src) {
   }
   return out;
 }
-// words with a usable translation (not a name, not left untranslated)
+/* ---------- the learner dictionary (dict-ko.js, ~28 000 words from Wiktionary) ----------
+   Only words found in it (or explained in the lesson itself) are practised: names, places, grammar endings
+   and broken bits of text are not in it, so they never become questions. Meanings come from the
+   dictionary, not from a translator guessing a lone word; for Polish the English meaning is translated. */
+let DICT = window.KWS_DICT || null, dictLoading = null;
+function loadDict() {
+  if (DICT) return Promise.resolve(DICT);
+  if (!dictLoading) dictLoading = new Promise(res => {
+    const s = document.createElement("script"); s.src = "dict-ko.js";
+    s.onload = () => { DICT = window.KWS_DICT || null; res(DICT); };
+    s.onerror = () => { dictLoading = null; res(null); };
+    document.head.appendChild(s);
+  });
+  return dictLoading;
+}
+/* Back from a form in the lesson to the dictionary form:
+   학생이에요 → 학생, 먹어요/먹는다/먹었어요 → 먹다, 봐요 → 보다, 해요 → 하다, 마셔요 → 마시다, 예뻐요 → 예쁘다,
+   더워요 → 덥다, 몰라요 → 모르다, 들어요 → 듣다/들다, 갑니다 → 가다, 가세요 → 가다. */
+const H0 = 0xAC00;
+const syl = ch => { const c = ch.charCodeAt(0) - H0; return c < 0 || c > 11171 ? null : { L: Math.floor(c / 588), V: Math.floor((c % 588) / 28), T: c % 28 }; };
+const mk = (L, V, T = 0) => String.fromCharCode(H0 + L * 588 + V * 28 + T);
+const NOUN_TAILS = ["이었어요","였어요","이에요","예요","입니다","이었다","였다","이야","이다","이지만","이고","에서는","에서도","에게서","한테서","에서","에게","한테","까지","부터","으로","이랑","하고","처럼","보다","마다","만","에는","에도","은","는","이","가","을","를","도","의","로","와","과","랑","에","야"];
+const VERB_TAILS = ["으셨어요","셨어요","으세요","세요","으십시오","십시오","었어요","았어요","였어요","겠어요","었습니다","았습니다","습니다","니다","었어","았어","었다","았다","는데요","는데","거든요","잖아요","고요","지만","지요","네요","군요","니까","으니까","으면","면","아서","어서","서","으러","러","으려고","려고","고","죠","기","게","자","는다","다","어요","아요","여요","요","는","은","을","어","아"];
+function verbStems(h, out) {
+  out.add(h);
+  const last = h.slice(-1), pre = h.slice(0, -1), s = syl(last); if (!s) return;
+  const p = pre ? syl(pre.slice(-1)) : null, pp = pre.slice(0, -1);
+  if (s.T === 20) { const b = pre + mk(s.L, s.V); verbStems(b, out); }                        // 갔 → 가, 먹었 → 먹었? (tail took 었)
+  if (s.T === 0) {
+    const swap = { 9: [8], 14: [13], 6: [20], 10: [11], 4: [18], 0: [18], 1: [0] }[s.V] || [];  // 봐→보, 워→우, 셔→시, 돼→되, 써→쓰, 빠→쁘, 해→하
+    for (const v of swap) out.add(pre + mk(s.L, v));
+    if (s.L === 11 && (s.V === 14 || s.V === 9) && p && p.T === 0) out.add(pp + mk(p.L, p.V, 17));   // 더워 → 덥, 도와 → 돕
+    if (s.L === 5 && (s.V === 0 || s.V === 4) && p && p.T === 8) out.add(pp + mk(p.L, p.V) + "르");     // 몰라 → 모르
+  }
+  if (p && p.T === 8 && s.L === 11) out.add(pp + mk(p.L, p.V, 7));                             // 들어 → 듣 (→ 듣다)
+  if (s.T === 4 || s.T === 8 || s.T === 17) out.add(pre + mk(s.L, s.V));                        // 간다/갈/갑니다 → 가
+}
+function lemma(w) {
+  if (!DICT || !w) return null;
+  // "가요" is a noun (song) in the dictionary, but in a lesson it is nearly always 가다: a verb form wins
+  if (DICT[w] && !(/(요|니다|세요|어|아)$/.test(w) && DICT[w][0] === "n" && verbLemma(w))) return { lemma: w, e: DICT[w] };
+  const cands = [];
+  for (const t of NOUN_TAILS) if (w.endsWith(t) && w.length > t.length) { const n = w.slice(0, -t.length); if (DICT[n] && "npmdc".includes(DICT[n][0])) cands.push(n); }
+  cands.sort((a, b) => b.length - a.length);
+  // a noun of two or more syllables first (학생이에요 → 학생); a one-syllable "noun" only if no verb fits (가요 is 가다)
+  if (cands[0] && cands[0].length >= 2) return { lemma: cands[0], e: DICT[cands[0]] };
+  const vb = verbLemma(w);
+  if (vb) return vb;
+  return cands[0] ? { lemma: cands[0], e: DICT[cands[0]] } : null;
+}
+function verbLemma(w) {
+  const stems = new Set();
+  for (const t of VERB_TAILS) if (w.endsWith(t) && w.length > t.length) {
+    const h = w.slice(0, -t.length);
+    verbStems(h, stems);
+    if (/^[었았였겠]/.test(t)) continue;
+  }
+  verbStems(w, stems);                                      // 가, 봐, 해 (endings fused into the last syllable)
+  for (const st of [...stems].sort((a, b) => b.length - a.length)) {
+    const v = st.replace(/(었|았|였|겠|시|으시)$/, "") + "다";
+    for (const c of [st + "다", v]) if (DICT[c] && "vj".includes(DICT[c][0])) return { lemma: c, e: DICT[c] };
+  }
+  return null;
+}
+// meanings you blocked or fixed with 🚩 (for all lessons)
+let mBlock = new Set(store.get("mBlock", []));
+const mFixes = () => store.get("mFix-" + meanLang(), {}) || {};
+const lc1 = s => /^\p{Lu}\p{Ll}/u.test(s) ? s.charAt(0).toLocaleLowerCase() + s.slice(1) : s;
+// words with a meaning: the lesson's explanation first, then the dictionary
 function meanPool(src) {
-  const seenTr = new Set(), out = [];
+  const seenKo = new Set(), seenTr = new Set(), out = [], gl = glosses(), l = meanLang(), map = wtrMap(), fix = mFixes();
   for (const x of meanWords(src === "review" ? "all" : src)) {
-    let tr = wtrOf(x.ko);
-    // translators often capitalize a single word ("Student"): show it in lower case like a dictionary
-    if (/^\p{Lu}\p{Ll}/u.test(tr)) tr = tr.charAt(0).toLocaleLowerCase() + tr.slice(1);
-    if (!tr || /[가-힣]/.test(tr) || looksLikeName(x.ko, tr) || seenTr.has(tr.toLowerCase())) continue;
-    seenTr.add(tr.toLowerCase()); out.push({ ...x, tr });
+    let ko = x.ko, tr = "";
+    const g = gl[x.ko];
+    if (g) tr = g.lang === l ? g.g : BUILTIN_WORDS[l]?.[x.ko] || map["g|" + g.g] || "";
+    else {
+      const L = lemma(x.ko); if (!L) continue;
+      ko = L.lemma;
+      tr = BUILTIN_WORDS[l]?.[x.ko] || BUILTIN_WORDS[l]?.[ko] || (l === "en" ? L.e[1] : map["g|" + L.e[1]] || "");
+    }
+    if (fix[ko]) tr = fix[ko];
+    tr = lc1(String(tr).trim());
+    if (!tr || mBlock.has(ko) || /[가-힣]/.test(tr) || seenKo.has(ko) || seenTr.has(tr.toLowerCase())) continue;
+    seenKo.add(ko); seenTr.add(tr.toLowerCase()); out.push({ ko, surf: x.ko, i: x.i, tr });
   }
   return src === "review" ? out.filter(x => isDue(prog.m?.[x.ko])) : out;
 }
-// what still has to go through the translator: the lesson's explanation when there is one, else the word
+// meanings that still need translating into Polish (or another language): always a short English meaning
 function meanMissing() {
   const l = meanLang(), map = wtrMap(), gl = glosses(), out = [], seen = new Set();
-  for (const x of [...meanWords("all"), ...[...speakerLabels()].map(ko => ({ ko }))]) {
+  for (const x of meanWords("all")) {
     const g = gl[x.ko];
-    const src = (g && g.lang === l) || BUILTIN_WORDS[l]?.[x.ko] ? null : g ? "g|" + g.g : x.ko;
+    let src = null;
+    if (g) src = g.lang === l || BUILTIN_WORDS[l]?.[x.ko] ? null : "g|" + g.g;
+    else if (l !== "en") { const L = lemma(x.ko); if (L && !BUILTIN_WORDS[l]?.[x.ko] && !BUILTIN_WORDS[l]?.[L.lemma]) src = "g|" + L.e[1]; }
     if (src && !(src in map) && !seen.has(src)) { seen.add(src); out.push({ ko: x.ko, src }); }
   }
   return out;
 }
 function mInfo(msg) {
   if (msg) { $("mInfo").textContent = msg; return; }
+  if (!DICT) { $("mInfo").textContent = t("dictLoading"); loadDict().then(d => { if (!$("pMean").hidden || d) mInfo(d ? undefined : t("dictFail")); }); return; }
   const n = meanPool($("mSrc").value).length, miss = meanMissing().length;
   $("mInfo").textContent = (miss ? t("meanToTr", miss) : t("meanAvail", n)) + ($("mSrc").value === "sel" && !sel.size ? t("noSelUsed") : "") + ($("mSrc").value === "review" && !n && !miss ? t("noDue") : "");
 }
@@ -3085,6 +3166,7 @@ function mItem(x, slot, dir, pool) {
 }
 $("mGo").onclick = async () => {
   if (mBusy) return;
+  if (!(await loadDict())) { mInfo(t("dictFail")); return; }
   if (meanMissing().length) {
     mBusy = true; $("mGo").disabled = true;
     try { await translateWords(); } catch (e) { if (meanPool("all").length < 2) { mInfo(t("meanNeed")); return; } }
@@ -3103,11 +3185,15 @@ function showM(silent) {
     <div class="qbar"><span>${t("qNum")} <b>${M.i + 1} / ${n}</b></span><span>${t("score")} <b>${M.score}</b></span></div>
     <div class="prog"><i style="width:${(M.i / n) * 100}%"></i></div>
     <div class="qhead">${ko ? t("meanQko") : t("meanQtr")}</div>
-    <div class="mprompt${ko ? "" : " tr"}" ${ko ? 'lang="ko"' : ""}>${esc(ko ? it.ko : it.tr)}</div>
+    <div class="mprompt${ko ? "" : " tr"}" ${ko ? 'lang="ko"' : ""}>${esc(ko ? it.ko : it.tr)}${ko && it.surf && it.surf !== it.ko ? `<span class="msurf">${esc(t("inLesson"))}: <span lang="ko">${esc(it.surf)}</span></span>` : ""}</div>
     ${ko ? `<button class="btn ghost listen" id="mPlay">${t("again")}</button>` : ""}
     <div class="opts mopts">${it.opts.map((o, k) => `<button class="opt mopt" data-k="${k}" ${ko ? "" : 'lang="ko"'}><span class="n">${"ABCD"[k]}</span>${esc(o)}</button>`).join("")}</div>
     <div class="fb" id="mFb"></div>
-    <div class="row"><button class="btn" id="mNext" hidden style="flex:1">${M.i + 1 < n ? t("next") : t("seeResult")}</button><button class="btn ghost" id="mQuit">${t("quit")}</button></div>
+    <div class="row"><button class="btn" id="mNext" hidden style="flex:1">${M.i + 1 < n ? t("next") : t("seeResult")}</button><button class="btn ghost" id="mQuit">${t("quit")}</button><button class="btn ghost" id="mFlag" title="${esc(t("flagT"))}" aria-label="${esc(t("flagT"))}">🚩</button></div>
+    <div class="mflag" id="mFlagBox" hidden>
+      <b>${esc(t("flagT"))}</b> <span lang="ko">${esc(it.ko)}</span> = ${esc(it.tr)}
+      <div class="row"><button class="btn ghost" id="mNotWord">${t("flagNotWord")}</button><button class="btn ghost" id="mFixMean">${t("flagFix")}</button></div>
+    </div>
   </div>`;
   if (!silent && ko) speakKo(it.ko);
 }
@@ -3144,6 +3230,20 @@ $("mBox").addEventListener("click", e => {
   const id = e.target.closest("button")?.id; if (!id) return;
   const it = M.items[M.i];
   if (id === "mPlay") speakKo(it.ko);
+  if (id === "mFlag") $("mFlagBox").hidden = !$("mFlagBox").hidden;
+  // 🚩 "not a word": gone from every lesson for good; "fix the meaning": your meaning is used from now on
+  if (id === "mNotWord" || id === "mFixMean") {
+    if (id === "mNotWord") { mBlock.add(it.ko); store.set("mBlock", [...mBlock]); }
+    else {
+      const v = prompt(t("flagAsk", it.ko), it.tr); if (v == null || !v.trim()) return;
+      const f = mFixes(); f[it.ko] = v.trim(); store.set("mFix-" + meanLang(), f);
+    }
+    // this word leaves the round (it counts as neither right nor wrong); the round goes on
+    M.items = M.items.filter((x, k) => k <= M.i || x.ko !== it.ko);
+    M.items.splice(M.i, 1); M.miss = M.miss.filter(m => m.ko !== it.ko);
+    toast(id === "mNotWord" ? t("flagDone") : t("flagFixed"));
+    return M.i < M.items.length ? showM() : M.items.length ? meanResult() : (M = null, $("mBox").innerHTML = "", $("mStart").hidden = false, mInfo());
+  }
   if (id === "mNext") { M.i++; M.i < M.items.length ? showM() : meanResult(); }
   if (id === "mQuit" || id === "mNew") { M = null; stop(); $("mBox").innerHTML = ""; $("mStart").hidden = false; mInfo(); }
   if (id === "mRetry") {
