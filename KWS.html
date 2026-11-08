@@ -2968,8 +2968,16 @@ function soundKey(s) {
 }
 // particles that can follow a name: 부산에 "in Busan", 서울에서, 민수는, 지민이…
 const PARTICLE_RE = /(에서|에게|한테|까지|부터|으로|이랑|하고|에|은|는|이|가|을|를|도|의|로|와|과|랑)$/;
+// consonants only, for loanwords and foreign names: 프랑스 "peurangseu" ≈ "France", 커피 ≈ "coffee"
+const skel = s => soundKey(s).replace(/ng/g, "n").replace(/[fv]/g, "b").replace(/[czx]/g, "s").replace(/q/g, "g").replace(/[aeiou]/g, "").replace(/(.)\1+/g, "$1");
 function looksLikeName(w, tr) {
   if (!tr) return false;
+  // any word of the translation that sounds like the Korean word (or its stem without a particle)
+  const stem0 = w.replace(PARTICLE_RE, "");
+  for (const base of new Set([w, stem0])) {
+    const ks = skel(romanize(base));
+    if (ks.length >= 3 && tr.split(/[\s,.;:!?()]+/).some(x => { const s = skel(x); return s.length >= 3 && lev(ks, s) <= 1; })) return true;
+  }
   // a name with a particle: the translation contains the name ("W Busanie", "in Seoul")
   const stem = w.replace(PARTICLE_RE, "");
   if (stem !== w && stem.length >= 2) {
@@ -3007,6 +3015,14 @@ function meanWords(src) {
     const l = lines[i]; if (!l || isHead(l)) continue;
     const v = l.text.match(VOCAB_RE);
     if (v) { add(v[1].replace(/\s+/g, " "), i); continue; }
+    // a line that is mostly English is an explanation ("Consonant-final stem takes -는다"):
+    // only its word/meaning pairs count, the Korean bits in it are endings and examples
+    const latin = (l.text.match(/[A-Za-z]/g) || []).length, hang = (l.text.match(/[가-힣]/g) || []).length;
+    if (latin > hang * 2) {
+      const gl = glosses();
+      for (const m of l.text.matchAll(GLOSS_RE)) { const ko = m[1].trim(); if (gl[ko] && !isNamey(ko)) add(ko, i); }
+      continue;
+    }
     const lab = l.text.match(/^\s*([가-힣]{1,6})\s*[:：]/);
     if (lab && lab[1].length >= 2 && !names.has(lab[1])) add(lab[1], i);   // a role like 점원 is a word to learn
     let prev = "";
@@ -3015,7 +3031,9 @@ function meanWords(src) {
       const w = tok.replace(/[^가-힣]/g, "");
       const name = isNamey(w);
       // "씨", "씨는", "님이" after a name are part of the name
-      if (w.length >= 2 && !name && !(/^(씨|님)/.test(w) && isNamey(prev)) && /^[^a-zA-Z]*[가-힣]+[^a-zA-Z]*$/.test(tok)) add(w, i);
+      // "-는다", "~아요", "(으)ㄴ" are grammar endings, not words
+      const ending = /^[-~‐–(（]/.test(tok) || /[ㄱ-ㅣ]/.test(tok);
+      if (w.length >= 2 && !name && !ending && !(/^(씨|님)/.test(w) && isNamey(prev)) && /^[^a-zA-Z]*[가-힣]+[^a-zA-Z]*$/.test(tok)) add(w, i);
       prev = w;
     }
   }
