@@ -2936,10 +2936,13 @@ function soundKey(s) {
 function looksLikeName(w, tr) {
   if (!tr) return false;
   const one = tr.trim().replace(/[.!?,;:]+$/, "");
-  // names start with a capital; loanwords ("바나나" → "banana") are written small and stay in the exercise
-  if (/\s/.test(one) || /[가-힣]/.test(one) || !/^\p{Lu}/u.test(one)) return false;
+  if (/\s/.test(one) || /[가-힣]/.test(one)) return false;
   const a = soundKey(romanize(w)), b = soundKey(one);
-  return !!a && !!b && lev(a, b) <= Math.max(1, Math.floor(a.length / 3));
+  if (!a || !b) return false;
+  // the translator writes names in lower case too ("부산" → "busan"), so the same sounds are enough;
+  // this also leaves out loanwords like "바나나" → "banana", which need no practice of their meaning
+  if (a === b) return true;
+  return /^\p{Lu}/u.test(one) && lev(a, b) <= Math.max(1, Math.floor(a.length / 3));
 }
 // speaker labels ("수빈:") are names unless their translation shows a role ("점원:" = shop assistant)
 function speakerLabels() {
