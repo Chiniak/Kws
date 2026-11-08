@@ -546,7 +546,7 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
         <div class="qset">
           <label class="ctrl"><span data-t="questions"></span> <select id="mCount"><option>5</option><option selected>10</option><option>20</option></select></label>
           <label class="ctrl"><span data-t="direction"></span> <select id="mDir"><option value="ko" data-t="dirKo"></option><option value="tr" data-t="dirTr"></option><option value="mix" data-t="dirMix"></option></select></label>
-          <label class="ctrl"><span data-t="sentFrom"></span> <select id="mSrc"><option value="all" data-t="wholeFile"></option><option value="sel" data-t="selLines"></option><option value="review" data-t="dueOnly"></option></select></label>
+          <label class="ctrl"><span data-t="wordsFrom"></span> <select id="mSrc"><option value="all" data-t="wholeFile"></option><option value="sel" data-t="selLines"></option><option value="review" data-t="dueOnly"></option></select></label>
         </div>
         <div class="row"><button class="btn" id="mGo" style="flex:1" data-t="startMean"></button></div>
         <p class="hint" id="mInfo" style="margin:0"></p>
@@ -819,10 +819,11 @@ const TX = {
     segBuild: "Build", segMean: "Meaning",
     buildTitle: "Build the sentence", buildIntro: "Listen and tap the pieces in the right order. No Korean keyboard needed.",
     startBuild: "Start", buildPh: "Tap the pieces below in the right order…", clearB: "↺ Clear", bAvail: n => `Sentences available: ${n}`,
-    meanTitle: "What does it mean?", meanIntro: "Match Korean sentences with their translations. It uses the lesson's translations.",
+    meanTitle: "What does it mean?", meanIntro: "Match Korean words from the lesson with their translations. Names, headings and English are left out.",
     direction: "Direction", dirKo: "Korean → translation", dirTr: "Translation → Korean", dirMix: "Mixed", startMean: "Start",
-    meanQko: "What does this sentence mean?", meanQtr: "How do you say it in Korean?",
-    meanAvail: n => `Translated sentences: ${n}`, meanNeed: "Translate the lesson first: 🎧 Listen → 🌐 Translate lesson (at least 2 sentences).",
+    meanQko: "What does this word mean?", meanQtr: "Which Korean word is it?",
+    meanAvail: n => `Words available: ${n}`, meanNeed: "The words could not be translated. Connect to the internet and try again.",
+    meanToTr: n => `${n} words will be translated when you start (internet needed once).`, meanWorking: (a, b) => `Translating words… ${a}/${b}`,
     statsBtn: "📊 Stats", streakN: n => `🔥 ${n} ${n === 1 ? "day" : "days"}`, goalLine: (n, g) => `Today ${Math.min(n, g)}/${g}${n >= g ? " ✓" : ""}`,
     goalDone: "🎉 Today's goal reached!", statsT: "Statistics", goalAt: "Daily goal (answers)",
     tStreak: "days in a row", tBest: "longest streak", tToday: "answers today", tAcc: "right (last 14 days)",
@@ -924,10 +925,11 @@ const TX = {
     segBuild: "Ułóż", segMean: "Znaczenie",
     buildTitle: "Ułóż zdanie", buildIntro: "Posłuchaj i dotykaj kawałków w dobrej kolejności. Nie potrzeba koreańskiej klawiatury.",
     startBuild: "Zacznij", buildPh: "Dotykaj kawałków poniżej w dobrej kolejności…", clearB: "↺ Wyczyść", bAvail: n => `Dostępnych zdań: ${n}`,
-    meanTitle: "Co to znaczy?", meanIntro: "Dopasuj koreańskie zdania do tłumaczeń. Korzysta z tłumaczeń lekcji.",
+    meanTitle: "Co to znaczy?", meanIntro: "Dopasuj koreańskie słowa z lekcji do tłumaczeń. Imiona, nagłówki i angielski są pomijane.",
     direction: "Kierunek", dirKo: "Koreański → tłumaczenie", dirTr: "Tłumaczenie → koreański", dirMix: "Na zmianę", startMean: "Zacznij",
-    meanQko: "Co znaczy to zdanie?", meanQtr: "Jak to powiedzieć po koreańsku?",
-    meanAvail: n => `Przetłumaczonych zdań: ${n}`, meanNeed: "Najpierw przetłumacz lekcję: 🎧 Listen → 🌐 Przetłumacz lekcję (co najmniej 2 zdania).",
+    meanQko: "Co znaczy to słowo?", meanQtr: "Które to słowo po koreańsku?",
+    meanAvail: n => `Dostępnych słów: ${n}`, meanNeed: "Nie udało się przetłumaczyć słów. Połącz się z internetem i spróbuj jeszcze raz.",
+    meanToTr: n => `Słów do przetłumaczenia: ${n} - przetłumaczą się po naciśnięciu „Zacznij” (raz potrzebny internet).`, meanWorking: (a, b) => `Tłumaczę słowa… ${a}/${b}`,
     statsBtn: "📊 Statystyki", streakN: n => `🔥 ${n} ${n === 1 ? "dzień" : "dni"}`, goalLine: (n, g) => `Dziś ${Math.min(n, g)}/${g}${n >= g ? " ✓" : ""}`,
     goalDone: "🎉 Cel na dziś osiągnięty!", statsT: "Statystyki", goalAt: "Dzienny cel (odpowiedzi)",
     tStreak: "dni z rzędu", tBest: "najdłuższa seria", tToday: "odpowiedzi dziś", tAcc: "dobrych (14 dni)",
@@ -1029,10 +1031,11 @@ const TX = {
     segBuild: "문장 만들기", segMean: "뜻",
     buildTitle: "문장 만들기", buildIntro: "듣고 조각을 맞는 순서로 누르세요. 한국어 키보드가 필요 없어요.",
     startBuild: "시작", buildPh: "아래 조각을 맞는 순서로 누르세요…", clearB: "↺ 지우기", bAvail: n => `사용할 수 있는 문장: ${n}개`,
-    meanTitle: "무슨 뜻일까요?", meanIntro: "한국어 문장과 번역을 맞춰 보세요. 레슨의 번역을 사용해요.",
+    meanTitle: "무슨 뜻일까요?", meanIntro: "레슨의 한국어 단어와 번역을 맞춰 보세요. 이름, 제목, 영어는 빠져요.",
     direction: "방향", dirKo: "한국어 → 번역", dirTr: "번역 → 한국어", dirMix: "섞어서", startMean: "시작",
-    meanQko: "이 문장은 무슨 뜻일까요?", meanQtr: "한국어로 어떻게 말할까요?",
-    meanAvail: n => `번역된 문장: ${n}개`, meanNeed: "먼저 레슨을 번역하세요: 🎧 듣기 → 🌐 레슨 번역 (최소 2문장).",
+    meanQko: "이 단어는 무슨 뜻일까요?", meanQtr: "한국어 단어는 무엇일까요?",
+    meanAvail: n => `사용할 수 있는 단어: ${n}개`, meanNeed: "단어를 번역하지 못했어요. 인터넷에 연결하고 다시 해 보세요.",
+    meanToTr: n => `번역할 단어 ${n}개: 시작을 누르면 번역돼요 (한 번은 인터넷 필요).`, meanWorking: (a, b) => `단어 번역 중… ${a}/${b}`,
     statsBtn: "📊 통계", streakN: n => `🔥 ${n}일`, goalLine: (n, g) => `오늘 ${Math.min(n, g)}/${g}${n >= g ? " ✓" : ""}`,
     goalDone: "🎉 오늘의 목표 달성!", statsT: "통계", goalAt: "하루 목표 (답)",
     tStreak: "연속 학습일", tBest: "최장 연속", tToday: "오늘 답한 수", tAcc: "정답률 (14일)",
@@ -1217,7 +1220,7 @@ function renderTrSel() {
   const opts = TR_LANGS.map(c => [c, langName(c)]).sort((a, b) => a[1].localeCompare(b[1], ui));
   $("trSel").innerHTML = opts.map(([c, n]) => `<option value="${c}" ${c === trLang ? "selected" : ""}>${esc(n)}</option>`).join("");
 }
-$("trSel").onchange = () => { trLang = $("trSel").value; store.set("trLang", trLang); loadTr(); renderPills(); render(); };
+$("trSel").onchange = () => { trLang = $("trSel").value; store.set("trLang", trLang); loadTr(); WTR = store.get("wtr-" + trLang, {}) || {}; M = null; renderPills(); render(); };
 const needsTr = l => /[\p{L}]/u.test(l.text) && !getTr(l.text);
 function renderTrBar(msg) {
   $("cTr").textContent = t("trChip", langName(trLang)); syncChips();
@@ -1251,7 +1254,9 @@ const chromeTr = {};
 function chromeGet(src, tl) {
   const k = src + ">" + tl;
   if (!chromeTr[k]) chromeTr[k] = (async () => {
-    if ((await Translator.availability({ sourceLanguage: src, targetLanguage: tl })) === "unavailable") throw new Error("unavailable");
+    // in some Chrome builds this question never gets an answer: give up after 5 s and use the next translator
+    const av = await Promise.race([Translator.availability({ sourceLanguage: src, targetLanguage: tl }), wait(5000).then(() => "timeout")]);
+    if (av === "unavailable" || av === "timeout") throw new Error("unavailable");
     return Translator.create({ sourceLanguage: src, targetLanguage: tl });
   })().catch(e => { delete chromeTr[k]; throw e; });
   return chromeTr[k];
@@ -1299,7 +1304,8 @@ async function translateLines(list, tl) {
   let denied = false;
   for (const [name, fn] of order) {
     try {
-      const out = await fn(list, tl);
+      // a translator that hangs (model download, blocked network) must not stop the others
+      const out = await Promise.race([fn(list, tl), wait(name === "claude" ? 90000 : 30000).then(() => { throw new Error("timeout"); })]);
       if (out.some(x => x && x.trim())) { trWorks = name; return out; }
     } catch (e) {
       if (e && ["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"].includes(e.code)) denied = true;
@@ -2847,32 +2853,125 @@ $("bBox").addEventListener("click", e => {
   if (id === "bRetry") startBuild(B.miss.slice());
 });
 
-/* ---------- meaning: match a Korean sentence with its translation (or the other way round) ---------- */
+/* ---------- meaning: single Korean words and their translations ----------
+   Words come from the lesson's Korean text: headings, English, names and the parts of names
+   ("수빈이에요", "수빈 씨는") are left out. Vocabulary lines like "학생 → student" give their whole Korean
+   entry ("안녕히 가세요"). Each word is translated on its own (once, kept in "wtr-<lang>" for all lessons). */
 let M = null;
 // the translation without a speaker label like "Subin:", which would give the answer away
 const trClean = s => String(s || "").replace(/^[^:：]{1,15}[:：]\s*/, "").trim();
+const VOCAB_RE = /^\s*([가-힣]+(?:\s+[가-힣]+){0,3})\s*(?:→|->|=|–|—|-|:)\s*([^가-힣]+)$/;
+// the example lesson's words in Polish, so it works without internet
+const PL_WORDS = {
+  "안녕하세요": "dzień dobry, cześć", "저는": "ja (co do mnie)", "만나서": "spotykając (cię)", "반가워요": "miło mi",
+  "저도": "ja też", "학생이에요": "jestem studentem", "회사원이에요": "jestem pracownikiem biurowym", "그럼": "w takim razie",
+  "다음에": "następnym razem", "봐요": "zobaczymy się", "안녕히": "w spokoju", "가세요": "proszę iść",
+  "수빈": "Subin", "민수": "Minsu", "만나서 반가워요": "miło mi cię poznać", "학생": "uczeń, student", "회사원": "pracownik biurowy", "안녕히 가세요": "do widzenia (do osoby, która odchodzi)",
+};
+let WTR = store.get("wtr-" + trLang, {}) || {};
+const wtrOf = w => WTR[w] || (trLang === "pl" && PL_WORDS[w]) || "";
+// rough romanization (for spotting names: 수빈 → "subin" = "Subin")
+function romanize(w) {
+  const I = ["g","kk","n","d","tt","r","m","b","pp","s","ss","","j","jj","ch","k","t","p","h"];
+  const V = ["a","ae","ya","yae","eo","e","yeo","ye","o","wa","wae","oe","yo","u","wo","we","wi","yu","eu","ui","i"];
+  const F = ["","k","k","k","n","n","n","t","l","k","m","l","l","l","p","l","m","p","p","t","t","ng","t","t","k","t","p","t"];
+  let out = "";
+  for (const ch of w) { const c = ch.charCodeAt(0) - 0xAC00; if (c < 0 || c > 11171) continue; out += I[Math.floor(c / 588)] + V[Math.floor((c % 588) / 28)] + F[c % 28]; }
+  return out;
+}
+function lev(a, b) {
+  const d = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) { let p = d[0]; d[0] = i; for (let j = 1; j <= b.length; j++) { const q = d[j]; d[j] = Math.min(d[j] + 1, d[j - 1] + 1, p + (a[i - 1] === b[j - 1] ? 0 : 1)); p = q; } }
+  return d[b.length];
+}
+// a translation that is just the word written in Latin letters, with a capital, is a name ("Subin", "Seul")
+function looksLikeName(w, tr) {
+  if (!tr || !/^\p{Lu}/u.test(tr) || /\s/.test(tr.trim())) return false;
+  const a = romanize(w), b = tr.toLowerCase().normalize("NFD").replace(/[^a-z]/g, "");
+  return !!a && lev(a, b) <= Math.max(1, Math.floor(a.length / 4));
+}
+// speaker labels ("수빈:") are names unless their translation shows a role ("점원:" = shop assistant)
+function speakerLabels() {
+  const out = new Set();
+  for (const l of lines) { const lab = l.text.match(/^\s*([가-힣]{1,6})\s*[:：]/); if (lab) out.add(lab[1]); }
+  return out;
+}
+function lessonNames() {
+  const names = new Set();
+  for (const lab of speakerLabels()) { const tr = wtrOf(lab); if (!tr || looksLikeName(lab, tr)) names.add(lab); }
+  for (const l of lines) for (const m of l.text.matchAll(/([가-힣]{1,6})\s*(?:씨|님)(?![가-힣]{2})/g)) names.add(m[1]);
+  return names;
+}
+// [{ko, i}] for the chosen lines; vocabulary entries first, then single words
+function meanWords(src) {
+  const ids = src === "sel" && sel.size ? [...sel].sort((a, b) => a - b) : lines.map((_, i) => i);
+  const names = lessonNames(), seen = new Set(), out = [];
+  const isNamey = w => [...names].some(n => w === n || (w.startsWith(n) && w.length - n.length <= 4));
+  const add = (ko, i) => { if (!seen.has(ko)) { seen.add(ko); out.push({ ko, i }); } };
+  for (const i of ids) {
+    const l = lines[i]; if (!l || isHead(l)) continue;
+    const v = l.text.match(VOCAB_RE);
+    if (v) { add(v[1].replace(/\s+/g, " "), i); continue; }
+    const lab = l.text.match(/^\s*([가-힣]{1,6})\s*[:：]/);
+    if (lab && lab[1].length >= 2 && !names.has(lab[1])) add(lab[1], i);   // a role like 점원 is a word to learn
+    let prev = "";
+    // notes in brackets ("(after a consonant → 이에요)") are explanations, not words to learn
+    for (const tok of l.text.replace(/^\s*[가-힣]{1,6}\s*[:：]/, "").replace(/\([^)]*\)|\[[^\]]*\]/g, " ").split(/\s+/)) {
+      const w = tok.replace(/[^가-힣]/g, "");
+      const name = isNamey(w);
+      // "씨", "씨는", "님이" after a name are part of the name
+      if (w.length >= 2 && !name && !(/^(씨|님)/.test(w) && isNamey(prev)) && /^[^a-zA-Z]*[가-힣]+[^a-zA-Z]*$/.test(tok)) add(w, i);
+      prev = w;
+    }
+  }
+  return out;
+}
+// words with a usable translation (not a name, not left untranslated)
 function meanPool(src) {
   const seenTr = new Set(), out = [];
-  for (const x of sentences(src === "review" ? "all" : src)) {
-    const tr = trClean(getTr(lines[x.i]?.text || ""));
-    if (!tr || seenTr.has(tr.toLowerCase())) continue;
+  for (const x of meanWords(src === "review" ? "all" : src)) {
+    let tr = wtrOf(x.ko);
+    // translators often capitalize a single word ("Student"): show it in lower case like a dictionary
+    if (/^\p{Lu}\p{Ll}/u.test(tr)) tr = tr.charAt(0).toLocaleLowerCase() + tr.slice(1);
+    if (!tr || /[가-힣]/.test(tr) || looksLikeName(x.ko, tr) || seenTr.has(tr.toLowerCase())) continue;
     seenTr.add(tr.toLowerCase()); out.push({ ...x, tr });
   }
   return src === "review" ? out.filter(x => isDue(prog.m?.[x.ko])) : out;
 }
-function mInfo() {
-  const n = meanPool($("mSrc").value).length, all = meanPool("all").length;
-  $("mInfo").textContent = all < 2 ? t("meanNeed") : t("meanAvail", n) + ($("mSrc").value === "sel" && !sel.size ? t("noSelUsed") : "") + ($("mSrc").value === "review" && !n ? t("noDue") : "");
+const meanMissing = () => [...meanWords("all"), ...[...speakerLabels()].map(ko => ({ ko }))]
+  .filter((x, k, a) => a.findIndex(y => y.ko === x.ko) === k && !(x.ko in WTR) && !(trLang === "pl" && PL_WORDS[x.ko]));
+function mInfo(msg) {
+  if (msg) { $("mInfo").textContent = msg; return; }
+  const n = meanPool($("mSrc").value).length, miss = meanMissing().length;
+  $("mInfo").textContent = (miss ? t("meanToTr", miss) : t("meanAvail", n)) + ($("mSrc").value === "sel" && !sel.size ? t("noSelUsed") : "") + ($("mSrc").value === "review" && !n && !miss ? t("noDue") : "");
 }
-$("mSrc").onchange = mInfo;
+$("mSrc").onchange = () => mInfo();
+// translate the words that have no translation yet (each word on its own line)
+let mBusy = false;
+async function translateWords() {
+  const todo = meanMissing().map(x => x.ko), tl = trLang;
+  for (let b = 0; b < todo.length; b += 40) {
+    mInfo(t("meanWorking", Math.min(b + 40, todo.length), todo.length));
+    const part = todo.slice(b, b + 40), out = await translateLines(part, tl);
+    if (tl !== trLang) return;
+    part.forEach((w, k) => { WTR[w] = typeof out[k] === "string" ? out[k].trim() : ""; });
+    store.set("wtr-" + tl, WTR);
+  }
+}
 function mItem(x, slot, dir, pool) {
   const key = dir === "ko" ? "tr" : "ko";
   const others = shuffle(pool.filter(p => p.ko !== x.ko).map(p => p[key])).filter((v, k, a) => a.indexOf(v) === k).slice(0, 3);
   return { ...x, dir, opts: placeRight([x[key], ...others], x[key], slot), right: x[key], slot };
 }
-$("mGo").onclick = () => {
+$("mGo").onclick = async () => {
+  if (mBusy) return;
+  if (meanMissing().length) {
+    mBusy = true; $("mGo").disabled = true;
+    try { await translateWords(); } catch (e) { if (meanPool("all").length < 2) { mInfo(t("meanNeed")); return; } }
+    finally { mBusy = false; $("mGo").disabled = false; }
+  }
   const all = meanPool($("mSrc").value), pool = meanPool("all");
-  if (pool.length < 2) { $("mInfo").textContent = t("meanNeed"); return; }
+  if (pool.length < 2) { mInfo(t("meanNeed")); return; }
   if (!all.length) { mInfo(); return; }
   const picked = shuffle(pickWeighted(all, parseInt($("mCount").value), x => prog.m?.[x.ko])), slots = answerSlots(picked.length), d = $("mDir").value;
   M = { items: picked.map((x, k) => mItem(x, slots[k], d === "mix" ? (k % 2 ? "tr" : "ko") : d, pool)), i: 0, score: 0, miss: [], done: false };
@@ -3075,6 +3174,12 @@ try { applyUI(); } catch (e) { console.error(e); }
 setPmin(pmin);
 setMode("orig");
 initLibrary();
+// "Meaning" used to practise whole sentences; it now practises words, so the old sentence results go
+if (!store.get("mWords", false)) {
+  try { for (const k of Object.keys(localStorage)) if (k.startsWith("kws-prog-")) { const p = JSON.parse(localStorage.getItem(k) || "null"); if (p && p.m) { delete p.m; localStorage.setItem(k, JSON.stringify(p)); } } } catch (e) {}
+  if (prog.m) delete prog.m;
+  store.set("mWords", true);
+}
 renderRem(); syncReminder(); renderStreak(); bkMsg();
 // links like …#dictation open the right place (used by the KWS checklist)
 function route() {
