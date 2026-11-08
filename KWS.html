@@ -383,6 +383,9 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
 .again { font-size: .85rem; font-weight: 600; color: var(--muted); }
 .bans { min-height: 64px; display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start; padding: 10px; border: 1.5px dashed var(--line); border-radius: var(--r-lg); background: var(--bg); }
 .bans .ph { color: var(--muted); font-size: .95rem; align-self: center; }
+.bmeans { margin-top: 6px; font-weight: 500; color: var(--fg); }
+.bmeans:empty { display: none; }
+.bmeans b { font-weight: 700; }
 .bpool { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .tile { font: inherit; font-size: 1.3rem; font-weight: 600; min-height: 48px; padding: 6px 14px; border-radius: var(--r); border: 1.5px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; box-shadow: var(--shadow); }
 .tile.used { visibility: hidden; }
@@ -815,7 +818,7 @@ const TX = {
     dueBanner: n => `📚 ${n} to review`, practiceNow: "Practise",
     dueOnly: "Due for review", noDue: " Nothing to review right now: come back later.",
     hardest: s => `Most often wrong: ${s}. They will come up more often.`,
-    againSoon: "↻ It will come back in a moment.",
+    againSoon: "↻ It will come back in a moment.", bMeans: "It means:", bTranslating: "Translating…",
     segBuild: "Build", segMean: "Meaning",
     buildTitle: "Build the sentence", buildIntro: "Listen and tap the pieces in the right order. No Korean keyboard needed.",
     startBuild: "Start", buildPh: "Tap the pieces below in the right order…", clearB: "↺ Clear", bAvail: n => `Sentences available: ${n}`,
@@ -921,7 +924,7 @@ const TX = {
     dueBanner: n => `📚 Do powtórki: ${n}`, practiceNow: "Ćwicz",
     dueOnly: "Do powtórki", noDue: " Na razie nie ma nic do powtórki: wróć później.",
     hardest: s => `Najczęściej mylone: ${s}. Będą pojawiać się częściej.`,
-    againSoon: "↻ To pytanie wróci za chwilę.",
+    againSoon: "↻ To pytanie wróci za chwilę.", bMeans: "Znaczy:", bTranslating: "Tłumaczę…",
     segBuild: "Ułóż", segMean: "Znaczenie",
     buildTitle: "Ułóż zdanie", buildIntro: "Posłuchaj i dotykaj kawałków w dobrej kolejności. Nie potrzeba koreańskiej klawiatury.",
     startBuild: "Zacznij", buildPh: "Dotykaj kawałków poniżej w dobrej kolejności…", clearB: "↺ Wyczyść", bAvail: n => `Dostępnych zdań: ${n}`,
@@ -1027,7 +1030,7 @@ const TX = {
     dueBanner: n => `📚 복습할 것 ${n}개`, practiceNow: "연습하기",
     dueOnly: "복습할 것", noDue: " 지금은 복습할 게 없어요. 나중에 다시 오세요.",
     hardest: s => `자주 틀린 단어: ${s}. 더 자주 나와요.`,
-    againSoon: "↻ 이 문제는 곧 다시 나와요.",
+    againSoon: "↻ 이 문제는 곧 다시 나와요.", bMeans: "뜻:", bTranslating: "번역 중…",
     segBuild: "문장 만들기", segMean: "뜻",
     buildTitle: "문장 만들기", buildIntro: "듣고 조각을 맞는 순서로 누르세요. 한국어 키보드가 필요 없어요.",
     startBuild: "시작", buildPh: "아래 조각을 맞는 순서로 누르세요…", clearB: "↺ 지우기", bAvail: n => `사용할 수 있는 문장: ${n}개`,
@@ -2806,7 +2809,22 @@ function showB(silent) {
 function bFeedback(it) {
   const fb = $("bFb");
   fb.className = "fb " + (it.ok ? "good" : "bad");
-  fb.innerHTML = it.ok ? esc(t("perfect")) : `${esc(t("correctAns"))}: <span lang="ko">${esc(it.ko)}</span>${it.requeued ? `<div class="again">${t("againSoon")}</div>` : ""}`;
+  const tr = trClean(getTr(lines[it.i]?.text || ""));
+  fb.innerHTML = (it.ok ? esc(t("perfect")) : `${esc(t("correctAns"))}: <span lang="ko">${esc(it.ko)}</span>`)
+    + `<div class="strl bmeans">${tr ? `${esc(t("bMeans"))} <b>${esc(tr)}</b>` : it.trTried ? "" : esc(t("bTranslating"))}</div>`
+    + (it.requeued ? `<div class="again">${t("againSoon")}</div>` : "");
+  if (!tr && !it.trTried) bTranslate(it);
+}
+// the lesson line had no translation yet: translate it now (and keep it, as in Listen)
+async function bTranslate(it) {
+  it.trTried = true;
+  const text = lines[it.i]?.text, lessonAt = curId, tl = trLang;
+  try {
+    const out = await translateLines([text], tl);
+    if (lessonAt !== curId || tl !== trLang || !out[0]?.trim()) throw 0;
+    TRC[text] = out[0].trim(); store.set(trKey(), TRC);
+  } catch (e) {}
+  if (B && B.items[B.i] === it && $("bFb")) bFeedback(it);
 }
 function checkB() {
   const it = B.items[B.i];
