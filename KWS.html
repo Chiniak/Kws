@@ -2905,6 +2905,12 @@ const wtrMap = (l = meanLang()) => WTRS[l] || (WTRS[l] = store.get("wtr-" + l, {
    "자주 (often)", also several pairs on one line of a vocabulary table. In another answer language the
    explanation is translated (not the bare Korean word, which has no context: 보통 alone becomes "normal"). */
 const GLOSS_RE = /([가-힣]+(?:\s[가-힣]+){0,2})\s*(?:→|->|=|–|—|-|:)?\s*\(?((?:[A-Za-zÀ-žąćęłńóśźżĄĆĘŁŃÓŚŹŻ'’]+[ ,/.]*){1,5})\)?/g;
+const GRAMMAR_WORDS = new Set(("casual informal formal polite honorific humble plain banmal jondaetmal standard style speech form forms " +
+  "present past future tense progressive continuous perfect noun nouns verb verbs adjective adjectives adverb particle particles " +
+  "subject object topic question statement command suggestion negative positive plural singular ending endings stem conjugation " +
+  "example examples ex e.g eg etc vs or and the a an of level lv grammar note dialogue vocabulary " +
+  "nieformalny nieformalna formalny formalna grzeczny grzeczna uprzejmy uprzejma potoczny potoczna forma czas przeszły teraźniejszy przyszły " +
+  "rzeczownik czasownik przymiotnik przysłówek partykuła pytanie przykład np").split(" "));
 function lessonGlosses() {
   const out = {};
   for (const l of lines) {
@@ -2913,6 +2919,8 @@ function lessonGlosses() {
       const ko = m[1].trim(), g = m[2].replace(/[\s,/.]+$/, "").trim();
       // a gloss is short; a Korean sentence followed by an English note is not one
       if (!g || g.split(/\s+/).length > 4 || ko.split(" ").length > 3 || out[ko]) continue;
+      // grammar labels ("먹어 (casual)", "먹어요 polite", "갔어요 - past") describe the form, not the meaning
+      if (g.toLowerCase().split(/[\s,/]+/).every(x => GRAMMAR_WORDS.has(x))) continue;
       out[ko] = { g, lang: /[ąćęłńóśźż]/i.test(g) ? "pl" : "en" };
     }
   }
