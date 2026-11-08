@@ -549,6 +549,7 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
         <div class="qset">
           <label class="ctrl"><span data-t="questions"></span> <select id="mCount"><option>5</option><option selected>10</option><option>20</option></select></label>
           <label class="ctrl"><span data-t="direction"></span> <select id="mDir"><option value="ko" data-t="dirKo"></option><option value="tr" data-t="dirTr"></option><option value="mix" data-t="dirMix"></option></select></label>
+          <label class="ctrl"><span data-t="answersIn"></span> <select id="mLang"></select></label>
           <label class="ctrl"><span data-t="wordsFrom"></span> <select id="mSrc"><option value="all" data-t="wholeFile"></option><option value="sel" data-t="selLines"></option><option value="review" data-t="dueOnly"></option></select></label>
         </div>
         <div class="row"><button class="btn" id="mGo" style="flex:1" data-t="startMean"></button></div>
@@ -818,7 +819,7 @@ const TX = {
     dueBanner: n => `📚 ${n} to review`, practiceNow: "Practise",
     dueOnly: "Due for review", noDue: " Nothing to review right now: come back later.",
     hardest: s => `Most often wrong: ${s}. They will come up more often.`,
-    againSoon: "↻ It will come back in a moment.", bMeans: "It means:", bTranslating: "Translating…",
+    againSoon: "↻ It will come back in a moment.", bMeans: "It means:", bTranslating: "Translating…", answersIn: "Answers in", mLangTr: "translation language",
     segBuild: "Build", segMean: "Meaning",
     buildTitle: "Build the sentence", buildIntro: "Listen and tap the pieces in the right order. No Korean keyboard needed.",
     startBuild: "Start", buildPh: "Tap the pieces below in the right order…", clearB: "↺ Clear", bAvail: n => `Sentences available: ${n}`,
@@ -924,7 +925,7 @@ const TX = {
     dueBanner: n => `📚 Do powtórki: ${n}`, practiceNow: "Ćwicz",
     dueOnly: "Do powtórki", noDue: " Na razie nie ma nic do powtórki: wróć później.",
     hardest: s => `Najczęściej mylone: ${s}. Będą pojawiać się częściej.`,
-    againSoon: "↻ To pytanie wróci za chwilę.", bMeans: "Znaczy:", bTranslating: "Tłumaczę…",
+    againSoon: "↻ To pytanie wróci za chwilę.", bMeans: "Znaczy:", bTranslating: "Tłumaczę…", answersIn: "Odpowiedzi po", mLangTr: "język tłumaczenia",
     segBuild: "Ułóż", segMean: "Znaczenie",
     buildTitle: "Ułóż zdanie", buildIntro: "Posłuchaj i dotykaj kawałków w dobrej kolejności. Nie potrzeba koreańskiej klawiatury.",
     startBuild: "Zacznij", buildPh: "Dotykaj kawałków poniżej w dobrej kolejności…", clearB: "↺ Wyczyść", bAvail: n => `Dostępnych zdań: ${n}`,
@@ -1030,7 +1031,7 @@ const TX = {
     dueBanner: n => `📚 복습할 것 ${n}개`, practiceNow: "연습하기",
     dueOnly: "복습할 것", noDue: " 지금은 복습할 게 없어요. 나중에 다시 오세요.",
     hardest: s => `자주 틀린 단어: ${s}. 더 자주 나와요.`,
-    againSoon: "↻ 이 문제는 곧 다시 나와요.", bMeans: "뜻:", bTranslating: "번역 중…",
+    againSoon: "↻ 이 문제는 곧 다시 나와요.", bMeans: "뜻:", bTranslating: "번역 중…", answersIn: "답 언어", mLangTr: "번역 언어",
     segBuild: "문장 만들기", segMean: "뜻",
     buildTitle: "문장 만들기", buildIntro: "듣고 조각을 맞는 순서로 누르세요. 한국어 키보드가 필요 없어요.",
     startBuild: "시작", buildPh: "아래 조각을 맞는 순서로 누르세요…", clearB: "↺ 지우기", bAvail: n => `사용할 수 있는 문장: ${n}개`,
@@ -1107,7 +1108,7 @@ function applyUI() {
   showFileName(); renderPills(); renderCards(); render(); uiPlaying(playing);
   try { renderLessons(); } catch (e) {}
   try { setPmin(pmin); } catch (e) {}
-  try { renderRem(); renderDue(); renderStreak(); bkMsg(); bInfo(); mInfo(); } catch (e) {}
+  try { renderRem(); renderDue(); renderStreak(); bkMsg(); bInfo(); renderMLang(); mInfo(); } catch (e) {}
   origDrawn = false; if (!$("origView").hidden) renderOrig();
   setCoverMode(coverMode);
   if (!$("quizView").hidden) { updateInfo(); if (Q) (Q.done ? result() : showQ(true)); if (P !== "quiz") showPractice(P); }
@@ -1223,7 +1224,7 @@ function renderTrSel() {
   const opts = TR_LANGS.map(c => [c, langName(c)]).sort((a, b) => a[1].localeCompare(b[1], ui));
   $("trSel").innerHTML = opts.map(([c, n]) => `<option value="${c}" ${c === trLang ? "selected" : ""}>${esc(n)}</option>`).join("");
 }
-$("trSel").onchange = () => { trLang = $("trSel").value; store.set("trLang", trLang); loadTr(); WTR = store.get("wtr-" + trLang, {}) || {}; M = null; renderPills(); render(); };
+$("trSel").onchange = () => { trLang = $("trSel").value; store.set("trLang", trLang); loadTr(); M = null; renderPills(); render(); try { renderMLang(); mInfo(); } catch (e) {} };
 const needsTr = l => /[\p{L}]/u.test(l.text) && !getTr(l.text);
 function renderTrBar(msg) {
   $("cTr").textContent = t("trChip", langName(trLang)); syncChips();
@@ -2886,8 +2887,27 @@ const PL_WORDS = {
   "다음에": "następnym razem", "봐요": "zobaczymy się", "안녕히": "w spokoju", "가세요": "proszę iść",
   "수빈": "Subin", "민수": "Minsu", "만나서 반가워요": "miło mi cię poznać", "학생": "uczeń, student", "회사원": "pracownik biurowy", "안녕히 가세요": "do widzenia (do osoby, która odchodzi)",
 };
-let WTR = store.get("wtr-" + trLang, {}) || {};
-const wtrOf = w => WTR[w] || (trLang === "pl" && PL_WORDS[w]) || "";
+const EN_WORDS = {
+  "안녕하세요": "hello", "저는": "I (as for me)", "만나서": "meeting (you)", "반가워요": "glad, nice",
+  "저도": "me too", "학생이에요": "I'm a student", "회사원이에요": "I'm an office worker", "그럼": "then, well",
+  "다음에": "next time", "봐요": "see (you)", "안녕히": "in peace", "가세요": "please go",
+  "수빈": "Subin", "민수": "Minsu", "만나서 반가워요": "nice to meet you", "학생": "student", "회사원": "office worker", "안녕히 가세요": "goodbye (to someone leaving)",
+};
+const BUILTIN_WORDS = { pl: PL_WORDS, en: EN_WORDS };
+/* Answers are in the app's language (English or Polish); "translation language" switches them to the one
+   chosen in Settings. With the app in Korean they are in the translation language. */
+let mLangPick = store.get("mLang", "app");
+const appLang = () => ui === "ko" ? (trLang !== "ko" ? trLang : "en") : ui;
+const meanLang = () => mLangPick === "tr" ? trLang : appLang();
+const WTRS = {};
+const wtrMap = (l = meanLang()) => WTRS[l] || (WTRS[l] = store.get("wtr-" + l, {}) || {});
+const wtrOf = w => wtrMap()[w] || BUILTIN_WORDS[meanLang()]?.[w] || "";
+function renderMLang() {
+  const a = appLang(), same = a === trLang;
+  $("mLang").innerHTML = `<option value="app">${esc(langName(a))}</option>` + (same ? "" : `<option value="tr">${esc(langName(trLang))} · ${esc(t("mLangTr"))}</option>`);
+  $("mLang").value = same ? "app" : mLangPick;
+}
+$("mLang").onchange = () => { mLangPick = $("mLang").value; store.set("mLang", mLangPick); M = null; mInfo(); };
 // rough romanization (for spotting names: 수빈 → "subin" = "Subin")
 function romanize(w) {
   const I = ["g","kk","n","d","tt","r","m","b","pp","s","ss","","j","jj","ch","k","t","p","h"];
@@ -2902,11 +2922,24 @@ function lev(a, b) {
   for (let i = 1; i <= a.length; i++) { let p = d[0]; d[0] = i; for (let j = 1; j <= b.length; j++) { const q = d[j]; d[j] = Math.min(d[j] + 1, d[j - 1] + 1, p + (a[i - 1] === b[j - 1] ? 0 : 1)); p = q; } }
   return d[b.length];
 }
-// a translation that is just the word written in Latin letters, with a capital, is a name ("Subin", "Seul")
+/* A translation that is just the word written in Latin letters is a name ("Subin", "Seul", "Jeryn" for 예린).
+   Both sides are reduced to a rough sound key, so English, Polish and other spellings match:
+   j/y/i, w/u/o, k/g, t/d, p/b, r/l, ch/c/cz, sz/sh/s are treated as the same sound. */
+function soundKey(s) {
+  return s.toLowerCase().normalize("NFD").replace(/[^a-z]/g, "")
+    .replace(/sz|sh/g, "s").replace(/cz|ch|tsch|tch/g, "c").replace(/dz|dzh/g, "c").replace(/zh/g, "c")
+    .replace(/kk|gg/g, "g").replace(/tt|dd/g, "d").replace(/pp|bb/g, "b").replace(/ss/g, "s")
+    .replace(/eo|eu|ae/g, m => ({ eo: "o", eu: "u", ae: "e" })[m])
+    .replace(/[jy]/g, "i").replace(/w/g, "u").replace(/k/g, "g").replace(/t/g, "d").replace(/p/g, "b").replace(/r/g, "l")
+    .replace(/h/g, "").replace(/(.)\1+/g, "$1");
+}
 function looksLikeName(w, tr) {
-  if (!tr || !/^\p{Lu}/u.test(tr) || /\s/.test(tr.trim())) return false;
-  const a = romanize(w), b = tr.toLowerCase().normalize("NFD").replace(/[^a-z]/g, "");
-  return !!a && lev(a, b) <= Math.max(1, Math.floor(a.length / 4));
+  if (!tr) return false;
+  const one = tr.trim().replace(/[.!?,;:]+$/, "");
+  // names start with a capital; loanwords ("바나나" → "banana") are written small and stay in the exercise
+  if (/\s/.test(one) || /[가-힣]/.test(one) || !/^\p{Lu}/u.test(one)) return false;
+  const a = soundKey(romanize(w)), b = soundKey(one);
+  return !!a && !!b && lev(a, b) <= Math.max(1, Math.floor(a.length / 3));
 }
 // speaker labels ("수빈:") are names unless their translation shows a role ("점원:" = shop assistant)
 function speakerLabels() {
@@ -2957,7 +2990,7 @@ function meanPool(src) {
   return src === "review" ? out.filter(x => isDue(prog.m?.[x.ko])) : out;
 }
 const meanMissing = () => [...meanWords("all"), ...[...speakerLabels()].map(ko => ({ ko }))]
-  .filter((x, k, a) => a.findIndex(y => y.ko === x.ko) === k && !(x.ko in WTR) && !(trLang === "pl" && PL_WORDS[x.ko]));
+  .filter((x, k, a) => a.findIndex(y => y.ko === x.ko) === k && !(x.ko in wtrMap()) && !BUILTIN_WORDS[meanLang()]?.[x.ko]);
 function mInfo(msg) {
   if (msg) { $("mInfo").textContent = msg; return; }
   const n = meanPool($("mSrc").value).length, miss = meanMissing().length;
@@ -2967,13 +3000,12 @@ $("mSrc").onchange = () => mInfo();
 // translate the words that have no translation yet (each word on its own line)
 let mBusy = false;
 async function translateWords() {
-  const todo = meanMissing().map(x => x.ko), tl = trLang;
+  const todo = meanMissing().map(x => x.ko), tl = meanLang(), map = wtrMap(tl);
   for (let b = 0; b < todo.length; b += 40) {
     mInfo(t("meanWorking", Math.min(b + 40, todo.length), todo.length));
     const part = todo.slice(b, b + 40), out = await translateLines(part, tl);
-    if (tl !== trLang) return;
-    part.forEach((w, k) => { WTR[w] = typeof out[k] === "string" ? out[k].trim() : ""; });
-    store.set("wtr-" + tl, WTR);
+    part.forEach((w, k) => { map[w] = typeof out[k] === "string" ? out[k].trim() : ""; });
+    store.set("wtr-" + tl, map);
   }
 }
 function mItem(x, slot, dir, pool) {
