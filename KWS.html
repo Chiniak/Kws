@@ -2901,7 +2901,32 @@ const appLang = () => ui === "ko" ? (trLang !== "ko" ? trLang : "en") : ui;
 const meanLang = () => mLangPick === "tr" ? trLang : appLang();
 const WTRS = {};
 const wtrMap = (l = meanLang()) => WTRS[l] || (WTRS[l] = store.get("wtr-" + l, {}) || {});
-const wtrOf = w => wtrMap()[w] || BUILTIN_WORDS[meanLang()]?.[w] || "";
+/* The lesson's own explanation of a word wins over machine translation: "보통 usually", "학생 → student",
+   "자주 (often)", also several pairs on one line of a vocabulary table. In another answer language the
+   explanation is translated (not the bare Korean word, which has no context: 보통 alone becomes "normal"). */
+const GLOSS_RE = /([가-힣]+(?:\s[가-힣]+){0,2})\s*(?:→|->|=|–|—|-|:)?\s*\(?((?:[A-Za-zÀ-žąćęłńóśźżĄĆĘŁŃÓŚŹŻ'’]+[ ,/.]*){1,5})\)?/g;
+function lessonGlosses() {
+  const out = {};
+  for (const l of lines) {
+    if (!l || isHead(l) || !/[A-Za-z]/.test(l.text)) continue;
+    for (const m of l.text.matchAll(GLOSS_RE)) {
+      const ko = m[1].trim(), g = m[2].replace(/[\s,/.]+$/, "").trim();
+      // a gloss is short; a Korean sentence followed by an English note is not one
+      if (!g || g.split(/\s+/).length > 4 || ko.split(" ").length > 3 || out[ko]) continue;
+      out[ko] = { g, lang: /[ąćęłńóśźż]/i.test(g) ? "pl" : "en" };
+    }
+  }
+  return out;
+}
+let glossCache = null, glossFor = null;
+const glosses = () => (glossFor === lines ? glossCache : (glossFor = lines, glossCache = lessonGlosses()));
+function wtrOf(w) {
+  const g = glosses()[w], l = meanLang(), map = wtrMap();
+  if (g && g.lang === l) return g.g;
+  if (BUILTIN_WORDS[l]?.[w]) return BUILTIN_WORDS[l][w];        // the example lesson, offline
+  if (g && map["g|" + g.g]) return map["g|" + g.g];
+  return map[w] || "";
+}
 function renderMLang() {
   const a = appLang(), same = a === trLang;
   $("mLang").innerHTML = `<option value="app">${esc(langName(a))}</option>` + (same ? "" : `<option value="tr">${esc(langName(trLang))} · ${esc(t("mLangTr"))}</option>`);
@@ -2933,8 +2958,16 @@ function soundKey(s) {
     .replace(/[jy]/g, "i").replace(/w/g, "u").replace(/k/g, "g").replace(/t/g, "d").replace(/p/g, "b").replace(/r/g, "l")
     .replace(/h/g, "").replace(/(.)\1+/g, "$1");
 }
+// particles that can follow a name: 부산에 "in Busan", 서울에서, 민수는, 지민이…
+const PARTICLE_RE = /(에서|에게|한테|까지|부터|으로|이랑|하고|에|은|는|이|가|을|를|도|의|로|와|과|랑)$/;
 function looksLikeName(w, tr) {
   if (!tr) return false;
+  // a name with a particle: the translation contains the name ("W Busanie", "in Seoul")
+  const stem = w.replace(PARTICLE_RE, "");
+  if (stem !== w && stem.length >= 2) {
+    const k = soundKey(romanize(stem));
+    if (k.length >= 4 && tr.split(/[\s,.;:!?()]+/).some(x => /^\p{Lu}/u.test(x) && soundKey(x).startsWith(k))) return true;
+  }
   const one = tr.trim().replace(/[.!?,;:]+$/, "");
   if (/\s/.test(one) || /[가-힣]/.test(one)) return false;
   const a = soundKey(romanize(w)), b = soundKey(one);
@@ -2992,8 +3025,16 @@ function meanPool(src) {
   }
   return src === "review" ? out.filter(x => isDue(prog.m?.[x.ko])) : out;
 }
-const meanMissing = () => [...meanWords("all"), ...[...speakerLabels()].map(ko => ({ ko }))]
-  .filter((x, k, a) => a.findIndex(y => y.ko === x.ko) === k && !(x.ko in wtrMap()) && !BUILTIN_WORDS[meanLang()]?.[x.ko]);
+// what still has to go through the translator: the lesson's explanation when there is one, else the word
+function meanMissing() {
+  const l = meanLang(), map = wtrMap(), gl = glosses(), out = [], seen = new Set();
+  for (const x of [...meanWords("all"), ...[...speakerLabels()].map(ko => ({ ko }))]) {
+    const g = gl[x.ko];
+    const src = (g && g.lang === l) || BUILTIN_WORDS[l]?.[x.ko] ? null : g ? "g|" + g.g : x.ko;
+    if (src && !(src in map) && !seen.has(src)) { seen.add(src); out.push({ ko: x.ko, src }); }
+  }
+  return out;
+}
 function mInfo(msg) {
   if (msg) { $("mInfo").textContent = msg; return; }
   const n = meanPool($("mSrc").value).length, miss = meanMissing().length;
@@ -3003,10 +3044,10 @@ $("mSrc").onchange = () => mInfo();
 // translate the words that have no translation yet (each word on its own line)
 let mBusy = false;
 async function translateWords() {
-  const todo = meanMissing().map(x => x.ko), tl = meanLang(), map = wtrMap(tl);
+  const todo = meanMissing().map(x => x.src), tl = meanLang(), map = wtrMap(tl);
   for (let b = 0; b < todo.length; b += 40) {
     mInfo(t("meanWorking", Math.min(b + 40, todo.length), todo.length));
-    const part = todo.slice(b, b + 40), out = await translateLines(part, tl);
+    const part = todo.slice(b, b + 40), out = await translateLines(part.map(s => s.replace(/^g\|/, "")), tl);
     part.forEach((w, k) => { map[w] = typeof out[k] === "string" ? out[k].trim() : ""; });
     store.set("wtr-" + tl, map);
   }
