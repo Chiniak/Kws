@@ -3046,12 +3046,21 @@ function meanWords(src) {
    Only words found in it (or explained in the lesson itself) are practised: names, places, grammar endings
    and broken bits of text are not in it, so they never become questions. Meanings come from the
    dictionary, not from a translator guessing a lone word; for Polish the English meaning is translated. */
-let DICT = window.KWS_DICT || null, dictLoading = null;
+// common words whose first Wiktionary meaning is not the one a learner needs first
+const DICT_FIX = {
+  "나다": ["v", "to come out, to occur, to arise"], "있다": ["v", "to be (somewhere), to exist, to have"],
+  "없다": ["j", "to not exist, to not have"], "너": ["p", "you (informal)"], "제": ["p", "my, I (humble)"], "저": ["p", "I, me (humble) / that"],
+  "내": ["p", "my, I"], "그": ["p", "that, he"], "이": ["d", "this"], "걸리다": ["v", "to take (time), to be caught"],
+  "생기다": ["v", "to happen, to come about"], "대다": ["v", "to touch, to put against"],
+  "시키다": ["v", "to order, to make (someone) do"], "싫다": ["j", "unpleasant, disliked"], "같다": ["j", "same, alike"],
+  "지다": ["v", "to lose, to set (sun)"], "좋아하다": ["v", "to like"], "우리": ["p", "we, us, our"],
+};
+let DICT = window.KWS_DICT ? Object.assign(window.KWS_DICT, DICT_FIX) : null, dictLoading = null;
 function loadDict() {
   if (DICT) return Promise.resolve(DICT);
   if (!dictLoading) dictLoading = new Promise(res => {
     const s = document.createElement("script"); s.src = "dict-ko.js";
-    s.onload = () => { DICT = window.KWS_DICT || null; res(DICT); };
+    s.onload = () => { DICT = window.KWS_DICT ? Object.assign(window.KWS_DICT, DICT_FIX) : null; res(DICT); };
     s.onerror = () => { dictLoading = null; res(null); };
     document.head.appendChild(s);
   });
@@ -3088,6 +3097,8 @@ function lemma(w) {
   cands.sort((a, b) => b.length - a.length);
   // a noun of two or more syllables first (학생이에요 → 학생); a one-syllable "noun" only if no verb fits (가요 is 가다)
   if (cands[0] && cands[0].length >= 2) return { lemma: cands[0], e: DICT[cands[0]] };
+  // a pronoun with a particle (나는, 저는, 제가, 너도) is far more common than a verb form (나는 = I, not 나다)
+  const pr = cands.find(c => DICT[c][0] === "p"); if (pr) return { lemma: pr, e: DICT[pr] };
   const vb = verbLemma(w);
   if (vb) return vb;
   return cands[0] ? { lemma: cands[0], e: DICT[cands[0]] } : null;
