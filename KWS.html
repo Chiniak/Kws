@@ -3109,23 +3109,25 @@ function verbLemma(w) {
 // meanings you blocked or fixed with 🚩 (for all lessons)
 let mBlock = new Set(store.get("mBlock", []));
 const mFixes = () => store.get("mFix-" + meanLang(), {}) || {};
+// an English meaning of an adjective without "to be" ("to be pretty" → "pretty"), so Polish gets "ładny", not "być ładnym"
+const enAdj = (txt, pos) => pos === "j" ? txt.replace(/^to be /i, "").replace(/([,;/] )to be /gi, "$1") : txt;
 const lc1 = s => /^\p{Lu}\p{Ll}/u.test(s) ? s.charAt(0).toLocaleLowerCase() + s.slice(1) : s;
 // words with a meaning: the lesson's explanation first, then the dictionary
 function meanPool(src) {
   const seenKo = new Set(), seenTr = new Set(), out = [], gl = glosses(), l = meanLang(), map = wtrMap(), fix = mFixes();
   for (const x of meanWords(src === "review" ? "all" : src)) {
-    let ko = x.ko, tr = "";
+    let ko = x.ko, tr = "", pos = "";
     const g = gl[x.ko];
-    if (g) tr = g.lang === l ? g.g : BUILTIN_WORDS[l]?.[x.ko] || map["g|" + g.g] || "";
+    if (g) { pos = lemma(x.ko)?.e[0] || ""; const gg = g.lang === "en" ? enAdj(g.g, pos) : g.g; tr = g.lang === l ? gg : BUILTIN_WORDS[l]?.[x.ko] || map["g|" + gg] || map["g|" + g.g] || ""; }
     else {
       const L = lemma(x.ko); if (!L) continue;
-      ko = L.lemma;
+      ko = L.lemma; pos = L.e[0];
       tr = BUILTIN_WORDS[l]?.[x.ko] || BUILTIN_WORDS[l]?.[ko] || (l === "en" ? L.e[1] : map["g|" + L.e[1]] || "");
     }
     if (fix[ko]) tr = fix[ko];
     tr = lc1(String(tr).trim());
     if (!tr || mBlock.has(ko) || /[가-힣]/.test(tr) || seenKo.has(ko) || seenTr.has(tr.toLowerCase())) continue;
-    seenKo.add(ko); seenTr.add(tr.toLowerCase()); out.push({ ko, surf: x.ko, i: x.i, tr });
+    seenKo.add(ko); seenTr.add(tr.toLowerCase()); out.push({ ko, surf: x.ko, i: x.i, tr, pos: "vj".includes(pos || "-") || /^(to |być )/i.test(tr) ? "v" : "n" });
   }
   return src === "review" ? out.filter(x => isDue(prog.m?.[x.ko])) : out;
 }
@@ -3135,7 +3137,7 @@ function meanMissing() {
   for (const x of meanWords("all")) {
     const g = gl[x.ko];
     let src = null;
-    if (g) src = g.lang === l || BUILTIN_WORDS[l]?.[x.ko] ? null : "g|" + g.g;
+    if (g) src = g.lang === l || BUILTIN_WORDS[l]?.[x.ko] ? null : "g|" + (g.lang === "en" ? enAdj(g.g, lemma(x.ko)?.e[0]) : g.g);
     else if (l !== "en") { const L = lemma(x.ko); if (L && !BUILTIN_WORDS[l]?.[x.ko] && !BUILTIN_WORDS[l]?.[L.lemma]) src = "g|" + L.e[1]; }
     if (src && !(src in map) && !seen.has(src)) { seen.add(src); out.push({ ko: x.ko, src }); }
   }
@@ -3159,10 +3161,38 @@ async function translateWords() {
     store.set("wtr-" + tl, map);
   }
 }
+// the answers of one question must look alike, so the form never gives the right one away
+// (e.g. "to be pretty" among "good", "and"). Each rule: if only SOME answers have this form, it is taken off all of them.
+const SHAPE_RULES = [
+  [/ \/ /, o => o.split(" / ")[0]],                                   // "apple / apology" → "apple"
+  [/\s*\([^)]*\)/, o => o.replace(/\s*\([^)]*\)/g, "")],             // "see (you)" → "see"
+  [/^(i'm |i am )/i, o => o.replace(/^(i'm |i am )/i, "")],
+  [/^(please |proszę )/i, o => o.replace(/^(please |proszę )/i, "")],
+  [/^to be /i, o => o.replace(/^to be /i, "")],
+  [/^to /i, o => o.replace(/^to /i, "")],
+  [/^(a |an |the )/i, o => o.replace(/^(a |an |the )/i, "")],
+  [/[.!?…]+$/, o => o.replace(/\s*[.!?…]+$/, "")],
+];
+function sameShape(opts) {
+  for (const [re, fix] of SHAPE_RULES) {
+    const n = opts.filter(o => re.test(o)).length;
+    if (n && n < opts.length) opts = opts.map(o => fix(o).trim() || o);
+  }
+  // the same number of meanings in each answer ("big, large" next to "good" → "big")
+  const parts = opts.map(o => o.split(/\s*[,;]\s*/).filter(Boolean)), min = Math.min(...parts.map(p => p.length));
+  if (parts.some(p => p.length !== min)) opts = opts.map((o, k) => parts[k].slice(0, min).join(", "));
+  return opts.map(lc1);
+}
 function mItem(x, slot, dir, pool) {
   const key = dir === "ko" ? "tr" : "ko";
-  const others = shuffle(pool.filter(p => p.ko !== x.ko).map(p => p[key])).filter((v, k, a) => a.indexOf(v) === k).slice(0, 3);
-  return { ...x, dir, opts: placeRight([x[key], ...others], x[key], slot), right: x[key], slot };
+  // wrong answers of the same kind first (verbs/adjectives with verbs/adjectives, other words with other words)
+  const rest = shuffle(pool.filter(p => p.ko !== x.ko && p.tr !== x.tr));
+  rest.sort((a, b) => (a.pos !== x.pos) - (b.pos !== x.pos));
+  const others = rest.map(p => p[key]).filter((v, k, a) => a.indexOf(v) === k).slice(0, 3);
+  let opts = [x[key], ...others];
+  if (key === "tr") opts = sameShape(opts);
+  if (new Set(opts.map(o => o.toLowerCase())).size < opts.length) opts = [x[key], ...others];   // stripping made two alike: keep them as they were
+  return { ...x, dir, opts: placeRight(opts, opts[0], slot), right: opts[0], slot };
 }
 $("mGo").onclick = async () => {
   if (mBusy) return;
@@ -3201,6 +3231,8 @@ function answerM(btn) {
   const it = M.items[M.i], ok = it.opts[+btn.dataset.k] === it.right;
   grade("m", it.ko, ok);
   document.querySelectorAll("#mBox .opt").forEach(b => { b.disabled = true; if (it.opts[+b.dataset.k] === it.right) b.classList.add("right"); });
+  // the answer was shortened to look like the others: show the whole meaning too
+  const fullM = () => it.dir === "ko" && it.tr !== it.right ? `<div class="hint" lang="${meanLang()}">${esc(it.ko)} = ${esc(it.tr)}</div>` : "";
   if (ok) { M.score++; $("mFb").className = "fb good"; $("mFb").textContent = t("perfect"); }
   else {
     btn.classList.add("wrong"); if (!M.miss.some(m => m.ko === it.ko)) M.miss.push(it);
@@ -3208,6 +3240,7 @@ function answerM(btn) {
     const pool = meanPool("all");
     if (requeue(M, it, (x, s) => mItem(x, s, x.dir, pool))) $("mFb").insertAdjacentHTML("beforeend", `<div class="again">${t("againSoon")}</div>`);
   }
+  $("mFb").insertAdjacentHTML("beforeend", fullM());
   speakKo(it.ko);
   $("mNext").textContent = M.i + 1 < M.items.length ? t("next") : t("seeResult");
   $("mNext").hidden = false; $("mNext").focus();
