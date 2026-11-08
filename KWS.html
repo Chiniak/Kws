@@ -2243,7 +2243,37 @@ function renderDue() {
   if (n) $("dueText").textContent = t("dueBanner", n);
 }
 $("dueGo").onclick = () => { location.hash = ""; goReview(); };
-function goReview() { setMode("quiz"); showPractice("quiz"); $("qSrc").value = "review"; updateInfo(); window.scrollTo({ top: 0 }); }
+/* "Practise" on the review bar: go to the lesson that has something due (this one first) and start the exercise
+   with the most due items at once: words → Spelling, sentences → Build, meanings → Meaning. */
+async function goReview() {
+  const now = Date.now(), dueIn = p => ["w", "s", "m"].some(k => Object.values(p?.[k] || {}).some(r => r && r.due && r.due <= now));
+  const ids = [curId, ...lib.map(l => l.id).filter(id => id !== curId)].filter(Boolean);
+  for (const id of ids) {
+    if (!dueIn(store.get("prog-" + id, null))) continue;
+    if (id !== curId) await openLesson(id);
+    if (curId !== id) continue;
+    if (await startReviewHere()) return;
+  }
+  renderDue();
+  setMode("quiz"); window.scrollTo({ top: 0 }); toast(t("noDue").trim());
+}
+async function startReviewHere() {
+  await loadDict();
+  const w = quizWords("review"), s = sentences("review"), m = DICT ? meanPool("review") : [];
+  const best = [["quiz", w.length], ["build", s.length], ["mean", m.length]].sort((a, b) => b[1] - a[1])[0];
+  if (!best[1]) {
+    // due items that no exercise can show any more (the lesson or the word list changed): they no longer count
+    const keep = { w: new Set(quizWords("all").map(x => x.w)), s: new Set(sentences("all").map(x => x.ko)), m: new Set(DICT ? meanPool("all").map(x => x.ko) : []) };
+    for (const k of ["w", "s", "m"]) for (const [key, r] of Object.entries(prog[k] || {})) if (r && r.due && r.due <= Date.now() && !keep[k].has(key) && (k !== "m" || DICT)) delete r.due;
+    saveProg();
+    return false;
+  }
+  setMode("quiz"); showPractice(best[0]); window.scrollTo({ top: 0 });
+  if (best[0] === "quiz") { $("qSrc").value = "review"; newQuiz(); }
+  if (best[0] === "build") { $("bSrc").value = "review"; $("bGo").onclick(); }
+  if (best[0] === "mean") { $("mSrc").value = "review"; await $("mGo").onclick(); }
+  return true;
+}
 function renderRem(msg) {
   $("remOn").checked = remOn;
   $("remHour").innerHTML = Array.from({ length: 18 }, (_, i) => i + 5).map(h => `<option value="${h}" ${h === remHour ? "selected" : ""}>${String(h).padStart(2, "0")}:00</option>`).join("");
