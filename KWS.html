@@ -2555,12 +2555,26 @@ function showPractice(m) {
 $("pSeg").onclick = e => { const b = e.target.closest("button"); if (b) showPractice(b.dataset.p); };
 
 /* Korean sentences of the lesson: [{i: line index, ko}] */
+/* A line that explains grammar, not a sentence to practise: "Consonant-final stem takes -는다",
+   "N + 이에요", "먹- + 어요", or English text with only short Korean bits in it ("the particle 는 marks the topic"). */
+function isGrammarNote(text) {
+  const runs = [...text.matchAll(RUN)];
+  if (!runs.length) return false;
+  for (const m of runs) {
+    const before = text.slice(0, m.index).trimEnd().slice(-1), after = text.slice(m.index + m[0].trimEnd().length).trimStart().charAt(0);
+    if (/[-~+＋]/.test(text.charAt(m.index - 1)) || /[+＋]/.test(before) || /^[-~]/.test(text.slice(m.index + m[0].trimEnd().length)) || after === "+") return true;
+  }
+  const hangul = (text.match(/[가-힣]/g) || []).length, latin = (text.match(/[A-Za-zÀ-ž]/g) || []).length;
+  return runs.every(m => m[0].replace(/[^가-힣]/g, "").length <= 2) && latin > hangul * 3;
+}
 function sentences(src) {
   const ids = src === "sel" && sel.size ? [...sel].sort((a, b) => a - b) : lines.map((_, i) => i);
   const seen = new Set(), out = [];
   for (const i of ids) {
-    if (isHead(lines[i])) continue;
-    let ko = (lines[i].text.match(RUN) || []).map(x => x.trim()).join(" ").replace(/\s+/g, " ").trim();
+    if (isHead(lines[i]) || isGrammarNote(lines[i].text)) continue;
+    // an explanation in brackets is not part of the sentence: "저는 학생이에요. (after a consonant → 이에요)"
+    const txt = lines[i].text.replace(/\s*[(\[（][^)\]）]*[A-Za-z][^)\]）]*[)\]）]/g, "");
+    let ko = (txt.match(RUN) || []).map(x => x.trim()).join(" ").replace(/\s+/g, " ").trim();
     // drop a speaker label like "수빈:" so only what is said goes into the exercise
     const lab = ko.match(/^[^:：.!?]{1,15}[:：]\s*/);
     if (lab && /[\uAC00-\uD7A3]/.test(ko.slice(lab[0].length))) ko = ko.slice(lab[0].length);
