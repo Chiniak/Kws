@@ -540,15 +540,15 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
     radial-gradient(480px 480px at -15% 58%, color-mix(in srgb, var(--a2) 12%, transparent), transparent 65%);
 }
 
-/* header: flag in a glass circle, name and line beside it, settings on the right */
+/* header: the logo is the flag with "with Subin" under it (left-aligned), settings on the right */
 [data-skin="aurora"] .hdr { background: none; box-shadow: none; color: var(--fg); border-radius: 0; padding: 6px 64px 14px 2px; justify-content: flex-start; margin-bottom: 8px; overflow: visible; }
 [data-skin="aurora"] .hdr::before, [data-skin="aurora"] .hdr::after { display: none; }
-[data-skin="aurora"] .hdr-brand { display: grid; grid-template-columns: 52px 1fr; column-gap: 12px; align-items: center; text-align: left; }
-[data-skin="aurora"] .brand { grid-row: 1 / 3; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); border: 1px solid var(--line-strong); }
-[data-skin="aurora"] .flag { width: 30px; margin: 0; border-radius: 3px; box-shadow: none; }
-[data-skin="aurora"] .withsubin { margin: 0; align-self: end; color: var(--fg); font-family: var(--display); font-weight: 800; font-size: 1.35rem; letter-spacing: -.02em; text-shadow: none; }
+[data-skin="aurora"] .hdr-brand { display: flex; flex-direction: column; align-items: center; align-self: flex-start; gap: 10px; text-align: left; }
+[data-skin="aurora"] .brand { flex: none; display: block; line-height: 0; }
+[data-skin="aurora"] .flag { width: 54px; height: 36px; margin: 0; border-radius: 6px; box-shadow: 0 0 0 1px var(--line-strong), 0 6px 18px rgba(0, 0, 0, .35); }
+[data-skin="aurora"] .withsubin { margin: 0; color: var(--fg); font-family: var(--display); font-weight: 800; font-size: 1.6rem; letter-spacing: -.02em; line-height: 1; text-shadow: none; }
 [data-skin="aurora"] .hdr .sub { margin: 0; align-self: start; color: var(--muted); font-size: .82rem; max-width: none; }
-[data-skin="aurora"] .hdr .gear-icon { top: 9px; right: 2px; color: var(--fg); background: var(--surface); border: 1px solid var(--line-strong); }
+[data-skin="aurora"] .hdr .gear-icon { top: 6px; right: 2px; color: var(--fg); background: var(--surface); border: 1px solid var(--line-strong); }
 
 /* glass cards */
 [data-skin="aurora"] .panel, [data-skin="aurora"] .qcard, [data-skin="aurora"] .opage, [data-skin="aurora"] .empty, [data-skin="aurora"] .lang, [data-skin="aurora"] .others, [data-skin="aurora"] .guide {
@@ -612,6 +612,7 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
 [data-skin="aurora"] .prog { background: color-mix(in srgb, var(--fg) 10%, transparent); border: 0; height: 6px; }
 [data-skin="aurora"] .prog i { background: var(--grad); }
 [data-skin="aurora"] .result .big { background: var(--grad); -webkit-background-clip: text; background-clip: text; font-family: var(--display); font-weight: 800; }
+.libcard .tagline { margin: 2px 0 0; font-size: .85rem; }
 [data-skin="aurora"] .vpill { background: var(--surface); border-color: var(--line); }
 [data-skin="aurora"] .opage canvas { border-radius: 16px; }
 
@@ -620,7 +621,7 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
   [data-skin="aurora"] .hdr .gear-icon:hover { background: color-mix(in srgb, var(--fg) 12%, transparent); }
 }
 @media (min-width: 760px) {
-  [data-skin="aurora"] .withsubin { font-size: 1.6rem; }
+  [data-skin="aurora"] .withsubin { font-size: 1.8rem; }
   [data-skin="aurora"] .opt { font-size: 1.8rem; }
 }
 
@@ -671,7 +672,6 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
     <div class="hdr-brand">
       <h1 class="brand"><svg class="flag" viewBox="0 0 72 48" role="img" aria-label="Korea"><rect width="72" height="48" fill="#fff"/><g transform="translate(36 24)"><g transform="rotate(33.69)"><circle r="12" fill="#0047A0"/><path d="M-12 0A12 12 0 0 1 12 0A6 6 0 0 0 0 0A6 6 0 0 1 -12 0Z" fill="#CD2E3A"/></g><g fill="#000"><g transform="rotate(-56.31)"><rect x="-6" y="-20" width="12" height="2"/><rect x="-6" y="-23" width="12" height="2"/><rect x="-6" y="-26" width="12" height="2"/></g><g transform="rotate(56.31)"><rect x="-6" y="-20" width="5.5" height="2"/><rect x="0.5" y="-20" width="5.5" height="2"/><rect x="-6" y="-23" width="12" height="2"/><rect x="-6" y="-26" width="5.5" height="2"/><rect x="0.5" y="-26" width="5.5" height="2"/></g><g transform="rotate(123.69)"><rect x="-6" y="-20" width="5.5" height="2"/><rect x="0.5" y="-20" width="5.5" height="2"/><rect x="-6" y="-23" width="5.5" height="2"/><rect x="0.5" y="-23" width="5.5" height="2"/><rect x="-6" y="-26" width="5.5" height="2"/><rect x="0.5" y="-26" width="5.5" height="2"/></g><g transform="rotate(-123.69)"><rect x="-6" y="-20" width="12" height="2"/><rect x="-6" y="-23" width="5.5" height="2"/><rect x="0.5" y="-23" width="5.5" height="2"/><rect x="-6" y="-26" width="12" height="2"/></g></g></g></svg><span class="vh">KWS</span></h1>
       <p class="withsubin">with Subin</p>
-      <p class="sub" data-t="tagline"></p>
     </div>
     <button class="gear gear-icon" id="openSet"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </div>
@@ -687,6 +687,7 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
       <input type="file" id="fileIn" accept=".pdf,.txt,.docx,application/pdf,text/plain" hidden>
       <span class="file" id="fileName"></span>
     </div>
+    <p class="hint tagline" data-t="tagline"></p>
     <details>
       <summary data-t="orPaste"></summary>
       <textarea id="paste"></textarea>
