@@ -605,6 +605,10 @@ textarea, .tredit textarea { border-radius: var(--r); border-width: 1px; }
 [data-skin="aurora"] .ctx .gap { border-bottom-color: var(--a2); }
 [data-skin="aurora"] .opt { background: var(--surface-2); border: 1px solid var(--line); border-radius: 24px; font-family: var(--kfont); font-size: 1.6rem; box-shadow: none; }
 [data-skin="aurora"] .opt .n { background: transparent; border-color: var(--line-strong); }
+/* Meaning answers are words and phrases, not one Korean word: normal text size, the letter in line before it */
+[data-skin="aurora"] .opt.mopt { font-family: var(--body); font-size: 1.05rem; font-weight: 600; line-height: 1.35; min-height: 56px; padding: 12px 16px; gap: 12px; justify-content: flex-start; text-align: left; overflow-wrap: anywhere; }
+[data-skin="aurora"] .opt.mopt[lang="ko"] { font-family: var(--kfont); font-size: 1.25rem; }
+[data-skin="aurora"] .opt.mopt .n { position: static; flex: none; }
 [data-skin="aurora"] .opt.right { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 13%, transparent); box-shadow: 0 0 36px -8px color-mix(in srgb, var(--ok) 65%, transparent); }
 [data-skin="aurora"] .opt.wrong { border-color: var(--red); background: color-mix(in srgb, var(--red) 12%, transparent); }
 [data-skin="aurora"] .opt.right .n { background: var(--ok); color: var(--on-accent); border-color: var(--ok); }
